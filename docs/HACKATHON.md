@@ -2,7 +2,7 @@
 
 **Status:** Draft for team scrutiny; proposed decisions are not commitments.  
 **Updated:** October 9, 2026  
-**Team:** David + partner; implementation owners to assign.  
+**Team:** David + Quazi; implementation owners to assign.  
 **Event:** Hack Knight Fall 2026, October 9–11.  
 **Purpose:** One working document combining product specification, technical specification, and execution plan. Keep setup instructions in `README.md`.
 
