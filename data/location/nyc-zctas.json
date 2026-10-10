@@ -1,0 +1,1273 @@
+{
+  "sourceUrl": "https://data.cityofnewyork.us/City-Government/ZIP-Code-Tabulation-Areas/35j5-n34v",
+  "extractedAt": "2026-10-09",
+  "boundarySourceUrl": "https://data.cityofnewyork.us/City-Government/Borough-Boundaries/gthc-hcne",
+  "records": [
+    {
+      "zcta5": "10001",
+      "latitude": 40.750649,
+      "longitude": -73.9972976,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10002",
+      "latitude": 40.7159693,
+      "longitude": -73.9868946,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10003",
+      "latitude": 40.7318645,
+      "longitude": -73.9891241,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10004",
+      "latitude": 40.6898053,
+      "longitude": -74.017389,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10005",
+      "latitude": 40.7062151,
+      "longitude": -74.0086868,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10006",
+      "latitude": 40.7094897,
+      "longitude": -74.0130536,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10007",
+      "latitude": 40.7138682,
+      "longitude": -74.0078656,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10009",
+      "latitude": 40.7263919,
+      "longitude": -73.9786045,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10010",
+      "latitude": 40.7390449,
+      "longitude": -73.9826162,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10011",
+      "latitude": 40.7418398,
+      "longitude": -74.0005279,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10012",
+      "latitude": 40.7256254,
+      "longitude": -73.9979364,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10013",
+      "latitude": 40.7200512,
+      "longitude": -74.0048091,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10014",
+      "latitude": 40.7341455,
+      "longitude": -74.0060262,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10016",
+      "latitude": 40.7451816,
+      "longitude": -73.9780533,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10017",
+      "latitude": 40.7523868,
+      "longitude": -73.9726777,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10018",
+      "latitude": 40.7553269,
+      "longitude": -73.9926959,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10019",
+      "latitude": 40.765735,
+      "longitude": -73.9850652,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10020",
+      "latitude": 40.7591745,
+      "longitude": -73.9807149,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10021",
+      "latitude": 40.7696404,
+      "longitude": -73.9590177,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10022",
+      "latitude": 40.7585703,
+      "longitude": -73.96793,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10023",
+      "latitude": 40.7745673,
+      "longitude": -73.9790155,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10024",
+      "latitude": 40.7856602,
+      "longitude": -73.9712689,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10025",
+      "latitude": 40.7982514,
+      "longitude": -73.9683364,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10026",
+      "latitude": 40.8029777,
+      "longitude": -73.9535293,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10027",
+      "latitude": 40.812657,
+      "longitude": -73.9549825,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10028",
+      "latitude": 40.7764466,
+      "longitude": -73.9533832,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10029",
+      "latitude": 40.7922493,
+      "longitude": -73.9473326,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10030",
+      "latitude": 40.8182473,
+      "longitude": -73.942834,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10031",
+      "latitude": 40.8248037,
+      "longitude": -73.9502057,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10032",
+      "latitude": 40.8390405,
+      "longitude": -73.942812,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10033",
+      "latitude": 40.8474756,
+      "longitude": -73.9355098,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10034",
+      "latitude": 40.8670761,
+      "longitude": -73.924312,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10035",
+      "latitude": 40.795251,
+      "longitude": -73.930418,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10036",
+      "latitude": 40.7597915,
+      "longitude": -73.9906851,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10037",
+      "latitude": 40.8130268,
+      "longitude": -73.9377141,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10038",
+      "latitude": 40.7092638,
+      "longitude": -74.0029028,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10039",
+      "latitude": 40.8262869,
+      "longitude": -73.937526,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10040",
+      "latitude": 40.8580974,
+      "longitude": -73.9296002,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10044",
+      "latitude": 40.7619065,
+      "longitude": -73.949967,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10065",
+      "latitude": 40.7646886,
+      "longitude": -73.9632643,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10069",
+      "latitude": 40.7773824,
+      "longitude": -73.98883,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10075",
+      "latitude": 40.7734133,
+      "longitude": -73.9562911,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10103",
+      "latitude": 40.7607797,
+      "longitude": -73.9776696,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10110",
+      "latitude": 40.7544986,
+      "longitude": -73.9822564,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10111",
+      "latitude": 40.7595312,
+      "longitude": -73.9785852,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10112",
+      "latitude": 40.7589044,
+      "longitude": -73.9790441,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10115",
+      "latitude": 40.810852,
+      "longitude": -73.9637437,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10119",
+      "latitude": 40.750644,
+      "longitude": -73.9927333,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10128",
+      "latitude": 40.7814985,
+      "longitude": -73.9501988,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10152",
+      "latitude": 40.7584035,
+      "longitude": -73.9720314,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10153",
+      "latitude": 40.7636221,
+      "longitude": -73.9724387,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10154",
+      "latitude": 40.7577785,
+      "longitude": -73.9724875,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10162",
+      "latitude": 40.7692674,
+      "longitude": -73.9497953,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10165",
+      "latitude": 40.752131,
+      "longitude": -73.9787223,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10167",
+      "latitude": 40.7546485,
+      "longitude": -73.974771,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10168",
+      "latitude": 40.7514484,
+      "longitude": -73.9771032,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10169",
+      "latitude": 40.7545147,
+      "longitude": -73.9763929,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10170",
+      "latitude": 40.7526253,
+      "longitude": -73.9758766,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10171",
+      "latitude": 40.7558993,
+      "longitude": -73.9738583,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10172",
+      "latitude": 40.7552733,
+      "longitude": -73.9743148,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10173",
+      "latitude": 40.7541306,
+      "longitude": -73.9793637,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10174",
+      "latitude": 40.751441,
+      "longitude": -73.9750035,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10177",
+      "latitude": 40.7551387,
+      "longitude": -73.9759337,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10199",
+      "latitude": 40.7513831,
+      "longitude": -73.9971519,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10271",
+      "latitude": 40.7082356,
+      "longitude": -74.0105414,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10278",
+      "latitude": 40.7151383,
+      "longitude": -74.0037175,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10279",
+      "latitude": 40.7126262,
+      "longitude": -74.0086688,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10280",
+      "latitude": 40.7097053,
+      "longitude": -74.0165861,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10282",
+      "latitude": 40.7163808,
+      "longitude": -74.0150041,
+      "borough": "Manhattan"
+    },
+    {
+      "zcta5": "10301",
+      "latitude": 40.6275046,
+      "longitude": -74.0943767,
+      "borough": "Staten Island"
+    },
+    {
+      "zcta5": "10302",
+      "latitude": 40.6308062,
+      "longitude": -74.1376638,
+      "borough": "Staten Island"
+    },
+    {
+      "zcta5": "10303",
+      "latitude": 40.6298846,
+      "longitude": -74.1741296,
+      "borough": "Staten Island"
+    },
+    {
+      "zcta5": "10304",
+      "latitude": 40.605965,
+      "longitude": -74.0935352,
+      "borough": "Staten Island"
+    },
+    {
+      "zcta5": "10305",
+      "latitude": 40.5965488,
+      "longitude": -74.0757794,
+      "borough": "Staten Island"
+    },
+    {
+      "zcta5": "10306",
+      "latitude": 40.5717144,
+      "longitude": -74.124264,
+      "borough": "Staten Island"
+    },
+    {
+      "zcta5": "10307",
+      "latitude": 40.5077532,
+      "longitude": -74.2420912,
+      "borough": "Staten Island"
+    },
+    {
+      "zcta5": "10308",
+      "latitude": 40.552828,
+      "longitude": -74.151525,
+      "borough": "Staten Island"
+    },
+    {
+      "zcta5": "10309",
+      "latitude": 40.529842,
+      "longitude": -74.2197775,
+      "borough": "Staten Island"
+    },
+    {
+      "zcta5": "10310",
+      "latitude": 40.6326122,
+      "longitude": -74.1161485,
+      "borough": "Staten Island"
+    },
+    {
+      "zcta5": "10311",
+      "latitude": 40.6052306,
+      "longitude": -74.1795339,
+      "borough": "Staten Island"
+    },
+    {
+      "zcta5": "10312",
+      "latitude": 40.5452374,
+      "longitude": -74.1804434,
+      "borough": "Staten Island"
+    },
+    {
+      "zcta5": "10314",
+      "latitude": 40.6006986,
+      "longitude": -74.1643138,
+      "borough": "Staten Island"
+    },
+    {
+      "zcta5": "10451",
+      "latitude": 40.8221675,
+      "longitude": -73.9226159,
+      "borough": "Bronx"
+    },
+    {
+      "zcta5": "10452",
+      "latitude": 40.8377909,
+      "longitude": -73.9233391,
+      "borough": "Bronx"
+    },
+    {
+      "zcta5": "10453",
+      "latitude": 40.8525077,
+      "longitude": -73.9132906,
+      "borough": "Bronx"
+    },
+    {
+      "zcta5": "10454",
+      "latitude": 40.8055831,
+      "longitude": -73.9165948,
+      "borough": "Bronx"
+    },
+    {
+      "zcta5": "10455",
+      "latitude": 40.8147983,
+      "longitude": -73.908601,
+      "borough": "Bronx"
+    },
+    {
+      "zcta5": "10456",
+      "latitude": 40.8306693,
+      "longitude": -73.9081608,
+      "borough": "Bronx"
+    },
+    {
+      "zcta5": "10457",
+      "latitude": 40.8457068,
+      "longitude": -73.8979229,
+      "borough": "Bronx"
+    },
+    {
+      "zcta5": "10458",
+      "latitude": 40.8624859,
+      "longitude": -73.8864478,
+      "borough": "Bronx"
+    },
+    {
+      "zcta5": "10459",
+      "latitude": 40.8256921,
+      "longitude": -73.8929981,
+      "borough": "Bronx"
+    },
+    {
+      "zcta5": "10460",
+      "latitude": 40.8423439,
+      "longitude": -73.8790617,
+      "borough": "Bronx"
+    },
+    {
+      "zcta5": "10461",
+      "latitude": 40.8467414,
+      "longitude": -73.8407884,
+      "borough": "Bronx"
+    },
+    {
+      "zcta5": "10462",
+      "latitude": 40.8432666,
+      "longitude": -73.860417,
+      "borough": "Bronx"
+    },
+    {
+      "zcta5": "10463",
+      "latitude": 40.8863455,
+      "longitude": -73.9015473,
+      "borough": "Bronx"
+    },
+    {
+      "zcta5": "10464",
+      "latitude": 40.8695935,
+      "longitude": -73.7958478,
+      "borough": "Bronx"
+    },
+    {
+      "zcta5": "10465",
+      "latitude": 40.8273295,
+      "longitude": -73.8221698,
+      "borough": "Bronx"
+    },
+    {
+      "zcta5": "10466",
+      "latitude": 40.8909641,
+      "longitude": -73.8462394,
+      "borough": "Bronx"
+    },
+    {
+      "zcta5": "10467",
+      "latitude": 40.8752619,
+      "longitude": -73.8720268,
+      "borough": "Bronx"
+    },
+    {
+      "zcta5": "10468",
+      "latitude": 40.8689403,
+      "longitude": -73.899995,
+      "borough": "Bronx"
+    },
+    {
+      "zcta5": "10469",
+      "latitude": 40.8685088,
+      "longitude": -73.8466911,
+      "borough": "Bronx"
+    },
+    {
+      "zcta5": "10470",
+      "latitude": 40.8895274,
+      "longitude": -73.8725845,
+      "borough": "Bronx"
+    },
+    {
+      "zcta5": "10471",
+      "latitude": 40.8999842,
+      "longitude": -73.9067506,
+      "borough": "Bronx"
+    },
+    {
+      "zcta5": "10472",
+      "latitude": 40.8296845,
+      "longitude": -73.8693733,
+      "borough": "Bronx"
+    },
+    {
+      "zcta5": "10473",
+      "latitude": 40.8186904,
+      "longitude": -73.8584741,
+      "borough": "Bronx"
+    },
+    {
+      "zcta5": "10474",
+      "latitude": 40.8113399,
+      "longitude": -73.8851728,
+      "borough": "Bronx"
+    },
+    {
+      "zcta5": "10475",
+      "latitude": 40.8756347,
+      "longitude": -73.826934,
+      "borough": "Bronx"
+    },
+    {
+      "zcta5": "11004",
+      "latitude": 40.7461911,
+      "longitude": -73.7115068,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11005",
+      "latitude": 40.7566433,
+      "longitude": -73.7142398,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11101",
+      "latitude": 40.7471126,
+      "longitude": -73.9397082,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11102",
+      "latitude": 40.7716,
+      "longitude": -73.9256033,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11103",
+      "latitude": 40.7625964,
+      "longitude": -73.9132821,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11104",
+      "latitude": 40.7448453,
+      "longitude": -73.9204681,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11105",
+      "latitude": 40.7790866,
+      "longitude": -73.9065223,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11106",
+      "latitude": 40.7622113,
+      "longitude": -73.9315281,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11109",
+      "latitude": 40.7466155,
+      "longitude": -73.9570094,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11201",
+      "latitude": 40.6937005,
+      "longitude": -73.9898589,
+      "borough": "Brooklyn"
+    },
+    {
+      "zcta5": "11203",
+      "latitude": 40.6495693,
+      "longitude": -73.9343269,
+      "borough": "Brooklyn"
+    },
+    {
+      "zcta5": "11204",
+      "latitude": 40.618815,
+      "longitude": -73.9849419,
+      "borough": "Brooklyn"
+    },
+    {
+      "zcta5": "11205",
+      "latitude": 40.6968905,
+      "longitude": -73.9680736,
+      "borough": "Brooklyn"
+    },
+    {
+      "zcta5": "11206",
+      "latitude": 40.7018701,
+      "longitude": -73.9425516,
+      "borough": "Brooklyn"
+    },
+    {
+      "zcta5": "11207",
+      "latitude": 40.6701572,
+      "longitude": -73.8938353,
+      "borough": "Brooklyn"
+    },
+    {
+      "zcta5": "11208",
+      "latitude": 40.674847,
+      "longitude": -73.8724799,
+      "borough": "Brooklyn"
+    },
+    {
+      "zcta5": "11209",
+      "latitude": 40.6218034,
+      "longitude": -74.0301497,
+      "borough": "Brooklyn"
+    },
+    {
+      "zcta5": "11210",
+      "latitude": 40.62806,
+      "longitude": -73.9463086,
+      "borough": "Brooklyn"
+    },
+    {
+      "zcta5": "11211",
+      "latitude": 40.7140845,
+      "longitude": -73.9451676,
+      "borough": "Brooklyn"
+    },
+    {
+      "zcta5": "11212",
+      "latitude": 40.6629047,
+      "longitude": -73.9130712,
+      "borough": "Brooklyn"
+    },
+    {
+      "zcta5": "11213",
+      "latitude": 40.6711552,
+      "longitude": -73.9362663,
+      "borough": "Brooklyn"
+    },
+    {
+      "zcta5": "11214",
+      "latitude": 40.5996903,
+      "longitude": -73.9963717,
+      "borough": "Brooklyn"
+    },
+    {
+      "zcta5": "11215",
+      "latitude": 40.6626879,
+      "longitude": -73.9867402,
+      "borough": "Brooklyn"
+    },
+    {
+      "zcta5": "11216",
+      "latitude": 40.680844,
+      "longitude": -73.9492221,
+      "borough": "Brooklyn"
+    },
+    {
+      "zcta5": "11217",
+      "latitude": 40.6816707,
+      "longitude": -73.9785294,
+      "borough": "Brooklyn"
+    },
+    {
+      "zcta5": "11218",
+      "latitude": 40.6431203,
+      "longitude": -73.9764459,
+      "borough": "Brooklyn"
+    },
+    {
+      "zcta5": "11219",
+      "latitude": 40.6326198,
+      "longitude": -73.9967697,
+      "borough": "Brooklyn"
+    },
+    {
+      "zcta5": "11220",
+      "latitude": 40.641026,
+      "longitude": -74.0166882,
+      "borough": "Brooklyn"
+    },
+    {
+      "zcta5": "11221",
+      "latitude": 40.6914258,
+      "longitude": -73.9276256,
+      "borough": "Brooklyn"
+    },
+    {
+      "zcta5": "11222",
+      "latitude": 40.7277898,
+      "longitude": -73.947605,
+      "borough": "Brooklyn"
+    },
+    {
+      "zcta5": "11223",
+      "latitude": 40.597091,
+      "longitude": -73.9734691,
+      "borough": "Brooklyn"
+    },
+    {
+      "zcta5": "11224",
+      "latitude": 40.5773723,
+      "longitude": -73.9887059,
+      "borough": "Brooklyn"
+    },
+    {
+      "zcta5": "11225",
+      "latitude": 40.6631194,
+      "longitude": -73.9538673,
+      "borough": "Brooklyn"
+    },
+    {
+      "zcta5": "11226",
+      "latitude": 40.6464089,
+      "longitude": -73.9566626,
+      "borough": "Brooklyn"
+    },
+    {
+      "zcta5": "11228",
+      "latitude": 40.6167251,
+      "longitude": -74.0134316,
+      "borough": "Brooklyn"
+    },
+    {
+      "zcta5": "11229",
+      "latitude": 40.6012928,
+      "longitude": -73.9444926,
+      "borough": "Brooklyn"
+    },
+    {
+      "zcta5": "11230",
+      "latitude": 40.6220886,
+      "longitude": -73.9651896,
+      "borough": "Brooklyn"
+    },
+    {
+      "zcta5": "11231",
+      "latitude": 40.6779162,
+      "longitude": -74.0051543,
+      "borough": "Brooklyn"
+    },
+    {
+      "zcta5": "11232",
+      "latitude": 40.6565408,
+      "longitude": -74.005182,
+      "borough": "Brooklyn"
+    },
+    {
+      "zcta5": "11233",
+      "latitude": 40.6783015,
+      "longitude": -73.9199318,
+      "borough": "Brooklyn"
+    },
+    {
+      "zcta5": "11234",
+      "latitude": 40.6077225,
+      "longitude": -73.9106494,
+      "borough": "Brooklyn"
+    },
+    {
+      "zcta5": "11235",
+      "latitude": 40.58422,
+      "longitude": -73.9431668,
+      "borough": "Brooklyn"
+    },
+    {
+      "zcta5": "11236",
+      "latitude": 40.6394133,
+      "longitude": -73.9006642,
+      "borough": "Brooklyn"
+    },
+    {
+      "zcta5": "11237",
+      "latitude": 40.70416,
+      "longitude": -73.9211389,
+      "borough": "Brooklyn"
+    },
+    {
+      "zcta5": "11238",
+      "latitude": 40.6713305,
+      "longitude": -73.9659365,
+      "borough": "Brooklyn"
+    },
+    {
+      "zcta5": "11239",
+      "latitude": 40.6468898,
+      "longitude": -73.864014,
+      "borough": "Brooklyn"
+    },
+    {
+      "zcta5": "11249",
+      "latitude": 40.704501,
+      "longitude": -73.9660018,
+      "borough": "Brooklyn"
+    },
+    {
+      "zcta5": "11354",
+      "latitude": 40.7682126,
+      "longitude": -73.8273924,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11355",
+      "latitude": 40.7514355,
+      "longitude": -73.8212271,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11356",
+      "latitude": 40.784871,
+      "longitude": -73.8415275,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11357",
+      "latitude": 40.7851288,
+      "longitude": -73.8100365,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11358",
+      "latitude": 40.7603631,
+      "longitude": -73.7965254,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11359",
+      "latitude": 40.7916054,
+      "longitude": -73.7767241,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11360",
+      "latitude": 40.7804186,
+      "longitude": -73.781838,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11361",
+      "latitude": 40.7641909,
+      "longitude": -73.7727748,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11362",
+      "latitude": 40.7602038,
+      "longitude": -73.7324174,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11363",
+      "latitude": 40.7723479,
+      "longitude": -73.7462919,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11364",
+      "latitude": 40.7462507,
+      "longitude": -73.7560621,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11365",
+      "latitude": 40.7396342,
+      "longitude": -73.7944896,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11366",
+      "latitude": 40.7311205,
+      "longitude": -73.780458,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11367",
+      "latitude": 40.730474,
+      "longitude": -73.8227486,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11368",
+      "latitude": 40.7497368,
+      "longitude": -73.8530446,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11369",
+      "latitude": 40.7634909,
+      "longitude": -73.8722195,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11370",
+      "latitude": 40.7653925,
+      "longitude": -73.8942155,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11371",
+      "latitude": 40.7744111,
+      "longitude": -73.8732723,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11372",
+      "latitude": 40.7517193,
+      "longitude": -73.8836703,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11373",
+      "latitude": 40.7389446,
+      "longitude": -73.8785609,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11374",
+      "latitude": 40.726457,
+      "longitude": -73.8614588,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11375",
+      "latitude": 40.722975,
+      "longitude": -73.8431785,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11377",
+      "latitude": 40.744775,
+      "longitude": -73.9051603,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11378",
+      "latitude": 40.7247442,
+      "longitude": -73.9096392,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11379",
+      "latitude": 40.7170611,
+      "longitude": -73.8805189,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11385",
+      "latitude": 40.7006472,
+      "longitude": -73.8894227,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11411",
+      "latitude": 40.6940638,
+      "longitude": -73.7362653,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11412",
+      "latitude": 40.6980199,
+      "longitude": -73.7590809,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11413",
+      "latitude": 40.6711705,
+      "longitude": -73.7520631,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11414",
+      "latitude": 40.6576043,
+      "longitude": -73.844804,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11415",
+      "latitude": 40.7080854,
+      "longitude": -73.8280442,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11416",
+      "latitude": 40.684586,
+      "longitude": -73.8497132,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11417",
+      "latitude": 40.676406,
+      "longitude": -73.8445955,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11418",
+      "latitude": 40.7003154,
+      "longitude": -73.8360186,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11419",
+      "latitude": 40.6886125,
+      "longitude": -73.8230616,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11420",
+      "latitude": 40.6735016,
+      "longitude": -73.8177023,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11421",
+      "latitude": 40.6940354,
+      "longitude": -73.8586591,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11422",
+      "latitude": 40.6607865,
+      "longitude": -73.7375702,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11423",
+      "latitude": 40.7156688,
+      "longitude": -73.7682985,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11424",
+      "latitude": 40.7139684,
+      "longitude": -73.828087,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11426",
+      "latitude": 40.7364067,
+      "longitude": -73.7223571,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11427",
+      "latitude": 40.7309425,
+      "longitude": -73.7457159,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11428",
+      "latitude": 40.7209926,
+      "longitude": -73.7422028,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11429",
+      "latitude": 40.7095558,
+      "longitude": -73.7384796,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11430",
+      "latitude": 40.6469645,
+      "longitude": -73.7872953,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11432",
+      "latitude": 40.7149339,
+      "longitude": -73.7929549,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11433",
+      "latitude": 40.6980905,
+      "longitude": -73.7867521,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11434",
+      "latitude": 40.6778566,
+      "longitude": -73.7770725,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11435",
+      "latitude": 40.7010799,
+      "longitude": -73.8096404,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11436",
+      "latitude": 40.6758637,
+      "longitude": -73.7966472,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11439",
+      "latitude": 40.7219354,
+      "longitude": -73.7945866,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11451",
+      "latitude": 40.7011879,
+      "longitude": -73.7957783,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11691",
+      "latitude": 40.602096,
+      "longitude": -73.7617938,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11692",
+      "latitude": 40.594154,
+      "longitude": -73.791986,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11693",
+      "latitude": 40.5916616,
+      "longitude": -73.8096677,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11694",
+      "latitude": 40.5753139,
+      "longitude": -73.8512354,
+      "borough": "Queens"
+    },
+    {
+      "zcta5": "11697",
+      "latitude": 40.5571317,
+      "longitude": -73.9137216,
+      "borough": "Queens"
+    }
+  ]
+}
