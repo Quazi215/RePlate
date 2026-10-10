@@ -11,7 +11,8 @@ export async function resolveNycZip(input: unknown, referencePath = defaultRefer
 
   let contents: string;
   try {
-    contents = await readFile(referencePath, "utf8");
+    // next.config.ts explicitly traces the default file; custom paths are test configuration.
+    contents = await readFile(/* turbopackIgnore: true */ referencePath, "utf8");
   } catch (error) {
     if (error instanceof Error && "code" in error && error.code === "ENOENT") {
       return { status: "data-error", code: "LOCATION_REFERENCE_MISSING", message: "The local ZIP/ZCTA reference is missing. Please try again later." };

@@ -10,7 +10,8 @@ export async function loadFareContext(mode: unknown, referencePath = defaultRefe
   if (mode !== "bus") return getFareContext(mode, null);
   let reference: unknown;
   try {
-    reference = JSON.parse(await readFile(referencePath, "utf8"));
+    // next.config.ts explicitly traces the default file; custom paths are test configuration.
+    reference = JSON.parse(await readFile(/* turbopackIgnore: true */ referencePath, "utf8"));
   } catch {
     // Missing/unreadable/corrupt optional fare evidence intentionally yields unknown.
     reference = null;

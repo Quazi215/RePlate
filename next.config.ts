@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
-    // The future server API reads these fixed files at runtime; keep them in its Vercel bundle.
+    // The loaders opt out of tracing configurable test paths. Include their default runtime files.
     "/api/retailers": [
       "./nyc_snap_supermarkets.csv",
       "./data/location/nyc-zctas.json",

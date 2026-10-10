@@ -34,7 +34,8 @@ function fileError(error: unknown, kind: "SNAPSHOT" | "GEOGRAPHY"): RetailerData
 /** Paths are server configuration for tests/tools, never request parameters. No provider calls or logs. */
 export async function loadRetailerSnapshot(options: { snapshotPath?: string; geographyPath?: string } = {}): Promise<RetailerSnapshot> {
   let bytes: Buffer;
-  try { bytes = await readFile(options.snapshotPath ?? defaultSnapshotPath); }
+  // next.config.ts explicitly traces both default files; custom paths are test configuration.
+  try { bytes = await readFile(/* turbopackIgnore: true */ options.snapshotPath ?? defaultSnapshotPath); }
   catch (error) { return fileError(error, "SNAPSHOT"); }
   let contents: string;
   try {
@@ -44,7 +45,7 @@ export async function loadRetailerSnapshot(options: { snapshotPath?: string; geo
     return { status: "data-error", code: "RETAILER_SNAPSHOT_CORRUPT", message: "The local retailer snapshot is corrupt. Please try again later." };
   }
   let compressed: Buffer;
-  try { compressed = await readFile(options.geographyPath ?? defaultGeographyPath); }
+  try { compressed = await readFile(/* turbopackIgnore: true */ options.geographyPath ?? defaultGeographyPath); }
   catch (error) { return fileError(error, "GEOGRAPHY"); }
 
   let geography: unknown;
