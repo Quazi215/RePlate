@@ -136,14 +136,20 @@ test("radius includes its boundary, accepts 25 miles, and omitted radius applies
   assert.equal(belowBoundary.status, "no-results");
 });
 
-test("location data failures stay distinct and missing optional fare evidence preserves search", async () => {
-  const unavailable = await searchRetailers({ zip: "10001", mode: "bus" }, dependencies({
-    resolveZip: async () => ({ status: "data-error", code: "LOCATION_REFERENCE_CORRUPT", message: "The location reference is corrupt." }),
-  }));
-  assert.equal(unavailable.status, "error");
-  if (unavailable.status !== "error") throw new Error("Expected a location data error.");
-  assert.equal(unavailable.httpStatus, 503);
-  assert.equal(unavailable.code, "LOCATION_REFERENCE_CORRUPT");
+for (const code of ["LOCATION_REFERENCE_MISSING", "LOCATION_REFERENCE_CORRUPT", "LOCATION_REFERENCE_UNAVAILABLE"] as const) {
+  test(`${code} preserves the error and offers the official retailer locator`, async () => {
+    const message = "The location reference could not be loaded.";
+    const unavailable = await searchRetailers({ zip: "10001", mode: "bus" }, dependencies({
+      resolveZip: async () => ({ status: "data-error", code, message }),
+    }));
+    assert.deepEqual(unavailable, {
+      status: "error", httpStatus: 503, code, message,
+      helpUrl: "https://www.fns.usda.gov/snap/retailer-locator",
+    });
+  });
+}
+
+test("missing optional fare evidence preserves search", async () => {
   const unknownFare = await searchRetailers({ zip: "10001", mode: "bus" }, dependencies({
     loadFare: async (mode) => getFareContext(mode, null),
   }));

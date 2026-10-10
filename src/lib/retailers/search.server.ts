@@ -77,7 +77,10 @@ function locationError(resolution: Exclude<ZipResolution, { status: "supported" 
   if (resolution.status === "unsupported") {
     return { status: "error", httpStatus: 422, code: resolution.code, message: resolution.message };
   }
-  return { status: "error", httpStatus: 503, code: resolution.code, message: resolution.message };
+  return {
+    status: "error", httpStatus: 503, code: resolution.code, message: resolution.message,
+    helpUrl: retailerLocatorUrl,
+  };
 }
 
 function retailerDataError(snapshot: Exclude<RetailerSnapshot, { status: "ready" }>): RetailerSearchError {
