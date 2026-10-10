@@ -13,6 +13,7 @@ const questions: Record<ScreeningQuestion, { title: string; help: string; kind: 
   dependentCare: { title: "Does your household pay for child care or dependent care?", help: "Count out-of-pocket care costs, such as paying a child-care provider or paying for care for an adult who needs help. This can change which income guideline applies.", kind: "choice" },
   earnedIncome: { title: "Does anyone in your household have income from work?", help: "For example, wages from a job, self-employment income, or income from a boarder. Money such as unemployment or Social Security alone is not income from work.", kind: "choice" },
   childSupportPaid: { title: "Does your household pay child support?", help: "This means money paid to support a child outside your household. It is different from child support you receive. A paid amount can affect the income comparison.", kind: "choice" },
+  childSupportAmount: { title: "How much child support does your household pay each month?", help: "Enter the total actually paid for children outside your SNAP household each month, including support withheld from pay. Include those withheld amounts in your gross income too, so we subtract them only once. Don’t enter support you receive or money owed but not paid. If you’re unsure which payments count, choose I don’t know.", kind: "money" },
   monthlyIncome: { title: "What is your household’s monthly gross income?", help: "Add the household’s monthly income from work and other sources, such as unemployment, Social Security, and child support received. Gross means before taxes or paycheck deductions: if a pay stub shows $1,500 before tax and $1,250 take-home, use $1,500. Use a monthly total, not one week’s pay. If you’re unsure which income to count, including self-employment or boarder income, choose I don’t know.", kind: "money" },
 };
 
@@ -32,11 +33,12 @@ export default function ScreeningJourney() {
   useEffect(() => {
     // Also clear on browser back/forward-cache restoration after leaving the page.
     function clearSession() { setAnswers({}); setView("entry"); setError(null); }
+    function clearOnRestore(event: PageTransitionEvent) { if (event.persisted) clearSession(); }
     window.addEventListener("pagehide", clearSession);
-    window.addEventListener("pageshow", clearSession);
+    window.addEventListener("pageshow", clearOnRestore);
     return () => {
       window.removeEventListener("pagehide", clearSession);
-      window.removeEventListener("pageshow", clearSession);
+      window.removeEventListener("pageshow", clearOnRestore);
     };
   }, []);
 
@@ -49,9 +51,9 @@ export default function ScreeningJourney() {
     <p>Answer a few questions to check a limited income guideline and understand what to do next. This is for NYC residents who haven’t applied.</p>
     <p><strong>This is screening, not an application.</strong> RePlate cannot approve benefits or make an official eligibility decision.</p>
     <aside className={styles.notice}>
-      <h2>What this first version checks</h2>
-      <p>We check one income guideline for households of 1–8 with income from work, no older/disabled/blind member, no dependent-care costs, and no child support paid. The path where everyone receives SSI or Cash Assistance is also outside this first version.</p>
-      <p>If a different circumstance applies or an answer is unknown, you’ll get an explanation and an official next step.</p>
+      <h2>What we check</h2>
+      <p>If everyone receives SSI or Cash Assistance, we check that assistance-based path. Otherwise, we compare income for households of 1–8. The guideline depends on income from work, an older/disabled/blind member, or dependent-care costs. We account for child support paid when it applies.</p>
+      <p>This is a limited financial check. If a required answer is unknown or your circumstances are outside the supported checks, you’ll get an explanation and an official next step.</p>
     </aside>
     <p>No account, identifying details, or documents. Answers stay on this page and clear when you refresh, start over, or leave.</p>
     <div className={styles.actions}><button className={brand.primary} type="button" onClick={() => navigate("nyc")}>Start screening</button></div>
@@ -101,7 +103,7 @@ export default function ScreeningJourney() {
 
   const questionId = view;
   const question = questions[questionId];
-  const index = screeningOrder.indexOf(questionId);
+  const index = activeQuestions.indexOf(questionId);
   const value = answers[questionId];
   const numeric = question.kind !== "choice";
   const describedBy = `question-help${error ? " answer-error" : ""}`;
@@ -131,7 +133,7 @@ export default function ScreeningJourney() {
     <p id="question-help">{question.help}</p>
     <form ref={form} onSubmit={next} noValidate autoComplete="off" className={styles.form}>
       {numeric ? <div className={styles.numberField}>
-        <label htmlFor="screening-number">{question.kind === "size" ? "Number of people, including you" : "Total monthly income in dollars"}</label>
+        <label htmlFor="screening-number">{question.kind === "size" ? "Number of people, including you" : questionId === "childSupportAmount" ? "Monthly child support paid in dollars" : "Total monthly income in dollars"}</label>
         <input id="screening-number" type="text" inputMode={question.kind === "size" ? "numeric" : "decimal"} value={value === "unknown" ? "" : value ?? ""} disabled={value === "unknown"} onChange={(event) => change(event.target.value)} aria-describedby={describedBy} aria-invalid={Boolean(error)} autoComplete="off" />
         <label className={styles.choice}><input type="checkbox" checked={value === "unknown"} onChange={(event) => change(event.target.checked ? "unknown" : "")} />I don’t know</label>
       </div> : <fieldset className={styles.choices} aria-describedby={describedBy}>
@@ -144,7 +146,7 @@ export default function ScreeningJourney() {
       {error && <p className={styles.error} id="answer-error" role="alert">{error}</p>}
       <div className={styles.actions}>
         <button className={brand.primary} type="submit">{view === "monthlyIncome" ? "See my result" : "Continue"}</button>
-        <button className={brand.secondary} type="button" onClick={() => navigate(screeningOrder[index - 1] ?? "entry")}>Back</button>
+        <button className={brand.secondary} type="button" onClick={() => navigate(activeQuestions[index - 1] ?? "entry")}>Back</button>
       </div>
     </form>
     <p className={styles.source}>Your answers stay on this page. Refreshing or leaving clears them.</p>

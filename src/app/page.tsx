@@ -2,7 +2,6 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import brand from "./site.module.css";
 import styles from "./info.module.css";
-import SnapChangeQuestionnaire from "./snap-change-questionnaire";
 
 export const metadata: Metadata = {
   title: "RePlate · SNAP information",
@@ -36,12 +35,12 @@ export default function InfoPage() {
             <a href={workRules}>Read HRA’s reset guidance <span aria-hidden="true">↗</span></a>
           </div>
         </div>
-        <SnapChangeQuestionnaire><figure className={styles.resetGraphic} aria-labelledby="reset-caption">
+        <figure className={styles.resetGraphic} aria-labelledby="reset-caption">
           <div className={styles.graphicHeading}><span>New period. Fresh allowance.</span><span aria-hidden="true">↺</span></div>
           <div className={styles.clock} aria-hidden="true"><span className={styles.clockNumber}>3</span><span>countable months</span><i /></div>
           <figcaption id="reset-caption">Up to <strong>3 countable months</strong> without meeting work rules, if you’re otherwise eligible and subject to them.</figcaption>
           <div className={styles.period}><span>Oct 1, 2026</span><span aria-hidden="true">→</span><span>Sep 30, 2029</span></div>
-        </figure></SnapChangeQuestionnaire>
+        </figure>
       </section>
 
       <section className={styles.explainer} aria-labelledby="reset-title">

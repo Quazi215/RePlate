@@ -3,7 +3,7 @@
 **Updated:** October 10, 2026
 **Current scope note, October 10:** The map feature is now a secondary ZIP/radius supermarket lookup alongside the Info homepage. Builder A and Builder B specs describe the integrated flow. Fare comparison, travel-mode controls, and the fictional bus-time demonstration below are historical scope.
 
-**SNAP screening amendment, October 10 — #14:** The approved screening journey supersedes the earlier no-financial-input, anchor-only, and clock-embedded questionnaire direction in #11–#13. Find your next step opens `/screening`; the homepage clock and official case-help paths stay available. The first slice provides one qualified earned-income path, current-answer reasons, review/edit, restart, preparation, and an optional official application handoff. Read the [full branch map and reconciled standards](../src/lib/screening/SOURCES.md) and [current frontend guide](../src/app/explore/README.md) for actual coverage. Other screening branches and broader validation remain #15–#17. The English phone/laptop demo target is October 11, 2026, 11:30 a.m. EDT; this target does not independently change or verify the historical event submission deadline below.
+**SNAP screening amendment, October 10 — #14–16:** The approved screening journey supersedes the earlier no-financial-input, anchor-only, and clock-embedded questionnaire direction in #11–#13. Find your next step opens `/screening`; the homepage clock and official case-help paths stay available. The journey covers the published assistance shortcut and the 130%, 150%, and 200% income comparisons for household sizes 1–8, with current-answer reasons, review/edit, restart, preparation, and an optional official application handoff. Read the [branch map and reconciled standards](../src/lib/screening/SOURCES.md), [current frontend guide](../src/app/explore/README.md), and [local verification record](design/snap-screening-verification.md) for coverage and limits. Official-reference comparison and observed use remain #17. The English phone/laptop demo target is October 11, 2026, 11:30 a.m. EDT; this target does not independently change or verify the historical event submission deadline below.
 
 **Previous status:** Core scope revised for a card-free implementation. Live routing is removed; the bus travel-time screen is a labeled UI demonstration. Retailer and ZIP-reference audits remain acceptance requirements; product value remains a hypothesis.
 
@@ -31,12 +31,12 @@ The approved October 10 consolidation and this documentation review establish th
 
 | Area | Current delivery | Boundary |
 | --- | --- | --- |
-| Info and screening | Homepage infographic and case help; separate one-question-at-a-time NYC financial prescreen | One verified earned-income path, sizes 1–8; no full eligibility, benefit calculation, case access, or submission |
+| Info and screening | Homepage infographic and case help; separate one-question-at-a-time NYC financial prescreen | Assistance shortcut and 130%/150%/200% income paths for sizes 1–8; no full eligibility, benefit calculation, case access, or submission |
 | Explore | Sample ZIP/radius search, geographic map/list, shared selection, Reset, map recovery | Fictional stores; illustrative addresses, pins, and distances; directions disabled |
 | Backend | Local ZIP/ZCTA resolution, retailer validation, Haversine ordering, fare context, retailer endpoint | Implemented separately; neither frontend page calls it |
 | Release | Content/source review, production checks, demo and submission readiness | Local implementation evidence does not establish deployed or external-service readiness |
 
-Walking/Bus controls are removed from Explore. Frontend fare display, routing, conversational/voice assistance, and grocery planning are deferred. Screening's additional branches remain in #15. Remove the fictional bus-time screen from the active delivery checklist; none is implemented. The current frontend guide supersedes historical Explore integration descriptions here.
+Walking/Bus controls are removed from Explore. Frontend fare display, routing, conversational/voice assistance, and grocery planning are deferred. Remove the fictional bus-time screen from the active delivery checklist; none is implemented. The current frontend guide supersedes historical Explore integration descriptions here.
 
 No accounts, uploads, saved profiles, precise-location permission, grocery-price comparison, inventory guarantee, medical diets, or guaranteed savings are part of delivery. Official informational handoffs are in scope even though the earlier custom benefits-recovery navigator remains deferred.
 
@@ -44,7 +44,7 @@ No accounts, uploads, saved profiles, precise-location permission, grocery-price
 
 **Info:** Read the SNAP infographic → identify the relevant official next-step path → open official guidance or help. The page distinguishes closed-case reapplication from adding a removed member back to a continuing household, with separate paths for unknown loss reasons and recertification. The allowance graphic is illustrative, not a personal countdown. Policy content needs release review; this document records the UI's purpose rather than independently verifying benefit rules.
 
-**Screening:** Find your next step → `/screening` → entry explanation → household and branch questions → qualified result with reasons → review/edit or prepare. The first path supports NYC households of 1–8 with earnings, no older/disabled/blind member, no dependent-care costs, no child support paid, and not all members receiving SSI/Cash Assistance. Unknown or deferred circumstances produce “We need more information”; a failed supported comparison does not mean official ineligibility. The result is a limited financial check, with no application submitted. Official preparation and optional ACCESS HRA handoff follow the result; information must be entered again there. Answers stay only in page memory, with no identifiers, uploads, storage, URLs, logs, analytics, or answer-bearing requests.
+**Screening:** Find your next step → `/screening` → entry explanation → branch-relevant questions → qualified result with reasons → review/edit or prepare. NYC households reporting that everyone receives SSI or Cash Assistance use the published assistance shortcut. Other households of 1–8 use the verified 200% older/disabled/blind or dependent-care row, 150% earned-income row, or 130% no-earned-income row; child support paid is accounted for when reported. Unknown, conflicting, or unsupported circumstances produce “We need more information”; an above-limit comparison does not mean official ineligibility. The result is a limited check, with no application submitted. Official preparation and optional ACCESS HRA handoff follow the result; information must be entered again there. Answers stay only in page memory, with no identifiers, uploads, storage, URLs, logs, analytics, or answer-bearing requests.
 
 **Explore:** Open the preloaded sample → edit ZIP/radius → Find stores → select a card or pin → switch mobile Map/List views as needed. There is no enabled directions handoff from fictional stores.
 
@@ -219,7 +219,7 @@ Do not reuse the old household basket/savings scenario, live search-to-direction
 | Decision | Current position |
 | --- | --- |
 | Product center | Info-first SNAP awareness with official handoffs; Explore secondary |
-| Frontend delivery | Homepage, separate initial screening journey, and secondary Explore; broader screening coverage remains #15 |
+| Frontend delivery | Homepage, separate screening journey with verified assistance and income branches, and secondary Explore |
 | Explore data | Fictional fixtures; ZIP/radius only; no enabled directions |
 | Editing | Preserve applied results and label pending edits until Find stores |
 | Backend | Implemented independently; frontend integration deferred |
@@ -234,7 +234,7 @@ The October 9 card-free backend decision still applies. The October 10 frontend 
 
 ### 4.2 Remaining decisions and validation
 
-The initial personal screener replaces the earlier three-question clock questionnaire. Remaining screening coverage, expanded verification, official-reference comparisons, and observed user completion are tracked in #15–#17. Release checks in §3.3 are historical starting points, not evidence that the screening demo is validated.
+The personal screener replaces the earlier three-question clock questionnaire. Local automated journey verification is recorded for #16. Official-reference comparisons and observed user completion remain #17. Release checks in §3.3 are historical starting points, not evidence that the screening demo is usable or policy accurate.
 
 Later work requires agreement on the ZIP/radius-only frontend versus required API mode, retailer evidence/disclosures, real directions, network states and acceptance criteria. Do not silently choose that behavior during release work. Source/authorization review must distinguish validated coordinates from current SNAP authorization.
 
