@@ -22,9 +22,9 @@ The core flow uses a reviewed local NYC ZIP Code Tabulation Area reference and n
 
 ## Vercel deployment setup
 
-This repository is a Next.js app at the repository root. Import `Quazi215/RePlate` in Vercel with the repository root as the project root and keep the detected Next.js framework and build settings. `.vercel/` is ignored so a local project link is not committed. The `/api/retailers` server function explicitly traces the local retailer CSV and ZIP, borough, and fare reference files it reads at runtime.
+This repository is linked to a Vercel project, with the Next.js app at the repository root. Keep the repository root as the project root and use Vercel's detected Next.js framework and build settings. `.vercel/` is ignored so local project settings are not committed. The `/api/retailers` server function explicitly traces the local retailer CSV and ZIP, borough, and fare reference files it reads at runtime.
 
-For a preview deployment, connect the GitHub repository in the Vercel dashboard or install the [Vercel CLI](https://vercel.com/docs/cli) and run `vercel login` followed by `vercel link` from this directory. Then create a preview deployment and confirm the build and routes before promoting a production deployment. This repository is configured for deployment, but has not been linked to a Vercel account or deployed yet.
+Create a preview deployment from the Vercel dashboard or with the [Vercel CLI](https://vercel.com/docs/cli), then confirm the build and routes before promoting a production deployment. Check the Vercel dashboard for the current deployment status.
 
 No environment variables are required for the current app. `GEMINI_API_KEY` is optional and should only be configured as a server-side Vercel environment variable if the optional Gemini feature is implemented. The production build command is `npm run build`; use Node.js 20.9 or newer as specified by `package.json`.
 
