@@ -1,62 +1,70 @@
 # RePlate — Builder B specification
 
 **Owner:** David
-**Source of truth:** [docs/HACKATHON.md](docs/HACKATHON.md), revised October 9, 2026
-**Backend handoff:** [BUILDER_A_SPEC.md](BUILDER_A_SPEC.md)
 
-## Goal and demo journey
+**Updated:** October 10, 2026
 
-Build a usable mobile search-to-directions experience for an existing NYC SNAP shopper. The live core shows reviewed retailer candidates and approximate straight-line proximity from a supported ZIP code, generic fare context, and clear missing information. A separate fictional screen may illustrate what bus travel-time comparison could look like if route data existed.
+**Source of truth:** [Hackathon plan](docs/HACKATHON.md)
 
-Live journey: enter a supported ZIP code, walking/bus choice, and optional straight-line radius → read proximity-ordered retailer list → see $0 walking fare or generic local-bus fare example → open external directions. Changing mode changes fare context, not store order or route availability. Grocery prices, inventory, travel times, and bus reachability are unknown.
+**Backend reference:** [Builder A specification](BUILDER_A_SPEC.md); its earlier integration sequence does not define the current frontend scope.
 
-## Setup and handoff
+## Goal and confirmed delivery scope
 
-The Next.js/TypeScript app, npm dependencies, `README.md`, and `.env.example` are present. Core development and local startup require no HERE key or payment card. Builder A supplies a reviewed local NYC ZCTA lookup, audited retailer data, and the single proposed `GET /api/retailers` response. Agree final field names and error codes with Quazi before replacing UI fixtures. Shared deployment and end-to-end review remain in the hackathon plan.
+Deliver the current two-page experience: SNAP-awareness Info at `/`, with official next-step links, and a secondary fictional grocery-discovery demonstration at `/explore`. The October 10 frontend consolidation supersedes the earlier live search-to-directions plan. Backend integration is deferred; the separate retailer API is implemented but neither page calls it.
 
-The repository CSV does not contain authorization source/date columns. Until the shared audit establishes current evidence, the UI must not call listed stores currently SNAP-authorized; show the source limitation and official USDA locator fallback.
+Confirmed in the documentation review: keep Info primary, Explore sample-only, and focus remaining work on content review, production checks, and demo/submission readiness. Remove the fictional bus-time screen from the active checklist. Travel-mode controls, frontend fare display, routing, and AI assistance are deferred.
 
-## P0 UI behavior
+## Implemented frontend
 
-### Location, mode, and radius
+### Info homepage
 
-- Collect a five-digit ZIP code, walking or bus mode, and optional `maxStraightLineMiles`. Display miles; accept a positive radius no greater than 25 miles. Preserve answers when stepping backward and provide reset.
-- Show distinct messages for malformed ZIP, supported NYC ZCTA, five-digit code absent from the local reference, local data error, and no results. Show an outside-NYC message only if a reviewed source verifies it; an unsupported ZIP is not automatically outside NYC.
-- Changing ZIP, radius, or mode invalidates stale results and explanations; late responses cannot restore them. Mode never silently switches and never implies a route.
+- Render the English SNAP infographic as readable HTML/CSS with source links and official next steps. Its allowance graphic is not a personal countdown or a benefit guarantee.
+- Distinguish the official handoffs for reapplying after a closed case and requesting restoration of a removed household member. Keep separate guidance paths for unknown loss reasons and recertification, plus official work-rule, exemption, and help resources.
+- HRA determines eligibility and case outcomes. RePlate does not screen eligibility, calculate required activity hours, submit applications, or inspect benefit status.
+- Provide a skip link, section anchors, readable mobile layout, and navigation to Explore. No personal forms, accounts, uploads, or saved profiles.
+- Existing policy copy and source-review notes require release review; this specification update does not revalidate policy facts or official service behavior.
 
-### Retailer list and proximity
+### Explore inputs and applied search
 
-- Show at most 20 candidates with name, address, source/evidence when verified, and approximate straight-line miles from a ZCTA internal point. Explain the candidate cap and that the list is not exhaustive.
-- The optional radius filters straight-line proximity. Label it “straight-line radius,” not walking/bus distance or a travel-time limit. Sort by distance then stable ID; switching mode does not reorder stores.
-- If authorization evidence is unvalidated, visibly state that status and link to the official retailer locator. Do not infer inventory, produce, opening hours, accessibility, or grocery prices from the snapshot.
+- ZIP and optional straight-line radius are the only search inputs. Walking/Bus controls have been removed.
+- Reload begins with sample ZIP `11206` and a 1-mile radius, showing three of four fictional stores. Blank radius shows all four; 0.5 miles shows one; 0.1 miles shows no results.
+- Require five digits and support only `11206` in this sample lookup. Other five-digit ZIPs are unsupported by the sample, not established to be outside NYC.
+- Radius must be greater than zero and at most 25 miles, or blank. Display miles and label the radius as straight-line.
+- Editing preserves the submitted results with a visible “Changes not applied” notice. Find stores validates and applies the inputs together. This replaces the earlier requirement to clear results immediately on every edit.
+- Reset clears inputs, results, and selection, then focuses ZIP. Progress stays in memory.
 
-### Fare context and external directions
+### Sample map and list
 
-- Walking shows $0 fare. Bus shows only a sourced generic local-bus fare example after A rechecks the MTA source. Label that it does not establish a bus route, service class, transfer treatment, return journey, or actual charge to reach any listed retailer.
-- Show grocery prices and trip-specific travel costs as unknown; do not display a total shopping cost or imply savings. The live list has no app-generated route duration, walking segment distance, transfer count, or “bus reachable” badge.
-- Provide a directions link for each retailer and a readable address if the link fails. Opening the link hands route checking to an external service; the link itself is not route evidence inside RePlate.
+- Keep all four retailer names fictional and visibly disclose that addresses, pins, and distances are illustrative. Fixed fixture distances are independent of pin coordinates; they are not calculated by the backend Haversine ranking.
+- Filter and order by sample distance, then stable sample ID. The backend's 20-candidate cap is not a four-store frontend behavior.
+- Desktop places the search/list panel over the map. Mobile starts in Map view, offers List, and preserves the chosen view for the page session; radius controls expand through a labeled button.
+- Cards and keyboard-operable numbered pins share selection. Map failure offers retry and list access. Map movement does not initiate a new search.
+- Sample directions are disabled. SNAP authorization, prices, stock, routes, travel time, and trip fare remain unknown. A basemap supplies no evidence for those claims.
 
-### Explainable ordering and accessible states
+### Shared presentation and routes
 
-- Explain “closer by straight line” with the ZCTA approximation. Do not call the list “cheapest,” “fastest,” or “best bus route.” Make no claim that a nearby store is practical for the selected mode.
-- Render no-results, unsupported ZIP, data unavailable, unvalidated authorization, and directions-link failure states in text. Use keyboard-accessible controls, readable mobile layouts, non-stigmatizing language, and in-memory progress only.
-- Optional Gemini assistance may explain only supplied facts and must not change order or invent routes, prices, authorization, or stock.
+- Both headers link to Info and Explore and identify the current page. `/prototype` redirects to `/explore`; `/prototype/snap` redirects to `/`.
+- Both pages render in development and production. Development-only gates and prototype framing are removed; sample-data disclosures remain visible.
+- Reuse shared branding/discovery styles in `src/app/site.module.css`, Info styles in `src/app/info.module.css`, and the locally hosted Atkinson Hyperlegible Next font/license in `public/fonts`.
+- Keep OpenStreetMap attribution visible. Tiles expose normal browser/network information and viewed tile coordinates to the provider; the frontend sends no ZIP query or home address to it. Production provider readiness remains a release check.
+- Retain reduced-motion behavior and usable list access while the map loads or fails.
 
-## Separate fictional bus-time UI demonstration
+## Backend boundary and deferred work
 
-David may add a sample screen to show how future bus routing times might be presented. It is presentation work outside the live P0 comparison:
+`GET /api/retailers` accepts a supported ZIP, required walking/bus `mode`, and optional `maxStraightLineMiles`. It returns server-resolved proximity results and generic fare context with provenance, limits, and unavailable fields. That contract is separate from the ZIP/radius-only sample frontend.
 
-- Use fixed fictional destinations and deterministic sample durations. Do not derive them from Haversine, the retailer API, or a directions URL.
-- Put “Demo only — sample bus times, not live routes” in the screen heading and next to every sample time. Show the same disclosure when navigating into the screen; it must not rely on a footnote alone.
-- Keep sample times, transfers, route lines, and fare examples out of live retailer cards, API payloads, ranking, totals, and any claim of working bus routing in the pitch or submission.
-- If the screen cannot meet those separation and labeling rules, omit it from the demo.
+Do not silently choose a mode, restore travel controls, or change the API to integrate these screens. A future integration needs an explicit product/API decision, authorization disclosures, loading/error and stale-response handling, and enabled directions only for suitable real destinations. See the backend/data status in [the hackathon plan](docs/HACKATHON.md).
 
-## Implementation and acceptance order
+Custom screening, grocery planning, live retailer integration, frontend fare examples, live routes, bus-time demonstrations, Gemini/voice assistance, prices/inventory, accounts, and persistence are deferred. There is no active fictional bus-time deliverable.
 
-1. Agree the single API response and error states with Quazi. Build the form, fictional retailer fixtures, readable list, and directions handoff; label fixtures while developing.
-2. Replace fixtures with A's audited ZIP lookup and retailer results for one supported NYC example. Confirm radius behavior, candidate cap, provenance warnings, and walking $0 fare.
-3. Add bus fare context without changing store ordering or adding route claims. Complete back/reset behavior, stale-response protection, mobile and keyboard states.
-4. Add the separate fictional bus-time screen if time allows, with visible labels on every sample time. Demonstrate the real proximity flow and the fictional screen as distinct parts.
-5. Repeat the live flow for supported examples across boroughs, malformed and unsupported ZIPs, no results, and data failure. Check outside-coverage messaging only if that classification has a reviewed source. Verify source and directions links before submission.
+## Remaining acceptance and handoff
 
-Meal suggestions, voice, verified basket prices/inventory, live transit routing, and route-time optimization are deferred. Driving, benefits eligibility/recovery, accounts, uploads, and guaranteed savings remain out of scope. Shared retailer/ZCTA audit and deployed-demo checks still gate claims of a complete live core.
+1. Review Info copy and current official handoffs; resolve source conflicts before making release claims.
+2. Verify the production build's `/`, `/explore`, shared navigation, and legacy redirects. Check sample disclosures, disabled directions, and absence of frontend API/model calls.
+3. Verify sample ZIP/radius validation, draft/applied results, empty results, Reset, card/pin selection, keyboard controls, mobile views, enlarged text, reduced motion, and map retry/list fallback.
+4. Check real tile-provider readiness and deployed behavior. Record deployment evidence and known limitations; do not treat local/intercepted browser checks as deployed verification.
+5. Rehearse the Info-first demo with both teammates. Describe Explore as fictional and the backend as separate work; submit accurate feature and pre-existing-asset claims.
+
+Use the existing checks in the [frontend guide](src/app/explore/README.md): `npm test`, `npm run lint`, `npm run typecheck`, `npm run build`, and the two browser verification scripts against a running server.
+
+The [October 10 consolidation record](docs/design/frontend-consolidation.md) reports 48 passing tests, passing lint/typecheck/build, and passing Info/Explore browser checks with intercepted map tiles. Those are recorded implementation results, not checks rerun by this documentation update. Full screen-reader/WCAG conformance, representative-user validation, live external services, and deployed readiness remain unestablished.
