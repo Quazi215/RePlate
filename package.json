@@ -11,6 +11,7 @@
     "start": "next start",
     "lint": "eslint .",
     "test": "node scripts/test.mjs",
+    "gemini:check": "node scripts/check-gemini.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
