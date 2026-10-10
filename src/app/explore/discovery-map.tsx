@@ -31,7 +31,9 @@ export default function DiscoveryMap({ stores, selectedId, hoveredId, select, ho
     import("leaflet").then(L => {
       if (cancelled || !container.current) return;
       leafletRef.current = L;
-      const map = L.map(container.current, { zoomControl: false, scrollWheelZoom: false, keyboard: false })
+      const map = L.map(container.current, {
+        zoomControl: false, scrollWheelZoom: true, touchZoom: true, bounceAtZoomLimits: false, keyboard: false,
+      })
         .setView([40.705, -73.947], 14);
       mapRef.current = map;
       L.control.zoom({ position: "bottomright" }).addTo(map);

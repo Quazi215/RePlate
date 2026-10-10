@@ -40,6 +40,7 @@ test("malformed responses, duplicate IDs, bad coordinates and unsupported eviden
   for (const value of [null, {}, { ...body, status: "no-results" }, { ...body, retailers: [...body.retailers, body.retailers[0]] }]) {
     assert.throws(() => parseDiscoveryResponse(value), /Invalid retailer response/);
   }
+  assert.throws(() => parseDiscoveryResponse({ ...body, retailers: Array.from({ length: 6 }, (_, i) => ({ ...body.retailers[0], id: `store-${i}` })) }));
   for (const patch of [{ latitude: 91 }, { longitude: Infinity }, { straightLineMiles: -1 },
     { straightLineMiles: "0.2" }, { id: "<script>" }, { authorizationStatus: "verified" }]) {
     assert.throws(() => parseDiscoveryResponse({ ...body, retailers: [{ ...body.retailers[0], ...patch }] }));

@@ -12,7 +12,7 @@ mkdirSync(output, { recursive: true });
 (async () => {
   const browser = await chromium.launch({ headless: true, ...(process.env.REPLATE_BROWSER_EXECUTABLE ? { executablePath: process.env.REPLATE_BROWSER_EXECUTABLE } : {}), args: ['--no-sandbox'] });
   try {
-    const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+    const page = await browser.newPage({ viewport: { width: 1440, height: 1000 }, hasTouch: true });
     const errors = [];
     const retailerRequests = [];
     page.on('request', request => { if (new URL(request.url()).pathname === '/api/retailers') retailerRequests.push(request.url()); });
@@ -33,11 +33,28 @@ mkdirSync(output, { recursive: true });
     const response = await realResponse;
     assert.equal(response.status(), 200);
     const actual = await response.json();
+    assert.equal(actual.resultLimit, 5);
+    assert.equal(actual.retailers.length, 5);
+    assert(actual.retailers.every((store, i) => i === 0 || actual.retailers[i - 1].straightLineMiles <= store.straightLineMiles));
     await page.getByRole('button', { name: 'Show store 1 on map' }).waitFor();
     assert.equal(await page.locator('article[data-store-id]').count(), actual.retailers.length);
     assert.equal(await page.locator('article[data-store-id]').first().getAttribute('data-store-id'), actual.retailers[0].id);
     assert(await page.locator('article[data-store-id]').first().innerText().then(text => text.includes(actual.retailers[0].name)));
     assert.equal(new URL(response.url()).searchParams.has('mode'), false);
+    assert.equal(await page.locator('.leaflet-marker-icon').count(), 5);
+    const storeList = page.getByRole('region', { name: 'Nearby store results' });
+    assert(await storeList.evaluate(el => el.scrollHeight > el.clientHeight), 'Five stores overflow into a bounded scrolling list');
+    await storeList.focus();
+    const pageScroll = await page.evaluate(() => scrollY);
+    await page.keyboard.press('PageDown');
+    await page.waitForFunction(() => document.querySelector('[data-store-list]').scrollTop > 0);
+    assert.equal(await page.evaluate(() => scrollY), pageScroll, 'Keyboard scrolling stays within the list');
+    await page.getByRole('button', { name: 'Show store 5 on map' }).click();
+    assert(await page.locator('article[data-store-id]').last().evaluate(el => {
+      const card = el.getBoundingClientRect();
+      const list = el.closest('[data-store-list]').getBoundingClientRect();
+      return card.bottom <= list.bottom + 1 && card.top >= list.top - 1;
+    }), 'Selecting the last pin reveals its card inside the scrolling list');
     const mockStores = [
       ['sample-01', 'Broadway Community Market', 0.24, 40.7025, -73.943],
       ['sample-02', 'Union Avenue Grocers', 0.58, 40.7098, -73.9519],
@@ -138,6 +155,35 @@ mkdirSync(output, { recursive: true });
     await page.evaluate(() => document.fonts.ready);
     await page.screenshot({ path: `${output}/desktop-deterministic.png`, fullPage: true });
     await page.setViewportSize({ width: 390, height: 844 });
+    const mapRegion = page.getByRole('region', { name: 'Nearby retailer map' });
+    await mapRegion.evaluate(el => el.scrollIntoView({ block: 'start' }));
+    assert(await mapRegion.evaluate(el => el.classList.contains('leaflet-touch-zoom')), 'Touch zoom handler enabled');
+    const session = await page.context().newCDPSession(page);
+    async function tileZoom() {
+      return await page.locator('.leaflet-tile-pane').evaluate(el => Math.max(...[...el.querySelectorAll('img')].map(img => Number(new URL(img.src).pathname.split('/')[1]))));
+    }
+    async function pinch(startGap, endGap) {
+      const box = await mapRegion.boundingBox();
+      const centerX = box.x + box.width / 2;
+      const centerY = Math.max(120, box.y + 160);
+      const points = gap => [{ x: centerX - gap / 2, y: centerY, id: 0 }, { x: centerX + gap / 2, y: centerY, id: 1 }];
+      await session.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: points(startGap) });
+      for (let step = 1; step <= 5; step++) {
+        await session.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: points(startGap + (endGap - startGap) * step / 5) });
+        await page.evaluate(() => new Promise(requestAnimationFrame));
+      }
+      await session.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+      await page.waitForFunction(() => !document.querySelector('.leaflet-zoom-anim'));
+    }
+    const beforePinch = await tileZoom();
+    await pinch(60, 180);
+    await page.waitForFunction(before => [...document.querySelectorAll('.leaflet-tile-pane img')].some(img => Number(new URL(img.src).pathname.split('/')[1]) > before), beforePinch);
+    const afterPinch = await tileZoom();
+    assert(afterPinch > beforePinch, 'Spreading fingers zooms in');
+    await pinch(180, 50);
+    await page.waitForFunction(before => Math.max(...[...document.querySelectorAll('.leaflet-tile-pane img')].map(img => Number(new URL(img.src).pathname.split('/')[1]))) < before, afterPinch);
+    assert.equal(await page.locator('article[data-store-id]').count(), 3, 'Pinch leaves results unchanged');
+    await page.evaluate(() => scrollTo(0, 0));
     const advanced = page.getByRole('button', { name: /Radius/ });
     await advanced.click();
     await radius.waitFor({ state: 'visible' });
@@ -230,6 +276,6 @@ mkdirSync(output, { recursive: true });
       } else { await page.getByText('Near 10001 · 1-mile radius', { exact: true }).waitFor(); }
     }
     assert.deepEqual(errors, []);
-    console.log('PASS: discovery search, validation, selection, real local API integration, error recovery and request cancellation, mobile views, 320px reflow, reset, tile outage/retry; screenshots saved.');
+    console.log('PASS: discovery search, validation, selection, real local API integration, error recovery and request cancellation, top-five cap, bounded list scrolling, touch pinch zoom, mobile views, 320px reflow, reset, tile outage/retry; screenshots saved.');
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exitCode = 1; });

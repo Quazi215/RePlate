@@ -37,7 +37,7 @@ test("route composes local data into a bounded, explicitly approximate result", 
   assert.match(String((body.ranking as Record<string, unknown>).distanceLabel), /straight-line/i);
   assert.ok(!("fareContext" in body));
   const candidates = body.retailers as Array<Record<string, unknown>>;
-  assert.ok(candidates.length <= 20);
+  assert.ok(candidates.length <= 5);
   assert.ok(candidates.every((candidate) => candidate.approximate === true));
   assert.ok(candidates.every((candidate) => Number(candidate.straightLineMiles) <= 0.01));
   assert.ok(candidates.every((candidate) => candidate.authorizationStatus === "unverified"));
@@ -52,7 +52,7 @@ test("ZIP-only searches return real candidates for all five boroughs", async () 
     assert.equal(response.status, 200);
     assert.equal(body.status, "ready");
     const candidates = body.retailers as Array<Record<string, unknown>>;
-    assert.ok(candidates.length > 0 && candidates.length <= 20);
+    assert.ok(candidates.length > 0 && candidates.length <= 5);
     assert.ok(candidates.every(candidate => typeof candidate.latitude === "number" && typeof candidate.longitude === "number"));
     assert.equal((body.origin as { zip: string }).zip, zip);
     assert.ok(!JSON.stringify(body).includes("sample-"));

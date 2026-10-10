@@ -105,7 +105,10 @@ export default function DiscoveryJourney() {
     if (window.matchMedia("(min-width: 900px)").matches) {
       const card = document.getElementById(`card-${id}`);
       const bounds = card?.getBoundingClientRect();
-      if (bounds && (bounds.top < 0 || bounds.bottom > window.innerHeight)) card?.scrollIntoView({ block: "nearest", behavior: "instant" });
+      const listBounds = card?.closest('[data-store-list]')?.getBoundingClientRect();
+      if (bounds && listBounds && (bounds.top < Math.max(0, listBounds.top) || bounds.bottom > Math.min(window.innerHeight, listBounds.bottom))) {
+        card?.scrollIntoView({ block: "nearest", behavior: "instant" });
+      }
     }
   }, []);
 
@@ -188,7 +191,7 @@ export default function DiscoveryJourney() {
           <SearchForm search={search} errors={errors} update={update} submit={submit} validateField={validateField} />
           {dirty ? <p className={styles.pendingNotice} role="status">Changes not applied. Select Find stores to update results.</p> : null}
           <div className={styles.resultHeading}><h2>{loading ? "Finding stores…" : requestError ? "Search could not complete" : result ? `${results.length} stores` : "Ready when you are"}</h2><p role="status">{applied ? `Near ${applied.zip} · ${applied.radius ? `${applied.radius}-mile radius` : "No radius limit"}` : "Enter a NYC ZIP code to get started."}</p>{result ? <p className={styles.help}>Ordered by approximate straight-line distance.</p> : null}{result?.capNotice ? <p className={styles.help}>{result.capNotice}</p> : null}</div>
-          <div className={`${styles.resultsBody} ${loading || requestError || result?.status === "no-results" ? styles.searchFeedback : ""}`} aria-busy={loading}>
+          <div className={`${styles.resultsBody} ${loading || requestError || result?.status === "no-results" ? styles.searchFeedback : ""}`} data-store-list role="region" aria-label="Nearby store results" tabIndex={0} aria-busy={loading}>
             {loading ? <div className={styles.empty} role="status"><p>Loading nearby stores…</p></div> : requestError ? <div className={styles.empty} role="alert"><h3>{requestError.code === "UNSUPPORTED_ZIP" ? "ZIP not supported" : "Stores unavailable"}</h3><p>{requestError.message}</p><div className={styles.failureActions}><button className={styles.secondary} onClick={() => { if (applied) void apply(applied); }}>Retry search</button><a href={retailerLocatorUrl} target="_blank" rel="noopener noreferrer">Find stores with USDA ↗</a></div></div> : !result ? <div className={styles.empty}><h3>A few possibilities, nearby.</h3><p>Find stores to explore nearby supermarket candidates. No precise location needed.</p></div> : results.length === 0 ? <div className={styles.empty} role="status"><h3>No stores in this radius</h3><p>Try a wider straight-line radius or clear it to see nearby candidates.</p><button className={styles.secondary} onClick={() => { if (applied) { const next = { ...applied, radius: "" }; setSearch(next); void apply(next); } }}>Clear radius</button></div> : results.map((store, index) => <StoreCard key={store.id} store={store} index={index} selected={store.id === selectedId} select={showOnMap} hover={setHoveredId} />)}
           </div>
           <Sources result={result} />

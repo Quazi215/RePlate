@@ -49,7 +49,7 @@ function text(value: unknown): string {
 export function parseDiscoveryResponse(value: unknown): DiscoveryResult | DiscoveryError {
   const data = record(value);
   if (data.status === "error") return { status: "error", code: text(data.code), message: text(data.message) };
-  if ((data.status !== "ready" && data.status !== "no-results") || !Array.isArray(data.retailers) || data.retailers.length > 20) {
+  if ((data.status !== "ready" && data.status !== "no-results") || !Array.isArray(data.retailers) || data.retailers.length > 5) {
     throw new Error("Invalid retailer response.");
   }
   const ids = new Set<string>();

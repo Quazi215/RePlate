@@ -76,12 +76,12 @@ test("filters by inclusive straight-line radius, sorts, discloses cap, sources, 
   assert.equal(result.ranking.version, "straight-line-haversine-v1");
   assert.match(result.ranking.distanceLabel, /straight-line.*miles/i);
   assert.match(result.ranking.rationale, /approximate proximity/i);
-  assert.equal(result.resultLimit, 20);
+  assert.equal(result.resultLimit, 5);
   assert.equal(result.candidateCount, 25);
   assert.equal(result.truncated, true);
-  assert.match(result.capNotice ?? "", /20 nearest of 25 candidates/);
-  assert.equal(result.retailers.length, 20);
-  assert.deepEqual(result.retailers.map(({ id }) => id), retailers.slice(0, 20).map(({ id }) => id));
+  assert.match(result.capNotice ?? "", /5 nearest of 25 candidates/);
+  assert.equal(result.retailers.length, 5);
+  assert.deepEqual(result.retailers.map(({ id }) => id), retailers.slice(0, 5).map(({ id }) => id));
   assert.ok(result.retailers.every((item) => item.straightLineMiles <= 2 && item.approximate));
   assert.equal(result.sources.location.sourceUrl, origin.sourceUrl);
   assert.equal(result.sources.retailerSnapshot.sourceUrl, null);

@@ -81,6 +81,7 @@
 .resultHeading { border-top: 1px solid var(--border); padding: 18px 22px; }
 .resultHeading h2 { font-size: 1.1rem; }
 .resultHeading > p:not(.help) { font-size: .9rem; margin-top: 6px; }
+.resultsBody { max-height: min(50dvh, 28rem); overflow-y: auto; overscroll-behavior-y: contain; scrollbar-gutter: stable; }
 .storeCard { border-top: 1px solid var(--border); padding: 18px 22px; transition: background-color 150ms; scroll-margin: 20px; }
 .storeCard:hover { background: #eff0df; }
 .cardSelected { background: #eff4d4; box-shadow: inset 4px 0 var(--forest); }

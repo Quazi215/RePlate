@@ -11,7 +11,7 @@ The homepage is the Info screen with official SNAP resources. Explore is a secon
 ## Search and results
 
 - Enter a five-digit ZIP and an optional positive straight-line radius up to 25 miles. Submit all inputs with Find stores; editing keeps the previous submitted results visible with an unapplied-change notice.
-- Use `GET /api/retailers` with `zip` and optional `maxStraightLineMiles`. The server resolves supported NYC ZIP/ZCTAs and returns at most 20 distance-ordered candidates with stable IDs, names, addresses, coordinates, and approximate straight-line miles. Disclose the result cap and approximate ZIP origin.
+- Use `GET /api/retailers` with `zip` and optional `maxStraightLineMiles`. The server resolves supported NYC ZIP/ZCTAs and returns at most five distance-ordered candidates with stable IDs, names, addresses, coordinates, and approximate straight-line miles. Disclose the result cap and approximate ZIP origin.
 - Show distinct malformed-input, unsupported-ZIP, no-results, and unavailable-data states. An unsupported ZIP is not automatically outside NYC. API failures offer retry and the USDA locator; a no-results state allows clearing the radius.
 - New submissions, reset, and unmount cancel requests. Late responses cannot replace a newer result set or restore cleared results.
 

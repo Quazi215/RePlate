@@ -4,7 +4,7 @@ import { rankRetailersByProximity } from "./proximity-ranking";
 import type { RetailerQuality } from "./retailer-snapshot";
 import { loadRetailerSnapshot, type RetailerSnapshot } from "./retailer-snapshot.server";
 
-const resultLimit = 20;
+const resultLimit = 5;
 const retailerLocatorUrl = "https://www.fns.usda.gov/snap/retailer-locator";
 
 export type SearchDependencies = {
