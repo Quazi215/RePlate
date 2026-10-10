@@ -10,6 +10,11 @@ const output = process.env.REPLATE_SCREENSHOT_DIR || 'docs/design';
 const browser = await chromium.launch({ headless: true, ...(process.env.REPLATE_BROWSER_EXECUTABLE ? { executablePath: process.env.REPLATE_BROWSER_EXECUTABLE } : {}) });
 try {
   const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+  await page.addInitScript(() => {
+    window.snapStorageWrites = 0;
+    const original = Storage.prototype.setItem;
+    Storage.prototype.setItem = function (...args) { window.snapStorageWrites++; return original.apply(this, args); };
+  });
   await page.route('https://tile.openstreetmap.org/**', route => route.abort());
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
@@ -29,7 +34,151 @@ try {
     await page.keyboard.press('Enter');
     assert.equal(new URL(page.url()).hash, '#snap-content');
     await page.getByRole('link', { name: 'Find your next step' }).click();
-    assert.equal(new URL(page.url()).hash, '#next-step');
+    await page.waitForURL(`${base}/screening`);
+    assert.equal(new URL(page.url()).pathname, '/screening');
+    await page.getByRole('heading', { name: 'Could SNAP help your household?', exact: true }).waitFor();
+    await page.waitForLoadState('networkidle');
+    {
+    assert.equal(await page.getByRole('link', { name: /Apply/ }).count(), 0, 'Application handoff appears only after results');
+    const interactionRequests = [];
+    const interactionLogs = [];
+    const recordRequest = request => interactionRequests.push(request.url());
+    const recordLog = message => interactionLogs.push(message.text());
+    const storageBefore = await page.context().storageState({ indexedDB: true });
+    const sessionBefore = await page.evaluate(() => ({ ...sessionStorage }));
+    page.on('request', recordRequest);
+    page.on('console', recordLog);
+    async function focusIs(title) {
+      assert.equal(await page.locator(':focus').innerText(), title, 'Step or result heading receives focus');
+    }
+    async function checkScreeningLayout() {
+      for (const width of [1440, 390, 320]) {
+        await page.setViewportSize({ width, height: 900 });
+        for (const fontSize of ['100%', '200%']) {
+          await page.evaluate(size => { document.documentElement.style.fontSize = size; }, fontSize);
+          assert(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), `Screening fits ${width}px / ${fontSize}`);
+        }
+      }
+      await page.evaluate(() => { document.documentElement.style.fontSize = '100%'; });
+      await page.setViewportSize({ width: 1440, height: 1000 });
+    }
+    async function continueWith(answer) {
+      if (/^\d/.test(answer)) await page.getByRole('textbox').fill(answer);
+      else await page.getByRole('radio', { name: answer, exact: true }).check();
+      await page.getByRole('button', { name: /^(Continue|See my result)$/ }).click();
+    }
+    await checkScreeningLayout();
+    await page.getByRole('button', { name: 'Start screening', exact: true }).click();
+    await page.getByRole('heading', { name: 'Do you live in New York City?', exact: true }).waitFor({ timeout: 3000 });
+    await focusIs('Do you live in New York City?');
+    assert.equal(await page.locator('input:checked').count(), 0, 'No answer is preselected');
+    await page.getByRole('button', { name: 'Continue', exact: true }).click();
+    assert.match(await page.locator('main').getByRole('alert').innerText(), /Choose Yes, No, or I don’t know/);
+    assert.equal(await page.locator(':focus').getAttribute('type'), 'radio');
+    assert.match(await page.locator(':focus').getAttribute('aria-describedby'), /answer-error/);
+    for (const answer of ['Yes', '1', 'No', 'No', 'No', 'Yes', 'No', '1995']) {
+      await checkScreeningLayout();
+      await continueWith(answer);
+    }
+    await page.getByRole('heading', { name: 'You may qualify for SNAP', exact: true }).waitFor();
+    await focusIs('You may qualify for SNAP');
+    await checkScreeningLayout();
+    assert.match(await page.locator('main').innerText(), /\$1,995.*at or below.*\$1,995/);
+    assert.match(await page.locator('main').innerText(), /No application has been submitted/);
+    assert.match(await page.locator('main').innerText(), /enter your information again/);
+    assert.equal(await page.getByRole('link', { name: /Apply on ACCESS HRA/ }).getAttribute('href'), 'https://a069-access.nyc.gov/accesshra/');
+    mkdirSync(output, { recursive: true });
+    await page.screenshot({ path: `${output}/screening-result-desktop.png`, fullPage: true });
+    await page.getByRole('button', { name: 'Review my answers', exact: true }).click();
+    await focusIs('Review your answers');
+    assert.equal(await page.locator('dl > div').count(), 8);
+    await checkScreeningLayout();
+    await page.getByRole('button', { name: 'Change: What is your household’s monthly gross income?', exact: true }).click();
+    assert.equal(await page.getByRole('textbox').inputValue(), '1995', 'Review preserves a relevant answer');
+    await page.getByRole('textbox').fill('1.001');
+    await page.getByRole('button', { name: 'See my result', exact: true }).click();
+    assert.equal(await page.getByRole('textbox').getAttribute('aria-invalid'), 'true');
+    assert.match(await page.locator('main').getByRole('alert').innerText(), /two decimal places/);
+    await checkScreeningLayout();
+    await continueWith('1995.01');
+    await focusIs("We couldn't establish likely eligibility from your answers");
+    assert.match(await page.locator('main').innerText(), /above.*\$1,995/);
+    assert.match(await page.locator('main').innerText(), /does not mean you are officially ineligible/);
+    await checkScreeningLayout();
+    await page.getByRole('button', { name: 'Review my answers', exact: true }).click();
+    await page.getByRole('button', { name: 'Change: Is anyone in your household 60 or older, disabled, or blind?', exact: true }).click();
+    await continueWith('Yes');
+    await focusIs('We need more information');
+    assert.match(await page.locator('main').innerText(), /older, disabled, or blind household member/);
+    assert.equal(await page.getByText(/monthly gross income of/).count(), 0, 'Prior income explanation disappears on an unsupported branch');
+    await page.getByRole('button', { name: 'Review my answers', exact: true }).click();
+    assert.equal(await page.locator('dl > div').count(), 4, 'Stale follow-ups disappear from review');
+    await page.getByRole('button', { name: 'Change: Is anyone in your household 60 or older, disabled, or blind?', exact: true }).click();
+    await continueWith('No');
+    await focusIs('Does your household pay for child care or dependent care?');
+    assert.equal(await page.locator('input:checked').count(), 0, 'Obsolete branch answers were discarded');
+    for (const answer of ['No', 'Yes', 'No']) await continueWith(answer);
+    assert.equal(await page.getByRole('textbox').inputValue(), '', 'Stale income cannot affect a revised result');
+    await page.getByRole('checkbox', { name: 'I don’t know', exact: true }).check();
+    await page.getByRole('button', { name: 'See my result', exact: true }).click();
+    await focusIs('We need more information');
+    assert.match(await page.locator('main').innerText(), /need your monthly gross household income/);
+    await checkScreeningLayout();
+    await page.getByRole('button', { name: 'Start over', exact: true }).click();
+    await focusIs('Do you live in New York City?');
+    assert.equal(await page.locator('input:checked').count(), 0);
+    // Complete using only the keyboard, including native radio arrow navigation.
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('Space');
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('Enter');
+    await focusIs('How many people are in your SNAP household?');
+    await page.keyboard.press('Tab');
+    await page.keyboard.type('-1');
+    await page.keyboard.press('Enter');
+    assert.match(await page.locator('main').getByRole('alert').innerText(), /whole number/);
+    await page.keyboard.press('ControlOrMeta+A');
+    await page.keyboard.type('2');
+    await page.keyboard.press('Enter');
+    for (const answer of ['No', 'No', 'No', 'Yes', 'No']) {
+      assert.equal(await page.locator('input:checked').count(), 0, 'Restart clears every answer');
+      await page.keyboard.press('Tab');
+      if (answer === 'No') await page.keyboard.press('ArrowDown');
+      await page.keyboard.press('Space');
+      await page.keyboard.press('Tab');
+      await page.keyboard.press('Enter');
+    }
+    assert.equal(await page.getByRole('textbox').inputValue(), '');
+    await page.keyboard.press('Tab');
+    await page.keyboard.type('2705');
+    await page.keyboard.press('Enter');
+    await focusIs('You may qualify for SNAP');
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await checkScreeningLayout();
+    assert.equal(new URL(page.url()).pathname, '/screening');
+    assert.equal(new URL(page.url()).search, '', 'No answers in URL parameters');
+    assert.equal(new URL(page.url()).hash, '', 'No answers in URL fragments');
+    assert.equal(await page.evaluate(() => window.snapStorageWrites), 0, 'No storage writes');
+    assert.deepEqual(await page.context().storageState({ indexedDB: true }), storageBefore, 'No cookies, local storage, or IndexedDB changes');
+    assert.deepEqual(await page.evaluate(() => ({ ...sessionStorage })), sessionBefore);
+    assert.deepEqual(interactionRequests, [], 'Screening interactions make no requests');
+    assert.deepEqual(interactionLogs, [], 'Screening interactions emit no logs');
+    page.off('request', recordRequest);
+    page.off('console', recordLog);
+    await page.reload();
+    await page.waitForLoadState('networkidle');
+    await page.getByRole('heading', { name: 'Could SNAP help your household?', exact: true }).waitFor();
+    await page.getByRole('button', { name: 'Start screening', exact: true }).click();
+    assert.equal(await page.locator('input:checked').count(), 0, 'Refresh clears answers');
+    await continueWith('I don’t know');
+    await focusIs('We need more information');
+    assert.match(await page.locator('main').innerText(), /whether you live in NYC/);
+    await page.getByRole('navigation').getByRole('link', { name: 'Info', exact: true }).click();
+    await page.waitForURL(`${base}/`);
+    await page.goBack();
+    await page.getByRole('heading', { name: 'Could SNAP help your household?', exact: true }).waitFor();
+    }
+    await page.goto(`${base}/`);
     assert.equal(await page.locator('#next-step article').count(), 3, 'Work-rule, unknown-status, and recertification paths stay distinct');
     const anchors = await page.locator('a').evaluateAll(elements => elements.map(element => element.getAttribute('href')));
     for (const href of anchors) {
@@ -220,7 +369,7 @@ try {
   }
   await expectResults([], fallbackAction, true);
   assert.deepEqual(errors, [], 'No browser runtime errors');
-  console.log('SNAP questionnaire, privacy, Info navigation, redirects and responsive browser checks passed');
+  console.log('SNAP screening, review/edit, validation, keyboard, privacy, refresh, navigation, redirects and responsive browser checks passed');
 } finally {
   await browser.close();
 }

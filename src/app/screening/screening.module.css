@@ -1,0 +1,37 @@
+.page { color-scheme: light; }
+.main { max-width: 780px; margin: 0 auto; padding: 40px 24px 64px; }
+.panel { display: grid; gap: 24px; min-width: 0; }
+.panel h1 { font-size: clamp(1.9rem, 4vw, 2.8rem); line-height: 1.12; }
+.panel p { line-height: 1.6; }
+.eyebrow { font-size: .9rem; font-weight: 700; }
+.notice { padding: 20px; border-left: 4px solid var(--forest); background: #eef0df; display: grid; gap: 12px; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
+.actions > *, .choice, .numberField, .review dd { min-width: 0; max-width: 100%; }
+.panel ul { padding-left: 24px; margin: 0; display: grid; gap: 12px; }
+.form { display: grid; gap: 24px; }
+.choices { padding: 0; border: 0; margin: 0; display: grid; gap: 12px; }
+.legend { font-weight: 700; margin-bottom: 12px; }
+.choice { display: flex; align-items: center; gap: 16px; padding: 16px; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; }
+.choice:has(input:checked) { background: #eef0df; border-color: var(--forest); }
+.choice input { width: 22px; height: 22px; flex: none; accent-color: var(--forest); }
+.numberField { display: grid; gap: 12px; }
+.numberField > label:first-child { font-weight: 700; }
+.numberField > input { width: 100%; min-width: 0; padding: 16px; border: 1px solid var(--forest); border-radius: 6px; background: #fffcf5; }
+.numberField > input:disabled { background: #eef0df; }
+.numberField > input[aria-invalid="true"] { border: 2px solid #923221; }
+.error { color: #923221; }
+.review { margin: 0; }
+.review > div { display: grid; gap: 12px; padding: 24px 0; border-bottom: 1px solid var(--border); }
+.review dt { font-weight: 700; }
+.review dd { margin: 0; overflow-wrap: anywhere; }
+.preparation { display: grid; gap: 20px; border-top: 1px solid var(--border); padding-top: 28px; }
+.applicationLink { justify-self: start; padding: 12px 0; font-weight: 700; }
+.source { font-size: .9rem; color: var(--muted); }
+.panel :is(h1, h2, p, li, a, button, dt, label) { overflow-wrap: anywhere; }
+.panel h1:focus { outline: 3px solid var(--forest); outline-offset: 6px; }
+@media (prefers-reduced-motion: reduce) {
+  .page button { transition: none; }
+}
+@media (max-width: 650px) {
+  .main { padding: 28px 20px 48px; }
+}

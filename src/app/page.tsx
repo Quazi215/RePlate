@@ -32,7 +32,7 @@ export default function InfoPage() {
           <h1 id="hero-title">The clock reset.<br />Know your next step.</h1>
           <p className={styles.lead}>Lost SNAP because of work rules? The October 1 reset may give you a way back.</p>
           <div className={styles.heroActions}>
-            <a className={styles.primary} href="#next-step">Find your next step <span aria-hidden="true">↓</span></a>
+            <Link className={styles.primary} href="/screening">Find your next step <span aria-hidden="true">→</span></Link>
             <a href={workRules}>Read HRA’s reset guidance <span aria-hidden="true">↗</span></a>
           </div>
         </div>
@@ -59,7 +59,7 @@ export default function InfoPage() {
       </aside>
 
       <section id="next-step" className={styles.nextSteps} aria-labelledby="next-title">
-        <div className={styles.sectionHeading}><h2 id="next-title">Start with your situation.</h2><p>You don’t need to fill out a RePlate form. These links take you to official services.</p></div>
+        <div className={styles.sectionHeading}><h2 id="next-title">Start with your situation.</h2><p>Already applied or receiving SNAP? These links take you to official services for your case.</p></div>
         <div className={styles.pathList}>
           <article className={styles.path}><div><h3>My benefits stopped because of work rules</h3><p>Whole case closed? Reapply. Household still receives SNAP? Request a case change to add the removed member back.</p></div><a className={styles.primary} href={hra}>Open ACCESS HRA <span aria-hidden="true">↗</span></a></article>
           <article className={styles.path}><div><h3>I don’t know why my benefits changed</h3><p>Check your notice and case information first. A missing payment does not necessarily mean you need to reapply.</p></div><a className={styles.textAction} href={snapGuide}>Find status and help guidance <span aria-hidden="true">↗</span></a></article>

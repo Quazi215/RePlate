@@ -3,6 +3,8 @@
 **Updated:** October 10, 2026
 **Current scope note, October 10:** The map feature is now a secondary ZIP/radius supermarket lookup alongside the Info homepage. Builder A and Builder B specs describe the integrated flow. Fare comparison, travel-mode controls, and the fictional bus-time demonstration below are historical scope.
 
+**SNAP screening amendment, October 10 — #14:** The approved screening journey supersedes the earlier no-financial-input, anchor-only, and clock-embedded questionnaire direction in #11–#13. Find your next step opens `/screening`; the homepage clock and official case-help paths stay available. The first slice provides one qualified earned-income path, current-answer reasons, review/edit, restart, preparation, and an optional official application handoff. Read the [full branch map and reconciled standards](../src/lib/screening/SOURCES.md) and [current frontend guide](../src/app/explore/README.md) for actual coverage. Other screening branches and broader validation remain #15–#17. The English phone/laptop demo target is October 11, 2026, 11:30 a.m. EDT; this target does not independently change or verify the historical event submission deadline below.
+
 **Previous status:** Core scope revised for a card-free implementation. Live routing is removed; the bus travel-time screen is a labeled UI demonstration. Retailer and ZIP-reference audits remain acceptance requirements; product value remains a hypothesis.
 
 **Status:** Info-first frontend implemented; Explore is a fictional sample demonstration. Retailer API implemented separately; frontend/backend integration deferred. Release review and deployed-demo verification remain open.
@@ -29,18 +31,20 @@ The approved October 10 consolidation and this documentation review establish th
 
 | Area | Current delivery | Boundary |
 | --- | --- | --- |
-| Info | English SNAP-awareness infographic, source links, official next steps and help | No custom screener, benefit calculation, authenticated case access, or application submission |
+| Info and screening | Homepage infographic and case help; separate one-question-at-a-time NYC financial prescreen | One verified earned-income path, sizes 1–8; no full eligibility, benefit calculation, case access, or submission |
 | Explore | Sample ZIP/radius search, geographic map/list, shared selection, Reset, map recovery | Fictional stores; illustrative addresses, pins, and distances; directions disabled |
 | Backend | Local ZIP/ZCTA resolution, retailer validation, Haversine ordering, fare context, retailer endpoint | Implemented separately; neither frontend page calls it |
 | Release | Content/source review, production checks, demo and submission readiness | Local implementation evidence does not establish deployed or external-service readiness |
 
-Walking/Bus controls are removed from Explore. Frontend fare display, live retailer integration, routing, conversational/voice assistance, custom screening, and grocery planning are deferred. Remove the fictional bus-time screen from the active delivery checklist; none is implemented.
+Walking/Bus controls are removed from Explore. Frontend fare display, routing, conversational/voice assistance, and grocery planning are deferred. Screening's additional branches remain in #15. Remove the fictional bus-time screen from the active delivery checklist; none is implemented. The current frontend guide supersedes historical Explore integration descriptions here.
 
 No accounts, uploads, saved profiles, precise-location permission, grocery-price comparison, inventory guarantee, medical diets, or guaranteed savings are part of delivery. Official informational handoffs are in scope even though the earlier custom benefits-recovery navigator remains deferred.
 
 ### 1.3 Implemented journeys
 
 **Info:** Read the SNAP infographic → identify the relevant official next-step path → open official guidance or help. The page distinguishes closed-case reapplication from adding a removed member back to a continuing household, with separate paths for unknown loss reasons and recertification. The allowance graphic is illustrative, not a personal countdown. Policy content needs release review; this document records the UI's purpose rather than independently verifying benefit rules.
+
+**Screening:** Find your next step → `/screening` → entry explanation → household and branch questions → qualified result with reasons → review/edit or prepare. The first path supports NYC households of 1–8 with earnings, no older/disabled/blind member, no dependent-care costs, no child support paid, and not all members receiving SSI/Cash Assistance. Unknown or deferred circumstances produce “We need more information”; a failed supported comparison does not mean official ineligibility. The result is a limited financial check, with no application submitted. Official preparation and optional ACCESS HRA handoff follow the result; information must be entered again there. Answers stay only in page memory, with no identifiers, uploads, storage, URLs, logs, analytics, or answer-bearing requests.
 
 **Explore:** Open the preloaded sample → edit ZIP/radius → Find stores → select a card or pin → switch mobile Map/List views as needed. There is no enabled directions handoff from fictional stores.
 
@@ -128,7 +132,7 @@ Use the [location audit](../data/location/README.md), [retailer audit](../data/r
 
 ### 2.6 Privacy and reliability
 
-Info collects no household data. Explore uses sample ZIP/radius in memory with no accounts, uploads, saved profiles, geocoding, or precise-location permission. Neither page calls Gemini or sends ZIP queries to the retailer API.
+Info's homepage collects no household data. Screening collects only the relevant categorical answers, household size, and monthly gross income for its supported branch in page memory. Refresh, restart, and leaving clear the flow; no screening answers enter storage, URLs, logs, analytics, or external requests. No accounts, personal identifiers, or uploads are collected. No page calls Gemini. Explore's current API and tile boundaries are documented in the frontend guide; the sample integration descriptions below are historical.
 
 The tile provider receives standard browser/network information and viewed tile coordinates; no home address or ZIP query is sent to it. Retain attribution and review provider requirements before release. Official handoffs are external services. Avoid logging household inputs or exposing secrets if later integration is added; do not claim anonymity solely because names are absent.
 
@@ -191,6 +195,8 @@ Recorded checks do not establish full WCAG/screen-reader conformance, representa
 
 **Proposed 90-second demo:**
 
+For the screening demo, start from Find your next step, complete a supported household, explain the limited result and preparation, then show review/edit and an uncertain circumstance. Use the outline below only for the older Info/Explore presentation; do not present it as the screening acceptance plan. Several official-reference comparisons and the friend's uncoached completion remain #17; automated completion is not evidence of easier use or policy accuracy.
+
 1. **0–35s:** Open Info, explain the informational graphic and show distinct official next-step/help paths without claiming a case outcome.
 2. **35–50s:** Navigate to Explore and identify the fictional stores, illustrative locations/distances, and unknown facts.
 3. **50–75s:** Demonstrate radius changes, applied versus pending inputs, card/pin selection and mobile Map/List.
@@ -213,13 +219,13 @@ Do not reuse the old household basket/savings scenario, live search-to-direction
 | Decision | Current position |
 | --- | --- |
 | Product center | Info-first SNAP awareness with official handoffs; Explore secondary |
-| Frontend delivery | Current public two-page demo, confirmed in this documentation review |
+| Frontend delivery | Homepage, separate initial screening journey, and secondary Explore; broader screening coverage remains #15 |
 | Explore data | Fictional fixtures; ZIP/radius only; no enabled directions |
 | Editing | Preserve applied results and label pending edits until Find stores |
 | Backend | Implemented independently; frontend integration deferred |
 | Transport | Mode/fare handling remains backend-only; routes unavailable |
 | Bus-time screen | Removed from active delivery checklist; no implemented screen |
-| Benefits workflow | Informational official handoffs in scope; custom screening/submission deferred |
+| Benefits workflow | Limited local financial screening with qualified results and official handoffs; full eligibility and submission excluded |
 | AI/voice | Deferred; no frontend model calls |
 | Remaining priorities | Content review, production checks, rehearsal and accurate submission |
 | Product value/novelty | Hypotheses awaiting user evidence |
@@ -228,7 +234,7 @@ The October 9 card-free backend decision still applies. The October 10 frontend 
 
 ### 4.2 Remaining decisions and validation
 
-No additional product questionnaire is required to document or deliver the confirmed current scope. Remaining release checks are in §3.3.
+The initial personal screener replaces the earlier three-question clock questionnaire. Remaining screening coverage, expanded verification, official-reference comparisons, and observed user completion are tracked in #15–#17. Release checks in §3.3 are historical starting points, not evidence that the screening demo is validated.
 
 Later work requires agreement on the ZIP/radius-only frontend versus required API mode, retailer evidence/disclosures, real directions, network states and acceptance criteria. Do not silently choose that behavior during release work. Source/authorization review must distinguish validated coordinates from current SNAP authorization.
 
