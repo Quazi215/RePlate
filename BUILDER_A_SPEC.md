@@ -7,7 +7,7 @@
 
 Power the Explore screen with real NYC supermarket results. The shopper enters a five-digit ZIP code and may set an optional straight-line radius. The backend resolves an approximate ZIP/ZCTA origin and returns nearby retailers for the screen’s result list and map pins.
 
-The Explore UI currently uses fictional sample records and a Leaflet map with OpenStreetMap tiles. Backend integration replaces the sample search/results; it does not require Builder A to build or operate the map. The map/list switch, selecting a store from either the list or a pin, reset behavior, and current search/radius controls are part of the UI flow.
+The Explore UI calls the retailer API and uses a Leaflet map with OpenStreetMap tiles. Builder A supplies the validated search results and does not operate the external basemap. The map/list switch, selecting a store from either the list or a pin, reset behavior, and current search/radius controls are part of the UI flow.
 
 ## SNAP authorization evidence
 
@@ -24,7 +24,7 @@ The product goal is to show nearby supermarkets that accept SNAP. The current ch
 
 ## API contract for Explore
 
-The UI currently submits ZIP and radius only. It has no walking/bus selector. The existing `GET /api/retailers` requires `mode=walking|bus`, so the current endpoint contract does not match the pulled UI. Before integration, align the endpoint and client so a search can be made with `zip` and optional `maxStraightLineMiles` only; do not add a visible travel-mode input just to satisfy the old contract. The endpoint currently includes fare and route limitation fields from the earlier scope; the UI does not display these and should consume only the fields it needs.
+`GET /api/retailers?zip=<five-digits>&maxStraightLineMiles=<optional>` accepts the UI’s ZIP/radius query directly. Travel mode and fare context are removed from this contract. Unsupported parameters, duplicates, malformed inputs, and unavailable data remain distinct errors.
 
 The UI needs:
 
@@ -38,11 +38,11 @@ Changing a ZIP or radius should continue to follow the UI’s submitted-search b
 
 ## Verification checklist
 
-- [ ] The API accepts the ZIP/radius query shape used by Explore without requiring travel mode.
-- [ ] ZIP parsing distinguishes malformed input, supported lookup, unsupported ZIP, and reference-data failure.
-- [ ] The lookup uses reviewed ZIP/ZCTA internal points and labels the origin approximate.
+- [x] The API accepts the ZIP/radius query shape used by Explore without requiring travel mode.
+- [x] ZIP parsing distinguishes malformed input, supported lookup, unsupported ZIP, and reference-data failure.
+- [x] The lookup uses reviewed ZIP/ZCTA internal points and labels the origin approximate.
 - [ ] Retailer identity, coordinates, duplicates, NYC geography, and current SNAP authorization evidence are reviewed.
-- [ ] Results described as SNAP-accepting contain only verified stores; otherwise status is clearly unverified with the USDA locator fallback.
-- [ ] Search results are radius-filtered and ordered by straight-line distance with a stable tie-breaker, within any disclosed result cap.
-- [ ] The response supports synchronized list cards and map pins, shared selection, no-results, and data-error states.
-- [ ] Relevant tests, lint, typecheck, and production build pass after backend changes.
+- [x] Results described as SNAP-accepting contain only verified stores; otherwise status is clearly unverified with the USDA locator fallback.
+- [x] Search results are radius-filtered and ordered by straight-line distance with a stable tie-breaker, within any disclosed result cap.
+- [x] The response supports synchronized list cards and map pins, shared selection, no-results, and data-error states.
+- [x] Relevant tests, lint, typecheck, and production build pass after backend changes.
