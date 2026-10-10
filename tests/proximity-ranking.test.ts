@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { getFareContext } from "../src/lib/fares/fare-context";
 import { haversineStraightLineMiles, rankRetailersByProximity } from "../src/lib/retailers/proximity-ranking";
 import type { Retailer } from "../src/lib/retailers/retailer-snapshot";
 
@@ -62,15 +61,8 @@ test("invalid coordinates are excluded and an invalid origin fails without echoi
   assert.deepEqual(rankRetailersByProximity(origin, []).retailers, []);
 });
 
-test("mode changes fare context without changing ranking; cost and sample times cannot affect it", () => {
+test("cost and sample times cannot affect proximity ranking", () => {
   const candidates = [retailer("far", 40.8), retailer("near")];
-  const source = { status: "reviewed", sourceUrl: "https://www.mta.info/fares-tolls/subway-bus",
-    reviewedAt: "2026-10-09", serviceClass: "local-bus", currency: "USD", perPaidRideCents: 300 };
-  const walking = { ...rankRetailersByProximity(origin, candidates), fareContext: getFareContext("walking", source) };
-  const bus = { ...rankRetailersByProximity(origin, candidates), fareContext: getFareContext("bus", source) };
-  assert.notDeepEqual(walking.fareContext, bus.fareContext);
-  assert.deepEqual(walking.retailers, bus.retailers);
-  assert.equal(walking.rankingVersion, bus.rankingVersion);
   const withUnsupportedEvidence = candidates.map((item, i) => ({ ...item,
     groceryPriceCents: i * 10000, tripFareCents: i * 10000, sampleBusMinutes: i * 100,
   }));

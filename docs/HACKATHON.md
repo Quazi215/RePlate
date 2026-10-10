@@ -1,6 +1,9 @@
 # RePlate — Hackathon Implementation Plan
 
 **Updated:** October 10, 2026
+**Current scope note, October 10:** The map feature is now a secondary ZIP/radius supermarket lookup alongside the Info homepage. Builder A and Builder B specs describe the integrated flow. Fare comparison, travel-mode controls, and the fictional bus-time demonstration below are historical scope.
+
+**Previous status:** Core scope revised for a card-free implementation. Live routing is removed; the bus travel-time screen is a labeled UI demonstration. Retailer and ZIP-reference audits remain acceptance requirements; product value remains a hypothesis.
 
 **Status:** Info-first frontend implemented; Explore is a fictional sample demonstration. Retailer API implemented separately; frontend/backend integration deferred. Release review and deployed-demo verification remain open.
 

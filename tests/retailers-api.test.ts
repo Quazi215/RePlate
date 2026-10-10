@@ -10,13 +10,13 @@ async function get(search: string): Promise<{ response: Response; body: Record<s
 test("route returns distinct request errors without echoing the supplied ZIP", async () => {
   const cases = [
     ["", 400, "MISSING_QUERY_PARAMETER"],
-    ["?zip=12&mode=walking", 400, "INVALID_ZIP"],
-    ["?zip=10001&mode=cycling", 400, "INVALID_TRAVEL_MODE"],
-    ["?zip=10001&mode=walking&maxStraightLineMiles=0", 400, "INVALID_RADIUS"],
-    ["?zip=10001&zip=10002&mode=walking", 400, "DUPLICATE_QUERY_PARAMETER"],
-    ["?zip=10001&mode=walking&latitude=40.7", 400, "UNKNOWN_QUERY_PARAMETER"],
-    ["?zip=99999&mode=walking", 422, "UNSUPPORTED_ZIP"],
-    [`?zip=10001&mode=walking&maxStraightLineMiles=${"1".repeat(512)}`, 400, "QUERY_TOO_LONG"],
+    ["?zip=12", 400, "INVALID_ZIP"],
+    ["?zip=10001&mode=cycling", 400, "UNKNOWN_QUERY_PARAMETER"],
+    ["?zip=10001&maxStraightLineMiles=0", 400, "INVALID_RADIUS"],
+    ["?zip=10001&zip=10002", 400, "DUPLICATE_QUERY_PARAMETER"],
+    ["?zip=10001&latitude=40.7", 400, "UNKNOWN_QUERY_PARAMETER"],
+    ["?zip=99999", 422, "UNSUPPORTED_ZIP"],
+    [`?zip=10001&maxStraightLineMiles=${"1".repeat(512)}`, 400, "QUERY_TOO_LONG"],
   ] as const;
   for (const [search, status, code] of cases) {
     const { response, body } = await get(search);
@@ -29,23 +29,32 @@ test("route returns distinct request errors without echoing the supplied ZIP", a
 });
 
 test("route composes local data into a bounded, explicitly approximate result", async () => {
-  const { response, body } = await get("?zip=10001&mode=walking&maxStraightLineMiles=0.01");
+  const { response, body } = await get("?zip=10001&maxStraightLineMiles=0.01");
   assert.equal(response.status, 200);
   assert.ok(body.status === "ready" || body.status === "no-results");
   assert.equal(body.maxStraightLineMiles, 0.01);
   assert.equal((body.ranking as Record<string, unknown>).version, "straight-line-haversine-v1");
   assert.match(String((body.ranking as Record<string, unknown>).distanceLabel), /straight-line/i);
-  assert.equal((body.fareContext as Record<string, unknown>).mode, "walking");
-  assert.equal(((body.fareContext as { fare: { amountCents: number } }).fare).amountCents, 0);
+  assert.ok(!("fareContext" in body));
   const candidates = body.retailers as Array<Record<string, unknown>>;
-  assert.ok(candidates.length <= 20);
+  assert.ok(candidates.length <= 5);
   assert.ok(candidates.every((candidate) => candidate.approximate === true));
   assert.ok(candidates.every((candidate) => Number(candidate.straightLineMiles) <= 0.01));
   assert.ok(candidates.every((candidate) => candidate.authorizationStatus === "unverified"));
-  assert.deepEqual(body.unavailable, {
-    routeDistance: null, routeDuration: null, busReachability: null, tripFare: null,
-    groceryCost: null, totalShoppingCost: null, inventory: null,
-  });
   assert.ok(!JSON.stringify(body).includes("sampleBusMinutes"));
   assert.equal(response.headers.get("cache-control"), "private, no-store, max-age=0");
+});
+
+
+test("ZIP-only searches return real candidates for all five boroughs", async () => {
+  for (const zip of ["10001", "11206", "10451", "11375", "10301"]) {
+    const { response, body } = await get(`?zip=${zip}`);
+    assert.equal(response.status, 200);
+    assert.equal(body.status, "ready");
+    const candidates = body.retailers as Array<Record<string, unknown>>;
+    assert.ok(candidates.length > 0 && candidates.length <= 5);
+    assert.ok(candidates.every(candidate => typeof candidate.latitude === "number" && typeof candidate.longitude === "number"));
+    assert.equal((body.origin as { zip: string }).zip, zip);
+    assert.ok(!JSON.stringify(body).includes("sample-"));
+  }
 });

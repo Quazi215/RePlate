@@ -42,7 +42,7 @@ export function haversineStraightLineMiles(origin: Coordinates, destination: Coo
 }
 
 /** Accept only server-resolved origins and audited, unique-ID snapshot candidates.
- * Fare/mode context is composed separately. Radius filtering and caps belong to the endpoint.
+ * Radius filtering and caps belong to the endpoint.
  */
 export function rankRetailersByProximity(origin: Coordinates, candidates: readonly Retailer[]): ProximityRanking {
   if (!hasValidCoordinates(origin)) throw new RangeError("Invalid origin coordinates.");

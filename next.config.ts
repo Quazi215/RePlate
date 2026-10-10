@@ -7,7 +7,6 @@ const nextConfig: NextConfig = {
       "./nyc_snap_supermarkets.csv",
       "./data/location/nyc-zctas.json",
       "./data/location/nyc-boroughs.json.gz",
-      "./data/fares/local-bus.json",
     ],
   },
 };

@@ -38,8 +38,8 @@
 .brandPeriod::after { content: ""; position: absolute; width: 7px; height: 7px; background: var(--tomato); border: 1px solid var(--forest); bottom: 9px; left: 2px; border-radius: 50%; }
 .textButton { margin-left: auto; border: 1px solid var(--forest); border-radius: 6px; padding: 8px 20px; min-height: 44px; background: transparent; }
 .textButton:hover { background: var(--lime); }
-.sampleNotice { padding: 10px 40px; display: flex; align-items: baseline; gap: 18px; background: var(--lime); border-bottom: 1px solid #a7b65d; font-size: .9rem; }
-.sampleNotice strong { flex: none; }
+.evidenceNotice { padding: 10px 40px; display: flex; align-items: baseline; gap: 18px; background: var(--lime); border-bottom: 1px solid #a7b65d; font-size: .9rem; }
+.evidenceNotice strong { flex: 0 1 auto; min-width: 0; max-width: 100%; }
 .shell { max-width: none; margin: 0; padding: 0; }
 .titleStrip { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 24px 40px; }
 .titleStrip p { margin-top: 6px; color: var(--muted); }
@@ -81,6 +81,7 @@
 .resultHeading { border-top: 1px solid var(--border); padding: 18px 22px; }
 .resultHeading h2 { font-size: 1.1rem; }
 .resultHeading > p:not(.help) { font-size: .9rem; margin-top: 6px; }
+.resultsBody { max-height: min(50dvh, 28rem); overflow-y: auto; overscroll-behavior-y: contain; scrollbar-gutter: stable; }
 .storeCard { border-top: 1px solid var(--border); padding: 18px 22px; transition: background-color 150ms; scroll-margin: 20px; }
 .storeCard:hover { background: #eff0df; }
 .cardSelected { background: #eff4d4; box-shadow: inset 4px 0 var(--forest); }
@@ -88,7 +89,7 @@
 .cardTop { display: flex; gap: 10px; align-items: start; }
 .cardTop > div { min-width: 0; }
 .storeNumber { display: inline-grid; place-items: center; border: 1px solid var(--forest); background: var(--forest); color: var(--cream); border-radius: 50%; font-size: .9rem; font-weight: 700; width: 28px; height: 28px; flex: none; margin-top: 3px; }
-.sampleTag { display: inline-block; font-size: .8rem; color: var(--muted); margin-bottom: 4px; }
+.storeTag { display: inline-block; font-size: .8rem; color: var(--muted); margin-bottom: 4px; }
 .selectedLabel { font-size: .75rem; margin-left: auto; font-weight: 700; background: var(--lime); border: 1px solid var(--forest); border-radius: 3px; padding: 3px 5px; flex: none; }
 .address { font-size: .9rem; color: var(--muted); margin-top: 9px !important; }
 .distance { font-size: 1.05rem; font-weight: 700; margin-top: 10px !important; }
@@ -97,8 +98,6 @@
 .cardActions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; }
 .mapAction { min-height: 44px; padding: 8px 10px; color: var(--forest); border: 1px solid var(--forest); background: transparent; border-radius: 4px; font-size: .85rem !important; font-weight: 600; }
 .mapAction:hover { background: var(--lime); }
-.disabledAction { min-height: 44px; border: 0; background: transparent; font-size: .8rem !important; color: var(--muted) !important; padding: 8px 0; }
-.sampleFootnote { font-size: .85rem; padding: 16px 22px; color: var(--muted); border-top: 1px solid var(--border); }
 .assumptions { padding: 12px 22px; border-top: 1px solid var(--border); font-size: .9rem; }
 .assumptions summary { font-weight: 600; min-height: 44px; align-content: center; }
 .assumptions p { margin: 12px 0; }
@@ -140,7 +139,7 @@
 }
 @media (max-width: 899px) {
   .header { padding: 12px 20px; gap: 16px; min-height: 70px; }
-  .sampleNotice { padding: 10px 20px; font-size: .85rem; gap: 6px; flex-wrap: wrap; }
+  .evidenceNotice { padding: 10px 20px; font-size: .85rem; gap: 6px; flex-wrap: wrap; }
   .titleStrip { padding: 16px 20px; }
   .titleStrip p { font-size: .9rem; }
   .areaTag { display: none; }
@@ -162,6 +161,7 @@
   .mapStage { order: 1; position: relative; top: auto; margin: 0; width: 100%; height: auto; min-height: 520px; flex: none; }
   .resultHeading { padding: 14px 20px; border-top: 0; }
   .mapView .resultsBody, .mapView .assumptions { display: none; }
+  .mapView .searchFeedback { display: block; }
   .listView .mapStage { display: none; }
   .mapCaption { top: 16px; left: 16px; right: 16px; width: fit-content; max-width: calc(100% - 32px); }
   .mapCaption > span:last-child { font-size: .75rem; }
@@ -186,14 +186,14 @@
 }
 @media (max-width: 380px) {
   .header { gap: 10px; padding: 12px 16px; flex-wrap: wrap; }
-  .sampleNotice { padding-inline: 16px; }
+  .evidenceNotice { padding-inline: 16px; }
   .titleStrip { padding: 16px; }
   .searchForm { padding-inline: 16px; grid-template-columns: 1fr; }
   .searchForm > .primary { grid-column: 1; grid-row: auto; margin-top: 0; }
   .selectedSummary { margin-right: 62px; margin-left: 12px; padding: 12px; }
   .selectedSummary .distance span { display: block; }
   .selectedLabel { display: none; }
-  .cardSelected .sampleTag::after { content: " · Selected"; font-weight: 700; }
+  .cardSelected .storeTag::after { content: " · Selected"; font-weight: 700; }
 }
 @media (prefers-reduced-motion: reduce) {
   .site *, .site *::before, .site *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }

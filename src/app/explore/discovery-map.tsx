@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import type { Map as LeafletMap, Marker, LayerGroup } from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { hasLocation, type Store } from "./sample-discovery";
+import { hasLocation, type Store } from "./discovery";
 import styles from "../site.module.css";
 
 type Props = {
@@ -31,7 +31,9 @@ export default function DiscoveryMap({ stores, selectedId, hoveredId, select, ho
     import("leaflet").then(L => {
       if (cancelled || !container.current) return;
       leafletRef.current = L;
-      const map = L.map(container.current, { zoomControl: false, scrollWheelZoom: false, keyboard: false })
+      const map = L.map(container.current, {
+        zoomControl: false, scrollWheelZoom: true, touchZoom: true, bounceAtZoomLimits: false, keyboard: false,
+      })
         .setView([40.705, -73.947], 14);
       mapRef.current = map;
       L.control.zoom({ position: "bottomright" }).addTo(map);
@@ -71,12 +73,12 @@ export default function DiscoveryMap({ stores, selectedId, hoveredId, select, ho
       if (!hasLocation(store) || !store.location) return;
       const marker = L.marker([store.location.latitude, store.location.longitude], {
         icon: L.divIcon({ className: styles.pin, html: `<span>${index + 1}</span>`, iconSize: [44, 48], iconAnchor: [22, 48] }),
-        title: `Sample store ${index + 1}: ${store.name}. Illustrative location.`,
+        title: `Store ${index + 1}: ${store.name}. SNAP authorization unverified.`,
         keyboard: true,
       }).addTo(group);
       const element = marker.getElement();
       element?.setAttribute("role", "button");
-      element?.setAttribute("aria-label", `Show sample store ${index + 1} on map`);
+      element?.setAttribute("aria-label", `Show store ${index + 1} on map`);
       element?.setAttribute("aria-pressed", "false");
       marker.on("click", () => select(store.id));
       marker.on("mouseover", () => hover(store.id));
@@ -93,7 +95,7 @@ export default function DiscoveryMap({ stores, selectedId, hoveredId, select, ho
       const name = document.createElement("strong");
       name.textContent = store.name;
       const detail = document.createElement("span");
-      detail.textContent = `Sample store · ${store.miles.toFixed(2)} mi straight-line`;
+      detail.textContent = `${store.miles.toFixed(2)} mi straight-line · SNAP not verified`;
       label.append(name, detail);
       marker.bindTooltip(label, { permanent: true, direction: "right", offset: [14, -26], className: styles.mapCallout });
       pins.set(store.id, marker);
@@ -122,7 +124,7 @@ export default function DiscoveryMap({ stores, selectedId, hoveredId, select, ho
   }, [selectedId, hoveredId, ready, stores, width]);
 
   return <>
-    <div ref={container} className={styles.mapCanvas} role="region" aria-label="Illustrative sample-store map" />
+    <div ref={container} className={styles.mapCanvas} role="region" aria-label="Nearby retailer map" />
     {!ready || !tilesLoaded ? <p className={styles.mapLoading} role="status">Loading map. The list is ready to use.</p> : null}
   </>;
 }
