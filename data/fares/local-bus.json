@@ -1,0 +1,8 @@
+{
+  "status": "reviewed",
+  "sourceUrl": "https://www.mta.info/fares-tolls/subway-bus",
+  "reviewedAt": "2026-10-09",
+  "serviceClass": "local-bus",
+  "currency": "USD",
+  "perPaidRideCents": 300
+}
