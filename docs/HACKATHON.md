@@ -1,6 +1,6 @@
 # RePlate — Hackathon Implementation Plan
 
-**Status:** Final scope review complete; ready to implement with the defaults below. Live data/provider checks remain acceptance requirements; product value remains a hypothesis.
+**Status:** Core scope revised for a card-free implementation. Live routing is removed; the bus travel-time screen is a labeled UI demonstration. Retailer and ZIP-reference audits remain acceptance requirements; product value remains a hypothesis.
 
 **Updated:** October 9, 2026
 
@@ -10,7 +10,7 @@
 
 **Purpose:** One working document combining product specification, technical specification, and execution plan. Keep setup instructions in `README.md`.
 
-> Working thesis: RePlate helps SNAP recipients in NYC compare shopping destinations through distance, estimated travel costs, and explicit tradeoffs. Minimizing total spending is the objective; without store-level grocery prices, the MVP cannot determine the cheapest overall shopping trip.
+> Working thesis: RePlate helps SNAP recipients in NYC compare shopping destinations through approximate straight-line distance and transparent fare assumptions. Minimizing total spending is the objective; without store-level grocery prices or verified routes, the MVP cannot determine the cheapest or most practical overall shopping trip.
 
 ## 1. Product specification
 
@@ -20,7 +20,7 @@
 - **Problem/domain:** Food affordability and practical grocery access.
 - **Primary audience:** Existing SNAP recipients shopping in NYC's five boroughs.
 - **Problem statement — hypothesis:** Comparing grocery and transportation costs takes effort under tight financial constraints. The team prioritizes minimizing spending; user benefit remains to be validated.
-- **Solution statement — proposal:** Use ZIP code, travel mode, and optional maximum distance to compare NYC SNAP-authorized retailers, explain estimated travel costs and unknown grocery prices, and provide directions.
+- **Solution statement — proposal:** Use a supported NYC ZIP code, travel mode, and optional straight-line radius to compare retailer candidates, show general travel-fare assumptions and unknown grocery prices, and open external directions.
 
 **Pivot rationale:** Following the team's novelty evaluation and answers in §4.2, we lacked sufficient evidence to justify another eligibility/application navigator alongside existing official tools and general-purpose assistants. Eligibility screening, reapplication assistance, and benefits recovery are removed from the core MVP. This does not establish that SNAP accessibility problems do not exist. The new grocery-planning direction also needs validation; the pivot is a scope decision, not proof of demand.
 
@@ -28,10 +28,10 @@
 
 After the core flow, a user should be able to answer:
 
-1. Which NYC SNAP-authorized retailers are near my starting location?
-2. What is the estimated travel cost, and what assumptions does it use?
-3. Which SNAP-authorized shopping options are practical for my transport mode?
-4. Why is an option recommended, what information is missing, and how do I get there?
+1. Which reviewed retailer candidates are approximately near my starting ZIP code?
+2. What walking or local-bus fare assumptions might matter, and what costs remain unknown?
+3. What is the proximity ordering, and how do I open directions to check an actual route?
+4. What retailer authorization, route, inventory, and grocery-price evidence is missing?
 
 Reduce decision effort without judging existing food choices. Respect familiar stores and reasons for traveling farther. Meal suggestions are stretch; nutritional adequacy and full-week food sufficiency are outside scope. SNAP authorization does not establish inventory, affordability, or fresh-food selection. Users must confirm stock with the store. A retailer map is not immediate food relief for someone without active benefits.
 
@@ -42,12 +42,12 @@ Reduce decision effort without judging existing food choices. Respect familiar s
 | Existing option | Relevant alternative | RePlate hypothesis to test |
 | --- | --- | --- |
 | General-purpose assistant such as ChatGPT | Meal suggestions, lists, explanations, store searches, and voice interaction | Structured onboarding and one connected workflow may require less prompting and correction |
-| USDA retailer locator [S7] | Authorized-retailer discovery | Connect retailer evidence to travel estimates and supported comparisons |
+| USDA retailer locator [S7] | Authorized-retailer discovery | Connect audited retailer evidence to approximate distance and honest limits |
 | Household's existing shopping routine | Familiar prices, selection, routes, and preferences | Offer useful alternatives without assuming the current routine is inefficient |
 
-**Proposed differentiation:** Structured personalization, integrated planning and navigation, verified domain data, and explainable recommendations. Targeted branding may support trust and usability; it is not a technical moat. These advantages remain hypotheses until observed.
+**Proposed differentiation:** Structured inputs, an understandable proximity list, directions handoff, and clear uncertainty. Targeted branding may support trust and usability; it is not a technical moat. These advantages remain hypotheses until observed.
 
-**Demo proof:** Change the travel mode or maximum distance and show updated retailer candidates and travel estimates. Show the comparison's evidence, assumptions, and missing grocery prices. For the same candidates, cost assumptions, and ranking version, ordering must be reproducible.
+**Demo proof:** Change the straight-line radius and show updated retailer candidates. Change travel mode and show the different fare context without changing proximity ordering or claiming route availability. Show missing grocery prices and route times. David may separately demonstrate a fictional bus travel-time UI; it must be visibly labeled as sample data and excluded from live results and ranking.
 
 **Later validation:** Test whether RePlate improves on a well-prompted ChatGPT session, reduces time to a usable shopping plan, and makes cost uncertainty understandable. These questions do not block implementation.
 
@@ -55,29 +55,31 @@ Reduce decision effort without judging existing food choices. Respect familiar s
 
 | Priority | Feature | Acceptance condition |
 | --- | --- | --- |
-| P0 | Location and travel inputs | NYC ZIP code, walking/bus mode, optional maximum distance; invalid or outside-NYC locations receive warnings |
-| P0 | Travel cost transparency | Walking: $0 fare; bus: sourced fare assumptions; unknown grocery costs remain unknown |
-| P0 | SNAP-authorized retailer discovery | Audited data, store names/locations, authorization source/date, explicit no-results and error states |
-| P0 | Distance comparison and navigation | HERE walking/bus route evidence where available; Haversine proximity labeled as straight-line; usable directions links |
-| P0 | Explainable recommendations | Use only supported criteria; identify unavailable affordability, selection, or inventory dimensions |
+| P0 | Location and travel inputs | Supported NYC ZIP code, walking/bus mode, optional straight-line radius; invalid and unsupported inputs receive distinct warnings; claim outside coverage only with evidence |
+| P0 | Fare transparency | Walking: $0 fare; local-bus fare shown only as a general sourced example; grocery and trip-specific fares remain unknown |
+| P0 | Retailer discovery | Audited data, store names/locations, authorization source/date when verified, explicit no-results and data-error states |
+| P0 | Proximity comparison and navigation | Haversine distance labeled as straight-line; at most 20 candidates; usable external directions links |
+| P0 | Explainable ordering | Sort by straight-line distance then stable ID; identify unavailable route, affordability, selection, and inventory evidence |
 | P1 | Conversational assistance | Bounded help about displayed comparisons, with the same data limitations |
 | P2 | Meal suggestions / grocery checklist | Stretch only; no nutritional-adequacy or full-week guarantees |
 | P2 | Verified basket comparison / inventory | Only after accessible, sufficiently fresh store-specific data is demonstrated |
-| P2 | ElevenLabs voice / advanced optimization | Useful audio or richer routing without delaying the core journey |
+| P2 | ElevenLabs voice / verified routing | Add only if later access and evidence justify it; neither delays the core journey |
 
-Walking and bus have distinct cost assumptions. Travel mode is user-selected; do not silently switch it based on proximity. Haversine cannot establish that a store has a usable walking or bus route; use HERE for route evidence. Universal store-level grocery pricing is unavailable to this MVP; comparisons must not imply the cheapest basket or total shopping trip.
+Walking and bus have distinct fare contexts. Travel mode is user-selected; it does not establish route availability and does not change proximity ranking. Haversine cannot establish walking or bus route distance, time, or feasibility. Universal store-level grocery pricing is unavailable to this MVP; comparisons must not imply the cheapest basket or total shopping trip.
 
 **Out of scope:** Driving and vehicle-cost calculations, eligibility screening, reapplication/recovery guidance, application submission, benefit prediction, accounts, uploaded documents, OCR, medical diets, saved profiles, live agency integration, and guaranteed prices or inventory. A smaller reliable experience is preferable to fabricated completeness.
 
 ### 1.5 User flow
 
-**NYC location + travel mode + optional distance → SNAP retailers → Travel cost comparison → Navigation**
+**Supported NYC ZIP code + travel mode + optional straight-line radius → retailer candidates → proximity and fare context → external directions**
 
-1. **Locate:** Ask ZIP code, walking/bus mode, and optional maximum distance. Resolve the location with HERE and check NYC coverage. Warn and stop the search for invalid or outside-NYC input. If address entry is supported, apply the same validation; an exact home address is not required.
-2. **Find retailers:** Select bounded NYC candidates using straight-line proximity, then obtain HERE walking/bus routes. Apply the user's distance limit to routed distance, not Haversine proximity (§2.2). Label ZIP-centroid approximation and distinguish proximity from route distance. Keep unverified routes separate from matches confirmed within the limit.
-3. **Estimate travel:** Show $0 fare for walking or an assumed bus fare total. Explain unavailable route/fare information rather than inventing it.
-4. **Compare:** Explain supported ordering and omissions. Grocery prices and stock are unknown; this is a travel comparison, not proof of lowest total spending.
-5. **Act:** Provide directions links and a readable retailer list. Warn separately when no stores match or data/services fail.
+1. **Locate:** Ask ZIP code, walking/bus mode, and optional maximum straight-line radius. Resolve the starting point from a reviewed local NYC ZCTA reference [S12]. Reject malformed input; call a five-digit code absent from that reference unsupported. Claim outside-NYC coverage only if a separate reviewed reference establishes it. An exact home address is not required.
+2. **Find retailers:** Select at most 20 valid NYC candidates using Haversine distance from the reference's internal point. Apply the optional radius to straight-line proximity only. Label the approximation, candidate cap, and data provenance; do not call it routed distance.
+3. **Explain fares:** Show $0 walking fare or a clearly generic local-bus fare example [S11]. No store-specific bus service, trip cost, route time, transfers, or return journey is verified.
+4. **Compare:** Explain distance ordering and omissions. Grocery prices, stock, and actual travel burden are unknown; proximity is not proof of lowest spending or easiest trip.
+5. **Act:** Provide external directions links and a readable retailer list. Warn separately when no stores match or location/retailer data is unavailable. Directions must be checked in the external service.
+
+**Bus-time UI demonstration:** David may add a separate sample screen showing how a bus travel-time comparison could look. Use fictional, deterministic examples with a visible “Demo only — sample bus times, not live routes” label adjacent to every time and in the screen heading. Keep sample times out of live retailer cards, API responses, rankings, cost totals, and submission claims about implemented routing.
 
 Use short screens, familiar language, keyboard-accessible controls, readable mobile layouts, and text labels for all states. Preserve answers when stepping backward; provide a clear reset action. Avoid stigmatizing language about users' current meals.
 
@@ -101,7 +103,7 @@ The event page lists the following categories and sponsor descriptions; fit asse
 | Best Use of ElevenLabs | Stretch | Working spoken grocery recommendations or meal summaries; text remains usable |
 | Best Financial Hack | Possible secondary fit | Budget constraints and honest expense estimates; confirm organizers' expectations |
 
-Gemini may explain supplied comparison results; meal suggestions are stretch. Application logic owns arithmetic and ordering; structured sources own retailer facts and routes. Gemini and ElevenLabs are optional enhancements. Do not force Solana, Presage, Tiger Data, or Snowflake into the product. Recheck event/sponsor instructions and organizer updates before selecting categories.
+Gemini may explain supplied comparison results; meal suggestions are stretch. Application logic owns arithmetic and ordering; reviewed sources own retailer and ZIP/ZCTA facts. Gemini and ElevenLabs are optional enhancements. Do not force Solana, Presage, Tiger Data, or Snowflake into the product. Recheck event/sponsor instructions and organizer updates before selecting categories.
 
 ## 2. Technical specification
 
@@ -114,41 +116,42 @@ Gemini may explain supplied comparison results; meal suggestions are stretch. Ap
 | Optional assistance | Gemini server-side | Explain supplied results; meal suggestions remain stretch |
 | Cost and ranking logic | Small TypeScript functions | Inspectable arithmetic and repeatable evidence-based comparisons |
 | Retailer data | Validated static snapshot, server-side | Avoid database provisioning for read-only data |
-| Distance | Haversine | Straight-line proximity only; team reports existing implementation |
-| Geocoding / walking and bus routes | HERE API | Selected provider; confirm credentials, service access, NYC coverage, quotas, and bus-only route support before claiming working integration |
+| ZIP/ZCTA lookup | Reviewed local extract of NYC Open Data ZCTAs [S12] | Card-free, server-side internal points; ZCTAs approximate USPS ZIP areas and do not cover every ZIP |
+| Distance | Haversine | Straight-line proximity only; implement and label it as an approximation |
+| Walking and bus routes | None in core | No routing API key or payment card; external directions are a handoff, not app route evidence |
 | Map display | Existing Leaflet/OpenStreetMap proposal, optional | Display alone does not supply travel times or routing; keep attribution |
 | Database | None initially | No accounts or persisted household profiles |
 
-These are implementation proposals, not claims of working capabilities. A separate backend, vector database, or multi-agent infrastructure needs a concrete justification. Verify library/provider documentation during implementation.
+These are implementation proposals, not claims of working capabilities. A separate backend, vector database, or multi-agent infrastructure needs a concrete justification. Review the ZCTA extract and retailer provenance before the app makes location or authorization claims.
 
 ### 2.2 Architecture and trust boundary
 
-- Browser collects ZIP code, travel mode, and optional maximum distance; progress stays in memory.
-- Server validates bounds, resolves the location with HERE Geocoding and Search, and confirms it is in NYC. Invalid input receives a correction warning; outside-NYC input receives a coverage warning. Service failure is a separate error, not proof that an address is invalid.
-- Resolve retailer facts on the server and restrict results to NYC. Missing/invalid records receive defensive handling even though the team reports complete dataset fields.
-- Haversine supplies approximate proximity, not route distance, feasibility, or travel time. Use HERE route responses for walking/bus evidence; a directions link is not route evidence.
-- Application logic calculates travel estimates from explicit assumptions. Grocery prices remain unknown; do not add unknown grocery costs as zero to a shopping total.
-- Rank only on comparable supported travel evidence; return assumptions, sources, omitted costs, and rationale. Optional Gemini explanations cannot invent facts or change ordering.
+- Browser collects ZIP/ZCTA, travel mode, and optional straight-line radius; progress stays in memory.
+- Server validates bounds and looks up the ZIP/ZCTA in a reviewed local NYC reference. Use its internal point as an approximate start. An unsupported code is not automatically outside NYC; distinguish malformed, known outside coverage, and absent-reference states.
+- Resolve retailer facts on the server and restrict results to NYC. Missing/invalid records receive defensive handling; the current CSV lacks authorization source/date columns.
+- Haversine supplies approximate proximity, not route distance, feasibility, or travel time. An external directions link is a handoff, not app route evidence.
+- Application logic shows walking $0 fare and a sourced generic local-bus fare example. It does not calculate a store-specific trip fare or add unknown grocery costs as zero.
+- Rank only by supported straight-line distance and stable ID; return source, omissions, and rationale. Optional Gemini explanations cannot invent facts or change ordering.
 
-**Travel cost basis:** Walking has $0 fare cost. MTA local buses cost $3 per paid ride; a baseline round trip with two separately paid local-bus rides is $6 [S11]. Express buses cost $7.25 per paid ride. Reduced fares, eligible transfers, and fare caps can change actual charges; label the baseline rather than promise an exact fare. Bus mode alone does not establish a usable route.
+**Fare context:** Walking has $0 fare cost. The previously checked MTA local-bus baseline was $3 per paid ride; two separately paid rides would be $6 [S11]. Recheck the fare source before displaying those amounts. Reduced fares, transfers, caps, service class, and actual route availability can change what a person pays. This is a general example, not a per-store trip estimate or proof that any retailer is bus reachable.
 
-**HERE integration:** Use Geocoding and Search for location resolution and Routing API pedestrian mode for walking. The final answers specify Public Transit API v8 with `modes=bus` for scheduled bus journeys; validate the exact request against current provider documentation during integration. This review did not independently confirm that filter or live NYC coverage. Do not use road routing for a bus vehicle as evidence of a scheduled public bus journey. Keep NYC coverage checks in application logic; a geocoding match alone does not establish in-scope coverage.
+**Location reference:** Use a checked-in extract of the NYC Open Data ZIP Code Tabulation Areas dataset [S12], with ZIP/ZCTA, internal latitude/longitude, source URL, and extract date. Its internal point is inside the ZCTA polygon; its center point may not be. A ZCTA is a Census approximation of a USPS ZIP area, so warn when a valid five-digit ZIP has no reference row rather than claiming it is outside NYC. Do not derive ZIP centroids from retailer locations.
 
-**Bus reachability:** Mark a retailer bus reachable only when HERE returns a valid itinerary for the displayed departure time with at least one public bus section, only bus motorized transit sections, and available walking segments, transfers, and total duration. Apply any configured walking/transfer constraints before that label. MVP default: add no separate walking-distance or transfer limits; display those burdens for the shopper to judge. A nearby bus stop is insufficient evidence. Outbound reachability does not verify a return journey; the round-trip fare remains an assumption. Use sourced MTA fare assumptions, not an assumed HERE fare calculation. Unknown bus service/fare classification must not receive the local-bus estimate.
+**Route availability:** The core app has no walking or transit route evidence. Do not mark a retailer “walking reachable,” “bus reachable,” or within a routed-distance limit. Do not show app-generated travel duration, transfer count, or walking segment distance. David's fictional bus-time UI demonstration is separate and visibly labeled as sample data. Opening external directions does not verify a route inside RePlate.
 
-**Distance defaults — implementation choices where final answers are silent:** Display miles; accept a positive maximum of 25 miles. The optional limit applies to the returned one-way itinerary's total routed distance, including walking and bus sections. Show total walking distance separately for bus comparisons. Convert provider meters consistently. When omitted, apply no user distance cutoff within NYC. Select at most the nearest 20 valid NYC retailers by Haversine distance, then stable retailer ID, for routing; when a limit is supplied, use it as a straight-line prefilter before routing. Disclose the candidate cap and that results are not exhaustive. Missing route distance cannot confirm a match within the limit; show it separately as unverified. These bounded defaults can be tuned during implementation without reopening product scope.
+**Distance defaults:** Display miles; accept a positive optional straight-line radius of at most 25 miles. When omitted, apply no user radius within NYC. Select at most the nearest 20 valid NYC retailers by Haversine distance, then stable retailer ID. Disclose the candidate cap and that results are not exhaustive. The radius is approximate geographic proximity, not a travel limit. These bounded defaults can be tuned during implementation without reopening product scope.
 
-**Ranking policy:** Remove the earlier 35/30/20/15 weighted score. For candidates meeting the selected constraints, order by lower estimated travel fare, shorter one-way journey duration, shorter routed distance (total walking distance in bus mode), then stable retailer ID. At each numeric comparison, available values precede missing values; ties continue to the next criterion. Candidates lacking travel fare follow those with estimates and are labeled incomplete. Unverified routes remain in a separate fallback list, not among confirmed reachable matches. Grocery prices, inventory, and nutritious selection never contribute scores. This ranks estimated travel expense, not total shopping cost; flat fares do not establish grocery savings.
+**Ordering policy:** Remove the earlier fare → duration → routed-distance ranking because none of those values is available per retailer. Order candidates by lower Haversine distance, then stable retailer ID; identical inputs and ranking version must reproduce the order. Travel mode does not reorder the list. Grocery prices, fares, inventory, and selection never contribute scores. Label this a proximity ordering, not a recommendation for lowest spending or travel burden.
 
-**Defensive behavior:** Exclude invalid coordinates from routing and log a data-quality issue without household inputs. Retain records missing optional metadata only when identity, location, and authorization evidence remain safe to use; label omissions. No route means unverified, not definitively inaccessible. On HERE 401/403, disable the affected integration and report a configuration error; on 429, back off within bounded retries and show limited results. On timeout/5xx, use valid cached data only if already available, with its timestamp; otherwise show the service error and proximity/navigation fallback. A cache is not a new MVP requirement. Keep these states distinct from invalid/outside-NYC input and genuine no-results responses.
+**Defensive behavior:** Exclude invalid coordinates and duplicate/unsafe retailer records; report data-quality issues without household inputs. Retain records missing optional metadata only when identity and location remain safe to use, and label omissions. Do not infer authorization from the CSV filename. Distinguish invalid ZIP, unsupported ZCTA, missing/corrupt reference data, unvalidated retailer data, and genuine no-results; identify outside coverage only when verified. If a source is unavailable, show the official retailer locator as a disclosed fallback rather than inventing stores or routes.
 
 ### 2.3 Minimal data model
 
 | Object | Minimal information | Persistence |
 | --- | --- | --- |
-| SearchInput | NYC ZIP code, walking/bus mode, optional maximum distance | Request/browser memory |
-| Retailer | ID, name, address, coordinates, type, authorization evidence/date, provenance | Validated snapshot |
-| StoreRecommendation | Retailer ID, straight-line distance, optional HERE route distance/time/mode/source, estimated fare or unknown, fare assumptions/source/date, omissions, rationale, ranking version | Request/browser memory |
+| SearchInput | NYC ZIP/ZCTA, walking/bus mode, optional straight-line radius | Request/browser memory |
+| Retailer | ID, name, address, coordinates, type, verified authorization evidence/date if available, provenance | Validated snapshot |
+| StoreComparison | Retailer ID, approximate straight-line distance, fare context, missing route/grocery evidence, ordering rationale/version | Request/browser memory |
 
 No persistence beyond reviewed static data is needed. Unknown prices and item availability remain unknown, not zero or false. Keep monetary arithmetic deterministic and avoid incompatible unit conversions.
 
@@ -158,10 +161,11 @@ These contracts replace the obsolete recovery assessment/explanation endpoints; 
 
 | Endpoint | Input | Output / failure behavior |
 | --- | --- | --- |
-| `GET /api/retailers` | NYC location, optional maximum distance in miles | Up to 20 proximity candidates under §2.2, authorization source/date, approximate distances, truncation notice; this prefilter does not confirm the routed limit |
-| `POST /api/recommendations` | NYC starting location, walking/bus mode, up to 20 retailer IDs, optional maximum distance in miles | HERE route evidence, matches confirmed within the routed limit, separate unverified candidates, fare estimates/comparison, displayed departure time, assumptions and omissions; missing routes/fares and service errors explicit |
+| `GET /api/retailers` | Supported NYC ZIP/ZCTA, walking/bus mode, optional `maxStraightLineMiles` | Up to 20 proximity-ordered candidates, verified authorization evidence when available, approximate distances, generic fare context, source/truncation notices, and explicit data errors; no route or bus-time sample |
 
-Keep keys server-side. Cap input sizes, model output, route calls, and results. Resolve retailer facts and any price references on the server; do not trust client-supplied prices, coordinates for retailer IDs, or authorization claims. Prevent arbitrary URL fetching. Coordinates must be finite and valid. ZIP-centroid distances are approximate; only HERE route results can be shown as routed walking/bus distance/time. Reject unsupported travel modes.
+The earlier proposed `POST /api/recommendations` endpoint is retired. There is no store-specific route, fare, or duration to compute, so a second comparison endpoint would add complexity without evidence.
+
+Cap input sizes, model output, and results. Resolve retailer facts on the server; do not trust client-supplied prices, coordinates for retailer IDs, or authorization claims. Prevent arbitrary URL fetching. Coordinates must be finite and valid. ZIP/ZCTA-point distances are approximate. Reject unsupported travel modes. No routing key or payment card is required for the core flow.
 
 ### 2.5 Evidence and data readiness
 
@@ -169,17 +173,18 @@ Keep keys server-side. Cap input sizes, model output, route calls, and results. 
 | --- | --- | --- |
 | Retailer snapshot | Locate file; inspect provenance, date, geography, duplicates, coordinates, authorization status | Do not claim current authorization from historical records; use official locator as a disclosed reduced fallback |
 | Grocery prices | Universal store-level coverage is unavailable to this MVP | Show unknown grocery costs; no cheapest-basket or total-shopping-cost claim |
-| Travel cost basis | Current MTA fares and applicable fare assumptions; walking fare is $0 | Label assumptions; unavailable bus fare details remain unknown |
+| Fare context | Recheck current MTA local-bus fare; walking fare is $0 | Label generic assumptions; trip-specific fare and service class remain unknown |
 | Inventory / nutritious selection | Outside core scope; no verified store/item evidence | Omit scores and guarantees; shopper confirms stock |
-| Geocoding / routes | HERE access, NYC location validation, pedestrian and bus-only route coverage, quotas, errors | Distinguish invalid/outside-NYC input from service failure; retain labeled proximity/navigation fallback |
+| ZIP/ZCTA reference | Audit NYC Open Data extract [S12], internal points, geography, and unsupported ZIP behavior | Do not infer location from retailer ZIPs or label unsupported codes outside NYC |
+| Routes and travel times | No routing integration in core | Keep route/time fields unavailable; external directions and fictional UI demo must be clearly identified |
 
-The approximately 8,600 retailer records remain a team-reported count, not an audited asset. Validate whether the dataset represents current or historical authorization before relying on it [S7]. Do not infer produce availability, opening hours, or accessibility. Prices and inventory are separate acquisition problems; no provider or availability is assumed here.
+The checked-in `nyc_snap_supermarkets.csv` has 1,250 data lines by file line count, but this is not an audited count of valid retailers; it has no authorization source/date columns. The earlier approximately 8,600 figure was a team report about a different or broader asset and must not describe this file. Validate whether the snapshot represents current or historical authorization before relying on it [S7]. Do not infer produce availability, opening hours, or accessibility. Prices and inventory are separate acquisition problems.
 
 ### 2.6 Privacy and reliability
 
 Collect only location and travel facts needed by the supported flow. ZIP code is sufficient for approximate search; do not require an exact home address. Do not request names, SSNs, case IDs, diagnoses, income documents, credentials, or proof of SNAP enrollment. Location can still be sensitive; avoid logging request bodies or sending them to analytics.
 
-Keep progress in memory; use fictional people in demos. No uploads or saved profiles. Send each provider only necessary context and disclose external processing; do not claim anonymity merely because no name is requested.
+Keep progress in memory; use fictional people in demos. No uploads or saved profiles. External directions receive the destination and may receive location context when opened; disclose that handoff. Do not log household request bodies or claim anonymity merely because no name is requested.
 
 ## 3. Execution plan
 
@@ -189,19 +194,19 @@ Proceed with the existing proposed assignments below. The final answers did not 
 
 | Workstream | Proposed owner | Deliverable |
 | --- | --- | --- |
-| Location validation, retailer API, travel-cost/ranking logic | Builder A — Quazi | Honest estimates, defensive handling, stable contracts |
-| Location/travel inputs, retailer comparison, navigation | Builder B — David | Complete mobile journey with uncertainty/error states |
-| Retailer/route audit, user checks, deployment, pitch | Both | Trustworthy demo and submission |
+| ZIP/ZCTA validation, retailer API, fare context/proximity ordering | Builder A — Quazi | Honest approximations, defensive handling, stable contracts |
+| Location/travel inputs, retailer comparison, navigation, fictional bus-time UI demo | Builder B — David | Complete mobile journey and visibly separated sample screen |
+| Retailer/ZCTA audit, user checks, deployment, pitch | Both | Trustworthy demo and submission |
 
 **Deadline:** Devpost lists **Sunday, October 11, 2026, 10:00 a.m. EDT** [S8]. Keep the earlier deadline rather than the previous noon assumption; reconcile organizer updates.
 
 | Milestone | Target, America/New_York | Completion evidence |
 | --- | --- | --- |
-| Integration readiness checks | First 60 minutes after coding begins | Use documented assignments/defaults; audit retailer data and test HERE access, NYC validation, and bus-only responses |
+| Integration readiness checks | First 60 minutes after coding begins | Audit retailer and ZCTA data; confirm supported ZIPs and interface contract |
 | First deployment and integration | Friday evening | Location/travel inputs reach server-resolved NYC retailers |
-| Core journey complete | Friday 11 p.m. | Location → retailers → travel comparison → navigation works |
-| Travel-cost integration | Saturday morning | HERE walking/bus route evidence and sourced bus assumptions; missing routes and unknown fares explicit |
-| Ranking and user comparison | Saturday afternoon | Supported criteria explained; test against general-purpose workflow |
+| Core journey complete | Friday 11 p.m. | ZIP/ZCTA → retailers → proximity/fare context → external directions works |
+| Fare and demo integration | Saturday morning | Sourced fare example and separate, prominently labeled fictional bus-time UI |
+| Ordering and user comparison | Saturday afternoon | Proximity criteria and unavailable routes explained; test against general-purpose workflow |
 | Feature freeze and rehearsal | Saturday 9 p.m. | Fix blocking defects; no new scope |
 | Final verification and code freeze | Sunday 8:30 a.m. | Deployed demo and submitted repository agree |
 | Internal submission target | Sunday 9 a.m. | Submission complete with a one-hour buffer |
@@ -210,53 +215,55 @@ Plan roughly six hours of sleep each night. Reduce scope at checkpoints instead 
 
 ### 3.2 Cut policy and fallbacks
 
-Cut in this order: meal suggestions → voice → conversational assistance → advanced optimization → map rendering. Preserve NYC validation, retailer discovery, supported travel estimates/comparison, navigation links, and explanations. Verified grocery-price comparisons are stretch; inventory guarantees are outside scope. If essential data fails, label the reduced demonstration and unmet condition.
+Cut in this order: meal suggestions → voice → conversational assistance → map rendering → fictional bus-time UI demonstration. Preserve supported ZIP/ZCTA lookup, audited retailer discovery, approximate proximity, fare context, navigation links, and explanations. Verified grocery-price comparisons are stretch; inventory guarantees are outside scope. If essential data fails, label the reduced demonstration and unmet condition.
 
 | Blocker | Response |
 | --- | --- |
 | Grocery prices unavailable | Expected limitation; show unknown and do not claim cheapest store or total spending |
-| Invalid / outside-NYC location | Show correction / NYC-coverage warning and stop search; preserve inputs |
-| Location service fails | Show service error and retry; do not call the input invalid |
-| No stores match | Explain no results and allow changing the distance limit |
+| Malformed / known outside-NYC code | Show correction / NYC-coverage warning and stop search; preserve inputs |
+| Five-digit ZIP absent from ZCTA reference | Say unsupported by this lookup; do not assert that it is outside NYC |
+| Local ZIP/ZCTA reference missing or corrupt | Show data error and retry/fallback; do not call the input invalid |
+| No stores match | Explain no results and allow changing the straight-line radius |
 | Inventory/selection unavailable | Omit those dimensions; disclose ingredients are not confirmed in stock |
-| HERE walking/bus route unavailable | Show missing route evidence with labeled Haversine proximity and directions links; do not imply a usable route |
+| Walking/bus route unavailable | Expected core limitation; show labeled Haversine proximity and external directions without implying a usable route |
 | Gemini unavailable/unreliable | Core comparison stays usable; optional explanation unavailable |
-| Routes or map fail | Plain retailer list/navigation links; missing route distance/time remains missing |
+| Map or directions handoff fails | Plain retailer list and destination address; route distance/time remains unavailable |
 | Retailer data unvalidated | Official locator link; custom ranking remains unmet |
 | Database work delays integration | Keep reviewed static data and in-memory progress |
 | Deployment fails near cutoff | Fix deployed core first; labeled recording is a backup, not a substitute for required live judging |
 
 ### 3.3 Verification that matters
 
-- [ ] Invalid NYC input, valid locations in all five boroughs, and outside-NYC input produce the correct result/warning; service failures are distinct.
-- [ ] Travel mode and distance limits follow §2.2; miles/meters conversion, routed filtering, omitted-limit behavior, 20-candidate truncation, and unverified-route separation are checked.
-- [ ] Walking shows $0 fare; bus assumptions use sourced fares and correct arithmetic; unsupported modes are rejected.
-- [ ] Unknown grocery prices and missing bus fares never become zero or a complete shopping total; inventory remains unverified.
-- [ ] Retailer provenance, authorization dates, geography, duplicates, coordinates, limits, and no-results behavior are checked.
-- [ ] HERE route mode/source is visible; bus results do not silently include subway journeys; straight-line distance never becomes route distance/time; partial failures are explicit.
-- [ ] Fixed ranking inputs reproduce fare → duration → distance/walking distance → ID ordering; available metrics precede missing metrics and unverified routes stay separate.
+- [ ] Malformed, supported NYC, unsupported five-digit ZIP, and local-reference failure states are distinct; supported samples cover all five boroughs. An outside-NYC label appears only if a reviewed reference can establish it.
+- [ ] Travel mode and straight-line radius follow §2.2; omitted-radius behavior, 25-mile bound, 20-candidate cap, and truncation are checked.
+- [ ] Walking shows $0 fare; sourced local-bus figures appear only as generic examples; unsupported modes are rejected.
+- [ ] Unknown grocery prices and trip-specific bus fares never become zero or a complete shopping total; inventory remains unverified.
+- [ ] Retailer and ZCTA provenance, dates, geography, duplicates, coordinates, limits, and no-results behavior are checked.
+- [ ] Straight-line distance is never labeled route distance/time; no live bus reachability or travel time is claimed.
+- [ ] Fixed inputs reproduce distance → stable-ID ordering; switching travel mode does not reorder stores.
 - [ ] Changed location/travel inputs invalidate stale retailer results, costs, and explanations.
 - [ ] Missing/invalid retailer records and optional model failures cannot fabricate facts or costs.
+- [ ] David's bus-time UI demonstration uses only fictional sample data, with visible demo labels on every time and no connection to live retailer ordering or APIs.
 - [ ] Navigation/source links, mobile/keyboard controls, back/reset actions, and error states work.
 - [ ] No household request bodies or secrets appear in logs or client bundles.
 
-Use small fictional fixtures for NYC validation, travel arithmetic, ranking, and missing data. Avoid a large test framework before the complete journey works.
+Use small fictional fixtures for ZIP/ZCTA validation, fare examples, proximity ordering, and missing data. Avoid a large test framework before the complete journey works.
 
 ### 3.4 Demo and submission
 
-**Scenario:** A fictional NYC shopper enters a valid ZIP code, bus mode, and an optional distance limit. “Which SNAP stores are nearby, what might the trip cost, and what changes if I walk?”
+**Scenario:** A fictional NYC shopper enters a supported ZIP code, bus mode, and an optional straight-line radius. “Which reviewed retailer candidates are nearby, what fare assumptions might matter, and where can I check real directions?”
 
 **Proposed 90-second demo:**
 
-1. **0–15s:** Enter NYC ZIP code, travel mode, and optional distance limit.
-2. **15–40s:** Show validated retailers and labeled straight-line proximity.
-3. **40–55s:** Show estimated travel costs and their assumptions; grocery prices remain unknown.
-4. **55–75s:** Change travel mode and explain supported tradeoffs and omissions.
-5. **75–90s:** Open directions and demonstrate an outside-NYC warning; state limitations.
+1. **0–15s:** Enter NYC ZIP code, travel mode, and optional straight-line radius.
+2. **15–40s:** Show reviewed retailers and labeled straight-line proximity; change radius to update candidates.
+3. **40–55s:** Show a generic local-bus fare example and unknown route/grocery costs.
+4. **55–75s:** Switch to walking and explain $0 fare and unchanged proximity order. Optionally show David's separate, visibly fictional bus-time UI screen.
+5. **75–90s:** Open external directions and demonstrate an unsupported-ZIP warning; state limitations.
 
 The earlier $75 household/meal scenario and $72.50 basket example are superseded. Do not use them as evidence of grocery affordability or savings.
 
-**Pitch draft:** “RePlate helps SNAP shoppers in NYC compare nearby shopping destinations and estimated travel costs. It explains the tradeoffs and makes clear that grocery prices and stock remain unverified.”
+**Pitch draft:** “RePlate helps SNAP shoppers in NYC compare nearby shopping destinations using approximate distance and transparent fare examples. It makes clear that routes, grocery prices, and stock remain unverified.”
 
 Devpost lists Creativity, Completeness, Presentation, Alignment With Track, and Design; track awards require a live demo and software requires a GitHub code link. It warns against code pushed before the event starts or after the deadline [S8]. Confirm permitted reuse and disclose pre-existing assets; this document is not a claim that implementation was built during the event.
 
@@ -278,35 +285,36 @@ Devpost lists Creativity, Completeness, Presentation, Alignment With Track, and 
 | Differentiation | Structured UX, integrated workflow, verified data, explainability | Hypothesis; branding/API combination is not a moat |
 | AI responsibility | Optional explanations; meal suggestions stretch; never invent retailer facts, costs, inventory, routes, or scores | Confirmed trust boundary |
 | Stack / persistence | One Next.js application, no accounts/database initially | Proposed defaults |
-| Retailers / transport | NYC only; ZIP, walking/bus, optional maximum distance; Haversine proximity, HERE routes, explicit fare assumptions | Confirmed scope; driving removed |
-| Geocoding / routing provider | HERE API for location resolution and walking/bus route integration | Confirmed selection; access and NYC bus-only coverage to verify |
-| Ranking | Fare → duration → routed distance (walking distance for bus) → stable ID; missing values last; unverified routes separate | Final answers incorporated; grocery costs remain unknown |
+| Retailers / transport | NYC only; supported ZIP/ZCTA, walking/bus fare context, optional straight-line radius, Haversine proximity | Revised scope; no live route or travel-time claim |
+| Location / routing source | Reviewed local NYC Open Data ZCTA extract [S12]; no HERE key or payment card | Current decision; earlier HERE plan superseded |
+| Ranking | Approximate straight-line distance → stable retailer ID | Current policy; fare, time, and grocery costs do not order stores |
+| Bus-time UI | David may show fictional sample bus durations in a separate, labeled demo | Presentation example only; not live routing or a product result |
 | Sponsor | Gemini and ElevenLabs optional enhancements | Current category selection still open |
 
 The earlier §4.2 answers prompted reconsideration of the original idea; their recovery-branch commitments and reset-period source question are superseded. Preserve their rationale here rather than carrying obsolete tasks into implementation.
 
 ### 4.2 Final answers and implementation readiness
 
-**Final review, October 9:** Incorporate the team's `RePlate Final Answers.txt` as decision input. Its recommendations resolve the remaining design questions; provider-support statements are not proof of tested credentials, quotas, or NYC coverage. Product scope is closed for implementation. No further product questionnaire is required before coding.
+**Revision, October 9:** The team chose not to add a payment card for HERE. This supersedes the earlier HERE and routed-distance answers in `RePlate Final Answers.txt`. The remaining product scope is a card-free proximity comparison with honest fare context; no further product questionnaire is required before coding.
 
 | Question | Final position / implementation action |
 | --- | --- |
-| What problem and inputs are core? | NYC SNAP retailer comparison using ZIP, walking/bus, and optional routed-distance limit. Travel is part of shopping expense; grocery prices remain unknown. Driving and core meal planning remain removed. |
-| What HERE capabilities do we use? | Geocoding, pedestrian routing, and Public Transit bus-only itineraries. Confirm exact API requests, actual key permissions, quota, and live NYC results during integration; documentation alone cannot establish account access or coverage. |
-| When is a store bus reachable? | Valid itinerary at the displayed departure time, actual bus section, bus-only motorized sections, walking/transfer/duration evidence, and compliance with configured constraints (§2.2). Nearby stops alone do not qualify. |
-| How are fares presented? | Keep the sourced MTA baseline in §2.2, visibly labeled as an assumption. Do not rely on HERE for personal charges or apply local fare to unknown service classes. A round-trip fare estimate does not verify a return route. |
-| What does maximum distance mean? | Routed one-way itinerary distance; Haversine only selects candidates. The answers did not specify units or omitted-limit bounds: use the explicit miles, 25-mile input maximum, and 20-candidate NYC defaults in §2.2. These are implementation defaults, not quoted team answers. |
-| How are ties and missing estimates ordered? | Travel fare, duration, routed distance (walking distance for bus), stable retailer ID; missing values follow available values. Keep unverified routes separate and label incomplete comparisons (§2.2). |
-| What happens on bad data or provider failure? | Exclude invalid coordinates; safely retain optional-metadata omissions; distinguish no route, 401/403, 429, timeout/5xx, invalid input, outside coverage, and no results (§2.2). Use timestamped valid cache only if already available; do not add a cache requirement. |
+| What problem and inputs are core? | NYC retailer proximity comparison using supported ZIP/ZCTA, walking/bus fare context, and optional straight-line radius. Grocery prices and real route times remain unknown. Driving and core meal planning remain removed. |
+| How is a ZIP located without a key? | Use a reviewed local extract of NYC Open Data ZCTAs [S12], including internal points and provenance. Distinguish malformed, unsupported, and known outside-coverage codes. |
+| When is a store bus reachable? | The core app cannot establish this. No retailer is labeled bus reachable, and sample bus times appear only in David's separate fictional UI demo. |
+| How are fares presented? | Keep a rechecked MTA local-bus amount as a visibly generic example. Walking fare is $0; store-specific service class, fare, transfers, and round trip remain unverified. |
+| What does maximum distance mean? | Approximate straight-line radius in miles from the local ZCTA internal point; positive input at most 25 miles, 20-candidate cap. It is not a routed one-way distance. |
+| How are ties ordered? | Lower straight-line distance, then stable retailer ID. Travel mode and fictional bus times never change this order. |
+| What happens on bad data? | Exclude unsafe retailer records; distinguish malformed ZIP, unsupported reference row, missing/corrupt data, and no results (§2.2). Outside coverage needs separate evidence; no routing-provider error taxonomy is needed. |
 | Who owns each workstream? | The answer file leaves this unanswered. Proceed with the existing Quazi/David/both assignments in §3.1; confirm later. |
 
-**Checks during implementation, not unanswered product questions:** Audit the retailer snapshot and NYC geography, test the actual HERE key and quota, confirm pedestrian and bus-only journeys with real NYC examples, and verify returned fields before displaying reachability or applying routed filters. These checks gate claims of a working integration and a complete demo; they do not prevent building the flow and its documented fallbacks. Use §3.3 as the acceptance checklist. If access or coverage fails, disclose the reduced demonstration and unmet acceptance condition.
+**Checks during implementation, not unanswered product questions:** Audit the retailer snapshot and local ZCTA extract, confirm five-borough samples and unsupported-code behavior, and verify the sourced fare example. Use §3.3 as the acceptance checklist. Live route reachability and travel time are intentionally outside core acceptance. The separate fictional bus-time UI must be labeled in the app and submission.
 
 **Later — nonblocking questions and validation:**
 
 - Confirm the existing workstream assignments; adjust ownership if needed.
 - Identify the actual burden with intended users, review newer research, and compare the same shopping task with a well-prompted ChatGPT session. Agree sample size, time, corrections, errors, uncertainty comprehension, and actionability measures before that study; results are not prerequisites for implementation.
-- Decide whether user feedback warrants different distance/candidate bounds or separate walking/transfer controls. Display current burdens and limitations in the meantime.
+- Decide whether user feedback warrants different radius/candidate bounds or later verified routing. Display current distance and travel limitations in the meantime.
 - Confirm award categories and whether Gemini or ElevenLabs adds useful evidence after the core journey works; check organizer requirements before submission.
 - Revisit basket-cost comparison only when verified store-specific prices are available. Inventory guarantees remain outside scope.
 
@@ -314,11 +322,11 @@ Demonstrate correct arithmetic, supported comparisons, respectful wording, and h
 
 ### 4.3 Success criteria and claim discipline
 
-**Hackathon success:** Complete reliable NYC search-to-navigation journey, correct supported travel-cost handling, explainable comparison, working Gemini if claimed, and code/demo submitted before cutoff. Record unmet essentials if the product falls back to a reduced demonstration.
+**Hackathon success:** Complete reliable NYC ZIP/ZCTA-to-retailer-to-external-directions journey, correct proximity and fare-context handling, explainable ordering, working Gemini if claimed, and code/demo submitted before cutoff. Keep fictional bus times visibly separate. Record unmet retailer/ZCTA evidence gates if the product falls back to a reduced demonstration.
 
 **Product-validation target:** Compare RePlate with a well-prompted general-purpose workflow using the same NYC location and travel constraints. Agree sample size, time target, and scoring before testing. Measure time to a usable destination comparison, required corrections, location/cost errors, understanding of uncertainty, and user-rated actionability. Informal feedback is exploratory, not proof of population-level benefit.
 
-Do not claim savings, improved health, reduced food insecurity, adoption, unique novelty, verified nutritional adequacy, full-week sufficiency, cheapest stores, or guaranteed inventory without evidence. Estimate arithmetic is not proof of actual affordability. Outbound directions and checklist completion are not confirmed purchases or outcomes.
+Do not claim savings, improved health, reduced food insecurity, adoption, unique novelty, verified nutritional adequacy, full-week sufficiency, cheapest stores, guaranteed inventory, bus reachability, or verified travel times without evidence. Fare examples are not actual trip costs. Outbound directions and checklist completion are not confirmed purchases or outcomes.
 
 ## 5. Source register
 
@@ -331,7 +339,8 @@ USDA research and Devpost overview checked October 9, 2026. Team decisions and a
 | S9 | [USDA ERS: Most U.S. Households Do Their Main Grocery Shopping at Supermarkets and Supercenters Regardless of Income](https://www.ers.usda.gov/amber-waves/2015/august/most-u-s-households-do-their-main-grocery-shopping-at-supermarkets-and-supercenters-regardless-of-income) | Morrison and Mancino, August 3, 2015; FoodAPS 2012–2013 shopping distances and transport context |
 | S10 | [USDA: Eligible food items](https://www.fns.usda.gov/snap/eligible-food-items) | Starting point for reviewing supported grocery-item considerations; not household screening |
 | S11 | [MTA: Subway and bus fares](https://www.mta.info/fares-tolls/subway-bus) | Checked October 9, 2026: $3 local fare, $7.25 express fare; reduced fares, transfer rules, and fare caps affect actual charges |
+| S12 | [NYC Open Data: ZIP Code Tabulation Areas](https://data.cityofnewyork.us/City-Government/ZIP-Code-Tabulation-Areas/35j5-n34v) | Checked October 9, 2026: NYC ZCTA subset with internal latitude/longitude; use a reviewed local extract and disclose that ZCTAs approximate USPS ZIP areas |
 
 **Historical sources — prior scope only:** S1 [NYC recovery outreach](https://www.nyc.gov/mayors-office/news/2026/10/mayor-mamdani-launches-citywide-push-to-get-snap-benefits-back-t); S2 [HRA ABAWD update](https://www.nyc.gov/site/hra/help/able-bodied-adults-without-dependents.page); S3 [HRA community updates](https://home4.nyc.gov/site/hra/partners/community-updates.page); S4 [ACCESS NYC screener](https://access.nyc.gov/eligibility/); S5 [ACCESS NYC SNAP](https://access.nyc.gov/programs/supplemental-nutrition-assistance-program-snap/); S6 [NYC monthly work rules](https://www.nyc.gov/main/services/snap-benefits/abawd). Retained for pivot traceability; recovery rules are not current MVP dependencies and were not revalidated for this revision.
 
-**Next team action:** Implement the smallest search-to-navigation journey using the assignments and defaults above. Audit retailer coverage and test HERE access, bus-only responses, and NYC validation alongside integration. Record failed acceptance checks and use the disclosed fallbacks; remaining nonblocking questions are in §4.2. Grocery prices remain a limitation; meal suggestions remain stretch.
+**Next team action:** Implement the smallest card-free ZIP/ZCTA-to-retailer-to-directions journey using the assignments and defaults above. Audit retailer and ZCTA data, record failed acceptance checks, and keep David's fictional bus-time UI isolated and visibly labeled. Remaining nonblocking questions are in §4.2. Grocery prices and route times remain limitations; meal suggestions remain stretch.
