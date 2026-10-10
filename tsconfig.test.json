@@ -8,6 +8,6 @@
     "types": ["node"],
     "rootDir": "."
   },
-  "include": ["src/lib/location/**/*.ts", "tests/**/*.test.ts"],
+  "include": ["src/lib/**/*.ts", "tests/**/*.test.ts"],
   "exclude": ["node_modules"]
 }
