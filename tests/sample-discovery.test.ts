@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { hasLocation, sampleResults, sampleSearch, sampleStores, validateSearch } from "../src/app/prototype/sample-discovery";
+import { hasLocation, sampleResults, sampleSearch, sampleStores, validateSearch } from "../src/app/explore/sample-discovery";
 
 test("sample search distinguishes malformed input from unsupported fixture ZIPs and validates radius", () => {
   assert.deepEqual(validateSearch(sampleSearch), {});
@@ -12,10 +12,10 @@ test("sample search distinguishes malformed input from unsupported fixture ZIPs 
   for (const radius of ["", "0.01", "25"]) assert.equal(validateSearch({ ...sampleSearch, radius }).radius, undefined);
 });
 
-test("sample radius recovery and travel preference preserve straight-line ordering without mutating fixtures", () => {
+test("sample search uses only ZIP and radius and preserves ordering without mutating fixtures", () => {
   const before = structuredClone(sampleStores);
+  assert.deepEqual(Object.keys(sampleSearch).sort(), ["radius", "zip"]);
   assert.deepEqual(sampleResults(sampleSearch).map(store => store.id), ["sample-01", "sample-02", "sample-03"]);
-  assert.deepEqual(sampleResults({ ...sampleSearch, mode: "walking" }), sampleResults(sampleSearch));
   assert.equal(sampleResults({ ...sampleSearch, radius: "0.1" }).length, 0);
   assert.equal(sampleResults({ ...sampleSearch, radius: "" }).length, 4);
   assert.deepEqual(sampleStores, before);

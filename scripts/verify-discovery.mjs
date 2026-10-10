@@ -14,13 +14,39 @@ mkdirSync(output, { recursive: true });
   try {
     const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
     const errors = [];
+    const retailerRequests = [];
+    page.on('request', request => { if (new URL(request.url()).pathname === '/api/retailers') retailerRequests.push(request.url()); });
     page.on('pageerror', error => errors.push(error.message));
     // Deterministic base for behavior checks. Visual review uses actual tiles separately.
     await page.route('https://tile.openstreetmap.org/**', route => route.fulfill({
       contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"><rect width="256" height="256" fill="#edece3"/><path d="M0 60H256M80 0V256M0 180H256M190 0V256" stroke="#fff" stroke-width="12"/></svg>',
     }));
-    await page.goto(`${base}/prototype`);
+    await page.goto(`${base}/explore`);
     await page.getByRole('button', { name: 'Show sample store 1 on map' }).waitFor();
+    const navigation = page.getByRole('navigation', { name: 'Main navigation' });
+    assert.equal(await navigation.getByRole('link', { name: 'Info', exact: true }).getAttribute('href'), '/');
+    assert.equal(await navigation.getByRole('link', { name: 'Explore', exact: true }).getAttribute('aria-current'), 'page');
+    await page.evaluate(() => document.fonts.ready);
+    async function assertDesktopMapCoverage() {
+      const bounds = await page.evaluate(() => {
+        const map = document.querySelector('.leaflet-container').getBoundingClientRect();
+        const section = document.querySelector('section[aria-label="Grocery discovery"]').getBoundingClientRect();
+        const footer = document.querySelector('footer').getBoundingClientRect();
+        return { mapTop: map.top, mapBottom: map.bottom, sectionTop: section.top, sectionBottom: section.bottom, footerTop: footer.top };
+      });
+      assert(Math.abs(bounds.mapTop - bounds.sectionTop - 1) <= 1, 'Desktop map starts at section top');
+      assert(Math.abs(bounds.mapBottom - bounds.sectionBottom + 1) <= 1, 'Desktop map fills section to footer');
+      assert(Math.abs(bounds.footerTop - bounds.sectionBottom) <= 1, 'Footer follows map section');
+    }
+    await assertDesktopMapCoverage();
+    await page.getByText('Sources & limitations', { exact: true }).click();
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    await assertDesktopMapCoverage();
+    await page.setViewportSize({ width: 1440, height: 800 });
+    await assertDesktopMapCoverage();
+    await page.getByText('Sources & limitations', { exact: true }).click();
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.evaluate(() => window.scrollTo(0, 0));
     assert.equal(await page.getByRole('link', { name: /Get directions/ }).count(), 0);
     assert.equal(await page.locator('article[data-store-id]').count(), 3);
     assert.equal(await page.getByRole('button', { name: /Directions unavailable/ }).first().isDisabled(), true);
@@ -49,9 +75,8 @@ mkdirSync(output, { recursive: true });
     await page.getByRole('heading', { name: 'No sample stores in this radius' }).waitFor();
     await page.getByRole('button', { name: 'Clear radius' }).click();
     assert.equal(await page.locator('article[data-store-id]').count(), 4);
-    await page.getByRole('radio', { name: 'Walking', exact: true }).check();
-    await page.getByRole('button', { name: 'Find stores', exact: true }).click();
-    assert.equal(await page.locator('article[data-store-id]').count(), 4);
+    await assertDesktopMapCoverage();
+    assert.equal(await page.getByRole('radio').count(), 0, 'Travel controls removed');
     const zip = page.getByLabel('NYC ZIP code', { exact: true });
     await zip.fill('12');
     await page.getByRole('button', { name: 'Find stores', exact: true }).click();
@@ -69,7 +94,7 @@ mkdirSync(output, { recursive: true });
     await page.evaluate(() => document.fonts.ready);
     await page.screenshot({ path: `${output}/desktop-deterministic.png`, fullPage: true });
     await page.setViewportSize({ width: 390, height: 844 });
-    const advanced = page.getByRole('button', { name: /Travel & radius/ });
+    const advanced = page.getByRole('button', { name: /Radius/ });
     await advanced.click();
     await radius.waitFor({ state: 'visible' });
     await advanced.click();
@@ -118,6 +143,9 @@ mkdirSync(output, { recursive: true });
     await page.getByRole('button', { name: 'Retry map' }).click();
     await page.getByRole('button', { name: 'Show sample store 1 on map' }).waitFor();
     await page.getByText('The map could not load. Your store list is still available.').waitFor({ state: 'hidden' });
+    await page.goto(`${base}/prototype`);
+    await page.waitForURL(`${base}/explore`);
+    assert.deepEqual(retailerRequests, [], 'Frontend must not call the retailer API yet');
     assert.deepEqual(errors, []);
     console.log('PASS: discovery search, validation, selection, sample safeguards, mobile views, 320px reflow, reset, tile outage/retry; screenshots saved.');
   } finally { await browser.close(); }

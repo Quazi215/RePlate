@@ -1,6 +1,6 @@
 // Fictional fixtures only. Coordinates and distances are independently illustrative.
 // Do not use these points for geocoding, route claims, or external directions.
-export type Search = { zip: string; mode: "walking" | "bus"; radius: string };
+export type Search = { zip: string; radius: string };
 export type Store = {
   id: string;
   name: string;
@@ -10,7 +10,7 @@ export type Store = {
 };
 export type SearchErrors = { zip?: string; radius?: string };
 
-export const sampleSearch: Search = { zip: "11206", mode: "bus", radius: "1" };
+export const sampleSearch: Search = { zip: "11206", radius: "1" };
 export const sampleStores: Store[] = [
   { id: "sample-01", name: "Broadway Community Market", address: "760 Broadway, Brooklyn, NY 11206", miles: 0.24, location: { latitude: 40.7025, longitude: -73.943 } },
   { id: "sample-02", name: "Union Avenue Grocers", address: "310 Union Avenue, Brooklyn, NY 11211", miles: 0.58, location: { latitude: 40.7098, longitude: -73.9519 } },
@@ -21,7 +21,7 @@ export const sampleStores: Store[] = [
 export function validateSearch(search: Search): SearchErrors {
   const errors: SearchErrors = {};
   if (!/^\d{5}$/.test(search.zip)) errors.zip = "Enter a 5-digit ZIP code.";
-  else if (search.zip !== "11206") errors.zip = "This ZIP is not in the draft’s sample lookup. Try 11206. This does not mean it is outside NYC.";
+  else if (search.zip !== "11206") errors.zip = "This ZIP is not in the sample lookup. Try 11206. This does not mean it is outside NYC.";
   if (search.radius !== "" && (!Number.isFinite(Number(search.radius)) || Number(search.radius) <= 0 || Number(search.radius) > 25)) {
     errors.radius = "Enter a straight-line radius greater than 0 and up to 25 miles, or leave it blank.";
   }

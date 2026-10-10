@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from 
 import type { Map as LeafletMap, Marker, LayerGroup } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { hasLocation, type Store } from "./sample-discovery";
-import styles from "./prototype.module.css";
+import styles from "../site.module.css";
 
 type Props = {
   stores: Store[];

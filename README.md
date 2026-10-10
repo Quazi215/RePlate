@@ -1,6 +1,6 @@
 # RePlate
 
-RePlate is a Next.js and TypeScript app for comparing NYC shopping destinations by approximate straight-line distance and transparent fare context. The retailer search API is implemented; the shopper search and comparison UI is still to be built.
+RePlate spreads awareness of NYC SNAP changes and links residents to official next steps. Info is the homepage at `/`; the secondary Explore feature at `/explore` provides a grocery map and ZIP/radius search. The retailer search API is implemented separately. Explore currently uses clearly labeled fictional sample stores; frontend/backend integration is deferred. See the [frontend guide](src/app/explore/README.md).
 
 ## Local setup
 
@@ -9,7 +9,7 @@ RePlate is a Next.js and TypeScript app for comparing NYC shopping destinations 
 3. Copy `.env.example` to `.env.local` only if you add optional Gemini assistance.
 4. Run `npm run dev` and open http://localhost:3000.
 
-The core flow uses a reviewed local NYC ZIP Code Tabulation Area reference and needs no routing API key or payment card. `GEMINI_API_KEY` is only for optional server-side explanations. Never prefix secret keys with `NEXT_PUBLIC_` or commit `.env.local`. The placeholder page does not make provider calls.
+The backend uses a reviewed local NYC ZIP Code Tabulation Area reference and needs no routing API key or payment card. `GEMINI_API_KEY` is only for optional server-side explanations. Never prefix secret keys with `NEXT_PUBLIC_` or commit `.env.local`. The Info and Explore pages do not call Gemini or the retailer API. Explore loads an OpenStreetMap basemap; sample pins and distances remain illustrative.
 
 ## Project commands
 

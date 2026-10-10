@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "RePlate",
-  description: "Compare NYC SNAP shopping destinations and estimated travel costs.",
+  description: "Understand NYC SNAP changes, find official next steps, and explore grocery options.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

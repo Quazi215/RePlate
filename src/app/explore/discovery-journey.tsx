@@ -1,11 +1,12 @@
 "use client";
 
-// Development-only discovery. Fictional fixtures, no live retailer search.
+// shortcut: fictional fixtures until the separately authorized retailer API integration.
+import Link from "next/link";
 import dynamic from "next/dynamic";
 import { Component, useCallback, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { AnimatePresence, LazyMotion, MotionConfig, domMax, m, useReducedMotion } from "motion/react";
 import { hasLocation, sampleResults, sampleSearch, validateSearch, type Search, type SearchErrors, type Store } from "./sample-discovery";
-import styles from "./prototype.module.css";
+import styles from "../site.module.css";
 
 const DiscoveryMap = dynamic(() => import("./discovery-map"), {
   ssr: false,
@@ -32,18 +33,10 @@ function SearchForm({ search, errors, update, submit, validateField }: {
       <p id="zip-help" className={styles.help}>No home address needed. Sample ZIP: 11206.</p>
       {errors.zip ? <p id="zip-error" className={styles.error} role="alert">{errors.zip}</p> : null}
     </div>
-    <button className={styles.advancedToggle} type="button" aria-controls="travel-radius" aria-expanded={advancedOpen || Boolean(errors.radius)} onClick={() => setAdvancedOpen(previous => !previous)}>
-      <span>Travel &amp; radius <strong>{search.mode === "bus" ? "Bus" : "Walking"} · {search.radius ? `${search.radius} mi` : "No limit"}</strong></span><span aria-hidden="true">{advancedOpen ? "−" : "+"}</span>
+    <button className={styles.advancedToggle} type="button" aria-controls="search-radius" aria-expanded={advancedOpen || Boolean(errors.radius)} onClick={() => setAdvancedOpen(previous => !previous)}>
+      <span>Radius <strong>{search.radius ? `${search.radius} mi` : "No limit"}</strong></span><span aria-hidden="true">{advancedOpen ? "−" : "+"}</span>
     </button>
-    <div id="travel-radius" className={`${styles.advancedFields} ${advancedOpen || errors.radius ? styles.advancedOpen : ""}`}>
-    <fieldset className={styles.modeField}>
-      <legend>Travel preference</legend>
-      <div className={styles.modeOptions}>{(["walking", "bus"] as const).map(mode => <label className={`${styles.modeOption} ${search.mode === mode ? styles.modeSelected : ""}`} key={mode}>
-        <input type="radio" name="mode" value={mode} checked={search.mode === mode} onChange={() => update({ ...search, mode })} />
-        <span>{mode === "walking" ? "Walking" : "Bus"}</span>
-      </label>)}</div>
-      <p className={styles.help}>Preference only. Routes are not verified.</p>
-    </fieldset>
+    <div id="search-radius" className={`${styles.advancedFields} ${advancedOpen || errors.radius ? styles.advancedOpen : ""}`}>
     <div className={styles.field}>
       <label htmlFor="radius">Straight-line radius <span className={styles.optional}>(optional)</span></label>
       <div className={styles.inputUnit}><input id="radius" name="radius" type="number" min="0.01" max="25" step="any" value={search.radius} placeholder="No limit"
@@ -81,15 +74,15 @@ function Sources() {
   return <details className={styles.assumptions}>
     <summary>Sources &amp; limitations</summary>
     <p>Four fictional stores, illustrative addresses and pins, and fixed sample distances. These distances are not computed from the pins. No live retailer lookup, geocoding, routing, prices, or inventory is used.</p>
-    <p>Results use the submitted sample ZIP and straight-line radius. Panning or zooming does not search the visible area. Travel preference never changes proximity ordering.</p>
+    <p>Results use the submitted sample ZIP and straight-line radius. Panning or zooming does not search the visible area.</p>
     <p>Sample directions are disabled to avoid sending you to an unrelated real business. An illustrative pin is not a verified retailer location.</p>
     <p>SNAP authorization is not verified. Missing evidence does not mean a store does not accept SNAP. <a href="https://www.fns.usda.gov/snap/retailer-locator" target="_blank" rel="noopener noreferrer">Check real stores in the official USDA retailer locator ↗</a>.</p>
     <p>Trip fare is unknown. For general fare education, <a href="https://www.mta.info/fares-tolls/subway-bus" target="_blank" rel="noopener noreferrer">see MTA subway and bus fares ↗</a>; no fare amount is used in this comparison.</p>
-    <p>The geographic basemap is supplied by OpenStreetMap. Tile requests share normal browser/network information and the viewed tile area with that provider. This draft does not request your precise location or send a home address. <a href="https://osmfoundation.org/wiki/Privacy_Policy" target="_blank" rel="noopener noreferrer">OpenStreetMap privacy policy ↗</a>.</p>
+    <p>The geographic basemap is supplied by OpenStreetMap. Tile requests share normal browser/network information and the viewed tile area with that provider. RePlate does not request your precise location or send a home address. <a href="https://osmfoundation.org/wiki/Privacy_Policy" target="_blank" rel="noopener noreferrer">OpenStreetMap privacy policy ↗</a>.</p>
   </details>;
 }
 
-export default function PrototypeJourney() {
+export default function DiscoveryJourney() {
   const reducedMotion = useReducedMotion();
   const [search, setSearch] = useState<Search>(sampleSearch);
   const [applied, setApplied] = useState<Search | null>(sampleSearch);
@@ -102,7 +95,7 @@ export default function PrototypeJourney() {
   const results = useMemo(() => applied ? sampleResults(applied) : [], [applied]);
   const selected = results.find(store => store.id === selectedId);
   const selectedNumber = results.findIndex(store => store.id === selectedId) + 1;
-  const dirty = Boolean(applied && (search.zip !== applied.zip || search.mode !== applied.mode || search.radius !== applied.radius));
+  const dirty = Boolean(applied && (search.zip !== applied.zip || search.radius !== applied.radius));
   const failMap = useCallback(() => setMapFailed(true), []);
   const selectPin = useCallback((id: string) => {
     setSelectedId(id);
@@ -128,7 +121,7 @@ export default function PrototypeJourney() {
   function submit(event: FormEvent<HTMLFormElement>) { event.preventDefault(); apply(search); }
   function validateField(field: keyof SearchErrors) { setErrors(previous => ({ ...previous, [field]: validateSearch(search)[field] })); }
   function reset() {
-    setSearch({ zip: "", mode: "walking", radius: "" }); setApplied(null); setErrors({}); setSelectedId(null); setHoveredId(null);
+    setSearch({ zip: "", radius: "" }); setApplied(null); setErrors({}); setSelectedId(null); setHoveredId(null);
     document.getElementById("zip")?.focus();
   }
   function showOnMap(id: string) { setSelectedId(id); setView("map"); }
@@ -145,11 +138,11 @@ export default function PrototypeJourney() {
   function retryMap() { setMapFailed(false); setMapAttempt(previous => previous + 1); }
   const fallback = <div className={styles.mapFailure} role="status"><h2>Map unavailable</h2><p>The map could not load. Your store list is still available.</p><div className={styles.failureActions}><button className={styles.primary} onClick={retryMap}>Retry map</button><button className={styles.secondary} onClick={() => setView("list")}>View store list</button></div></div>;
 
-  return <LazyMotion features={domMax} strict><MotionConfig reducedMotion="user"><div className={styles.prototype}>
-    <header className={styles.header}><a className={styles.brand} href="/prototype" aria-label="RePlate discovery prototype"><span className={styles.brandMark} aria-hidden="true" />RePlate<span className={styles.brandPeriod} aria-hidden="true">.</span></a><span className={styles.headerCaption}>Grocery discovery · NYC</span><button className={styles.textButton} onClick={reset}>Reset</button></header>
-    <div className={styles.draftNotice}><strong>Sample discovery</strong><span>Fictional stores. Pins &amp; distances illustrative. SNAP not verified.</span></div>
+  return <LazyMotion features={domMax} strict><MotionConfig reducedMotion="user"><div className={styles.site}>
+    <header className={styles.header}><Link className={styles.brand} href="/" aria-label="RePlate home"><span className={styles.brandMark} aria-hidden="true" />RePlate<span className={styles.brandPeriod} aria-hidden="true">.</span></Link><nav className={styles.navigation} aria-label="Main navigation"><Link href="/">Info</Link><Link href="/explore" aria-current="page">Explore</Link></nav><button className={styles.textButton} onClick={reset}>Reset</button></header>
+    <div className={styles.sampleNotice}><strong>Sample discovery</strong><span>Fictional stores. Pins &amp; distances illustrative. SNAP not verified.</span></div>
     <main className={styles.shell}>
-      <div className={styles.titleStrip}><div><h1>Your neighborhood, on the map.</h1><p>Explore nearby grocery options. Know what’s known.</p></div><span className={styles.areaTag}>Brooklyn sample · 11206</span></div>
+      <div className={styles.titleStrip}><div><h1>Your neighborhood, on the map.</h1><p>Search by NYC ZIP code. Sample data for now.</p></div><span className={styles.areaTag}>Brooklyn sample · 11206</span></div>
       <div className={styles.mobileSwitch} aria-label="Discovery view">{(["map", "list"] as const).map(option => <button key={option} className={view === option ? styles.viewSelected : ""} aria-pressed={view === option} onClick={() => setView(option)}>
         {view === option ? <m.span className={styles.viewIndicator} layoutId={reducedMotion ? undefined : "discovery-view"} transition={{ duration: reducedMotion ? 0 : 0.16 }} aria-hidden="true" /> : null}<span>{option === "map" ? "Map" : "List"}</span>
       </button>)}</div>
@@ -167,7 +160,7 @@ export default function PrototypeJourney() {
           <div className={styles.panelHeading}><div><span className={styles.panelEyebrow}>A little closer to home</span><h2>Find your grocery stop</h2></div><span className={styles.panelAccent} aria-hidden="true">↗</span></div>
           <SearchForm search={search} errors={errors} update={update} submit={submit} validateField={validateField} />
           {dirty ? <p className={styles.pendingNotice} role="status">Changes not applied. Select Find stores to update results.</p> : null}
-          <div className={styles.resultHeading}><h2>{applied ? `${results.length} sample stores` : "Ready when you are"}</h2><p role="status">{applied ? `Near ${applied.zip} · ${applied.radius ? `${applied.radius}-mile radius` : "No radius limit"} · ${applied.mode === "bus" ? "Bus" : "Walking"} preference` : "Use sample ZIP 11206 to get started."}</p>{applied ? <p className={styles.help}>Ordered by approximate straight-line distance.</p> : null}</div>
+          <div className={styles.resultHeading}><h2>{applied ? `${results.length} sample stores` : "Ready when you are"}</h2><p role="status">{applied ? `Near ${applied.zip} · ${applied.radius ? `${applied.radius}-mile radius` : "No radius limit"}` : "Use sample ZIP 11206 to get started."}</p>{applied ? <p className={styles.help}>Ordered by approximate straight-line distance.</p> : null}</div>
           <div className={styles.resultsBody}>
             {!applied ? <div className={styles.empty}><h3>A few possibilities, nearby.</h3><p>Find stores to compare sample grocery options. No precise location needed.</p></div> : results.length === 0 ? <div className={styles.empty} role="status"><h3>No sample stores in this radius</h3><p>Try a wider straight-line radius or clear it to see all four sample stores.</p><button className={styles.secondary} onClick={() => { const next = { ...applied, radius: "" }; setSearch(next); apply(next); }}>Clear radius</button></div> : results.map((store, index) => <StoreCard key={store.id} store={store} index={index} selected={store.id === selectedId} select={showOnMap} hover={setHoveredId} />)}
             {applied ? <p className={styles.sampleFootnote}>Sample stores cannot be used for real shopping directions.</p> : null}
@@ -175,7 +168,7 @@ export default function PrototypeJourney() {
           <Sources />
         </aside>
       </section>
-      <footer className={styles.footer}><span>RePlate · A neighborhood discovery draft.</span><a href="https://www.fns.usda.gov/snap/retailer-locator" target="_blank" rel="noopener noreferrer">Find verified information with USDA ↗</a></footer>
+      <footer className={styles.footer}><span>RePlate · Explore grocery options.</span><a href="https://www.fns.usda.gov/snap/retailer-locator" target="_blank" rel="noopener noreferrer">Find verified information with USDA ↗</a></footer>
     </main>
   </div></MotionConfig></LazyMotion>;
 }
