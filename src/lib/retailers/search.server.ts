@@ -1,4 +1,3 @@
-import { loadFareContext } from "../fares/fare-context.server";
 import { isFiveDigitZip, type ZipOrigin, type ZipResolution } from "../location/nyc-zcta";
 import { resolveNycZip } from "../location/nyc-zcta.server";
 import { rankRetailersByProximity } from "./proximity-ranking";
@@ -11,13 +10,11 @@ const retailerLocatorUrl = "https://www.fns.usda.gov/snap/retailer-locator";
 export type SearchDependencies = {
   resolveZip: typeof resolveNycZip;
   loadRetailers: typeof loadRetailerSnapshot;
-  loadFare: typeof loadFareContext;
 };
 
 const defaultDependencies: SearchDependencies = {
   resolveZip: resolveNycZip,
   loadRetailers: loadRetailerSnapshot,
-  loadFare: loadFareContext,
 };
 
 export type RetailerSearchError = {
@@ -39,7 +36,6 @@ export type RetailerSearchSuccess = {
   resultLimit: number;
   truncated: boolean;
   capNotice: string | null;
-  fareContext: Extract<Awaited<ReturnType<typeof loadFareContext>>, { status: "ready" }>["context"];
   sources: {
     location: { sourceUrl: string; extractedAt: string };
     boroughGeography: Extract<RetailerSnapshot, { status: "ready" }>["geography"];
@@ -47,15 +43,6 @@ export type RetailerSearchSuccess = {
     fallbackUrl: string;
   };
   omissions: { retailerFields: string[]; unverifiedFields: string[]; missingColumns: string[] };
-  unavailable: {
-    routeDistance: null;
-    routeDuration: null;
-    busReachability: null;
-    tripFare: null;
-    groceryCost: null;
-    totalShoppingCost: null;
-    inventory: null;
-  };
   caveats: string[];
 };
 
@@ -93,14 +80,11 @@ function retailerDataError(snapshot: Exclude<RetailerSnapshot, { status: "ready"
 
 /** Compose trusted server-resolved data into a deterministic, proximity-ordered search result. */
 export async function searchRetailers(
-  input: { zip: unknown; mode: unknown; maxStraightLineMiles?: unknown },
+  input: { zip: unknown; maxStraightLineMiles?: unknown },
   dependencies: SearchDependencies = defaultDependencies,
 ): Promise<RetailerSearchResult> {
   if (!isFiveDigitZip(input.zip)) {
     return invalid("INVALID_ZIP", "Enter a ZIP code containing exactly five digits.");
-  }
-  if (input.mode !== "walking" && input.mode !== "bus") {
-    return invalid("INVALID_TRAVEL_MODE", "Choose walking or bus.");
   }
   if (input.maxStraightLineMiles !== undefined && !isRadius(input.maxStraightLineMiles)) {
     return invalid("INVALID_RADIUS", "Enter a straight-line radius greater than 0 and no greater than 25 miles.");
@@ -109,18 +93,13 @@ export async function searchRetailers(
   const maxStraightLineMiles = input.maxStraightLineMiles === undefined
     ? null
     : Number(input.maxStraightLineMiles);
-  const [resolution, snapshot, fareResult] = await Promise.all([
+  const [resolution, snapshot] = await Promise.all([
     dependencies.resolveZip(input.zip),
     dependencies.loadRetailers(),
-    dependencies.loadFare(input.mode),
   ]);
 
   if (resolution.status !== "supported") return locationError(resolution);
   if (snapshot.status !== "ready") return retailerDataError(snapshot);
-  if (fareResult.status !== "ready") {
-    return invalid(fareResult.code, fareResult.message);
-  }
-
   const ranked = rankRetailersByProximity(resolution.origin, snapshot.retailers);
   const withinRadius = maxStraightLineMiles === null
     ? ranked.retailers
@@ -143,7 +122,6 @@ export async function searchRetailers(
     capNotice: truncated
       ? `Showing the ${resultLimit} nearest of ${candidateCount} candidates; results are not exhaustive.`
       : null,
-    fareContext: fareResult.context,
     sources: {
       location: { sourceUrl: origin.sourceUrl, extractedAt: origin.extractedAt },
       boroughGeography: snapshot.geography,
@@ -155,12 +133,9 @@ export async function searchRetailers(
       unverifiedFields: snapshot.quality.unverifiedFields,
       missingColumns: snapshot.quality.missingColumns,
     },
-    unavailable: {
-      routeDistance: null, routeDuration: null, busReachability: null, tripFare: null,
-      groceryCost: null, totalShoppingCost: null, inventory: null,
-    },
     caveats: [
-      ...fareResult.context.caveats,
+      "Distances are approximate straight-line miles from a ZIP/ZCTA internal point, not route distances or travel times.",
+      "Prices and stock are unknown; proximity does not establish affordability or route availability.",
       "Current SNAP authorization is unverified for these retailer candidates.",
       "Results are limited to the local NYC ZIP/ZCTA and retailer references; no outside-coverage claim is made.",
     ],

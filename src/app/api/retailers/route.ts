@@ -3,7 +3,7 @@ import { searchRetailers } from "../../../lib/retailers/search.server";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-const allowedParameters = new Set(["zip", "mode", "maxStraightLineMiles"]);
+const allowedParameters = new Set(["zip", "maxStraightLineMiles"]);
 const responseHeaders = {
   "Cache-Control": "private, no-store, max-age=0",
   "X-Content-Type-Options": "nosniff",
@@ -27,7 +27,7 @@ export async function GET(request: Request): Promise<Response> {
   const parameters = url.searchParams;
   for (const name of parameters.keys()) {
     if (!allowedParameters.has(name)) {
-      return json(requestError("UNKNOWN_QUERY_PARAMETER", "Use only zip, mode, and maxStraightLineMiles."), 400);
+      return json(requestError("UNKNOWN_QUERY_PARAMETER", "Use only zip and maxStraightLineMiles."), 400);
     }
     if (parameters.getAll(name).length !== 1) {
       return json(requestError("DUPLICATE_QUERY_PARAMETER", `Provide ${name} only once.`), 400);
@@ -35,14 +35,12 @@ export async function GET(request: Request): Promise<Response> {
   }
 
   const zip = parameters.get("zip");
-  const mode = parameters.get("mode");
-  if (zip === null || mode === null) {
-    return json(requestError("MISSING_QUERY_PARAMETER", "Provide a ZIP code and a travel mode."), 400);
+  if (zip === null) {
+    return json(requestError("MISSING_QUERY_PARAMETER", "Provide a ZIP code."), 400);
   }
 
   const result = await searchRetailers({
     zip,
-    mode,
     maxStraightLineMiles: parameters.get("maxStraightLineMiles") ?? undefined,
   });
   if (result.status === "error") {

@@ -1,59 +1,48 @@
 # RePlate — Builder A specification
 
 **Owner:** Quazi
-**Source of truth:** [docs/HACKATHON.md](docs/HACKATHON.md), revised October 9, 2026
-**Tracker:** [Quazi workstream #1](https://github.com/Quazi215/RePlate/issues/1)
 **UI handoff:** [BUILDER_B_SPEC.md](BUILDER_B_SPEC.md)
 
-## Goal and current boundary
+## Goal
 
-Provide one card-free server endpoint that validates a supported NYC ZIP/ZCTA, loads reviewed retailer data, and returns up to 20 candidates ordered by approximate straight-line distance. Include a general walking or local-bus fare context and explicit missing evidence. The endpoint must not claim a walking/bus route, trip duration, trip-specific fare, current SNAP authorization, or grocery savings without supporting data.
+Power the Explore screen with real NYC supermarket results. The shopper enters a five-digit ZIP code and may set an optional straight-line radius. The backend resolves an approximate ZIP/ZCTA origin and returns nearby retailers for the screen’s result list and map pins.
 
-The Next.js/TypeScript scaffold and dependencies are present. No HERE key, payment card, geocoding API, or routing API is required. `README.md` contains local setup. The current `nyc_snap_supermarkets.csv` has identity/location fields but no authorization source/date columns; the shared audit must establish what claims it supports.
+The Explore UI currently uses fictional sample records and a Leaflet map with OpenStreetMap tiles. Backend integration replaces the sample search/results; it does not require Builder A to build or operate the map. The map/list switch, selecting a store from either the list or a pin, reset behavior, and current search/radius controls are part of the UI flow.
 
-## Work items in order
+## SNAP authorization evidence
 
-| Ticket | Deliverable | Acceptance |
-| --- | --- | --- |
-| [#2](https://github.com/Quazi215/RePlate/issues/2) | Reviewed local NYC ZCTA lookup | Bundle ZIP/ZCTA and internal-point coordinates from [NYC Open Data](https://data.cityofnewyork.us/City-Government/ZIP-Code-Tabulation-Areas/35j5-n34v) with source/extract date. Distinguish malformed input, supported code, known outside coverage, and five-digit code absent from the reference. Do not derive origins from store positions. |
-| [#3](https://github.com/Quazi215/RePlate/issues/3) | Defensive retailer CSV loader | Normalize stable ID, name, address, type, coordinates and available provenance; exclude unsafe/duplicate/non-NYC records; do not infer current authorization from the filename. |
-| [#7](https://github.com/Quazi215/RePlate/issues/7) | General fare context | Walking fare $0; rechecked MTA local-bus amount shown only as a generic example. No per-retailer bus fare or route claim. Unknown grocery/trip costs stay unknown. |
-| [#8](https://github.com/Quazi215/RePlate/issues/8) | Deterministic proximity ordering | Same input and ranking version yield distance → stable-ID order. Mode and David's fictional bus times never change the order. Rationale says “approximate proximity.” |
-| [#4](https://github.com/Quazi215/RePlate/issues/4) | `GET /api/retailers` | Validate inputs; calculate Haversine miles; apply optional straight-line radius; sort by distance then stable ID; cap at 20; return source, omissions, cap notice, fare context and distinct failure states. |
+The product goal is to show nearby supermarkets that accept SNAP. The current checked-in retailer snapshot does not verify current SNAP authorization. Audit and source current authorization evidence before returning stores as SNAP-accepting. If that evidence is not available, preserve the UI’s explicit “SNAP authorization not verified” state and USDA locator fallback; do not label unverified candidates as stores that accept SNAP.
 
-The former walking-route [#5](https://github.com/Quazi215/RePlate/issues/5), bus-itinerary [#6](https://github.com/Quazi215/RePlate/issues/6), and recommendations-endpoint [#9](https://github.com/Quazi215/RePlate/issues/9) tasks are superseded by the no-routing decision. The core has no second API endpoint. David owns the separate fictional bus-time UI demonstration; Builder A does not supply its sample times through the live API.
+## Backend responsibilities
 
-## Location and retailer rules
+- Accept a five-digit ZIP and an optional positive straight-line radius up to 25 miles. Resolve the ZIP from the reviewed NYC ZIP/ZCTA reference and use its internal point as an approximate origin, not as the shopper’s address.
+- Distinguish malformed ZIPs, supported ZIPs, unsupported ZIPs, invalid radii, missing/corrupt reference data, retailer-data failures, and genuine no-results.
+- Load and validate retailer identity, address, coordinates, NYC geography, and duplicate IDs. Include only stores with verified current SNAP authorization in results presented as SNAP-accepting.
+- Filter by straight-line distance when a radius is supplied, then sort by distance and stable retailer ID. Return coordinates for map pins and distance for the list. Disclose an approximate origin and any result cap.
+- Return authorization source/date when verified, or explicit unverified status and the official USDA locator URL when it is not.
+- Keep local data access and validation on the server. Do not log the shopper’s ZIP or trust client-supplied retailer coordinates or authorization claims.
 
-- Accept a five-digit ZIP/ZCTA. Use a reviewed local extract of NYC Open Data ZCTAs, particularly the internal latitude/longitude point. That point is within the source polygon; it is an approximation, not the shopper's address. ZCTAs approximate USPS ZIP areas and do not include every deliverable ZIP. A valid five-digit code missing from the reference is **unsupported**, not automatically outside NYC.
-- Show “outside NYC” only when a separate reviewed reference establishes it. A malformed ZIP receives a correction message. Missing/corrupt lookup data is a server data error. Keep these states separate from genuine zero nearby stores.
-- Resolve retailer facts on the server from the reviewed snapshot. Exclude invalid/non-finite coordinates, unsafe identity/location records, duplicates, and records outside NYC. Optional metadata omissions may be displayed if the remaining facts are safe. Do not present the snapshot as currently SNAP-authorized until source/date/status have been audited.
-- The optional radius is greater than zero and at most 25 miles. It filters Haversine distance from the ZCTA internal point, not any travel route. With no radius, there is no user distance cutoff within NYC. Return at most 20 retailers ordered by distance, then stable retailer ID; disclose the cap and that results are not exhaustive.
+## API contract for Explore
 
-## Fare and comparison rules
+The UI currently submits ZIP and radius only. It has no walking/bus selector. The existing `GET /api/retailers` requires `mode=walking|bus`, so the current endpoint contract does not match the pulled UI. Before integration, align the endpoint and client so a search can be made with `zip` and optional `maxStraightLineMiles` only; do not add a visible travel-mode input just to satisfy the old contract. The endpoint currently includes fare and route limitation fields from the earlier scope; the UI does not display these and should consume only the fields it needs.
 
-- Walking mode has $0 fare. Bus mode may display the plan's previously checked $3 per paid local-bus ride / $6 for two separately paid rides only after rechecking the MTA source. Label it “example local-bus fare”; note reductions, transfers, caps and service class. It is not an actual trip estimate or evidence that a store is bus reachable.
-- Do not calculate route distance, travel time, transfer count, walking segment distance, verified round trip, grocery basket total, or per-store travel fare. All of these are unavailable in the core response.
-- Sort candidates only by approximate distance and stable ID. Do not mix generic fare examples or fictional demo times into ordering. Explain that nearby does not necessarily mean cheaper, faster, or practical for a selected mode.
+The UI needs:
 
-## API handoff to David
+- resolved ZIP/ZCTA origin coordinates and an approximation label;
+- retailers with stable ID, name, readable address, coordinates, approximate straight-line miles, and authorization status;
+- authorization source/date when verified, plus omissions or the USDA fallback when verification is unavailable;
+- result status, count/limit and truncation details if capped, and machine-readable errors with readable messages;
+- `ready` and `no-results` states that let the list and map update from the same submitted query.
 
-`GET /api/retailers?zip=<five-digits>&mode=walking|bus&maxStraightLineMiles=<optional>` is the single proposed contract. Agree final field names before wiring the UI. A successful response needs:
+Changing a ZIP or radius should continue to follow the UI’s submitted-search behavior: edits do not replace visible results until the shopper selects **Find stores**. On successful submission, update the list and map together. Reset clears the query, results, and selection. Pin selection and list selection should refer to the same retailer ID. Map tile loading or failure is handled by the UI and must not change the search result.
 
-- origin ZIP/ZCTA, approximate internal-point label, reference source/extract date;
-- up to 20 retailers with stable ID, name, address, coordinates, approximate straight-line miles, and only verified authorization evidence if available;
-- proximity ranking version and rationale, candidate-cap/truncation notice, omissions, and a generic fare-context object for the selected mode;
-- explicit `routeDistance`, `routeDuration`, `busReachability`, and `tripFare` unavailability, or a shared missing-evidence list that makes the same limitation clear.
+## Verification checklist
 
-Use stable machine-readable error codes and plain messages for malformed ZIP, unsupported ZIP/ZCTA, known outside coverage, invalid radius/mode, missing/corrupt location reference, unvalidated retailer data, and genuine no results. Do not echo a household location in logs or error traces. Reject client-supplied retailer coordinates, prices, authorization claims, and arbitrary URLs.
-
-## Verification and evidence gates
-
-- [ ] Reviewed ZCTA extract covers chosen examples in all five boroughs; malformed and unsupported cases are distinct. Outside-NYC classification requires a separate reviewed source.
-- [ ] Snapshot source/date/status are audited before current-authorization claims; coordinates, duplicates, and NYC geography are checked.
-- [ ] A supplied radius, omitted radius, 25-mile maximum, 20-candidate cap, stable ties, and no-results behavior match the contract.
-- [ ] Walking $0 and the generic bus example are labeled; actual routes, times, trip fares, grocery prices, and inventory remain unavailable.
-- [ ] David can render every API state without inventing missing evidence; no sample bus times enter the live API.
-- [ ] Local lint, typecheck, and build commands still pass after implementation.
-
-Shared user checks and deployment remain in the hackathon plan. Optional Gemini explanations must consume only supported facts and cannot change ordering.
+- [ ] The API accepts the ZIP/radius query shape used by Explore without requiring travel mode.
+- [ ] ZIP parsing distinguishes malformed input, supported lookup, unsupported ZIP, and reference-data failure.
+- [ ] The lookup uses reviewed ZIP/ZCTA internal points and labels the origin approximate.
+- [ ] Retailer identity, coordinates, duplicates, NYC geography, and current SNAP authorization evidence are reviewed.
+- [ ] Results described as SNAP-accepting contain only verified stores; otherwise status is clearly unverified with the USDA locator fallback.
+- [ ] Search results are radius-filtered and ordered by straight-line distance with a stable tie-breaker, within any disclosed result cap.
+- [ ] The response supports synchronized list cards and map pins, shared selection, no-results, and data-error states.
+- [ ] Relevant tests, lint, typecheck, and production build pass after backend changes.
