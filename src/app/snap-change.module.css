@@ -1,0 +1,21 @@
+.entry { display: grid; gap: 16px; min-width: 0; }
+.panel { min-width: 0; padding: 24px; border: 1px solid var(--forest); border-radius: 12px; background: #eef0df; }
+.entry .primary, .panel .primary { min-height: 48px; padding: 12px 18px; border: 1px solid var(--forest); border-radius: 6px; background: var(--forest); color: var(--cream); font: inherit; font-weight: 700; cursor: pointer; }
+.primary:hover { background: #163724; }
+.question { min-width: 0; margin: 20px 0 0; padding: 0; border: 0; }
+.question legend { font-size: 1.5rem; line-height: 1.2; font-weight: 700; }
+.question p { margin: 16px 0 !important; }
+.answers { display: grid; gap: 10px; }
+.answers label { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; background: var(--cream); cursor: pointer; }
+.answers input { accent-color: var(--forest); width: 20px; height: 20px; flex: none; }
+.controls { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+.secondary { min-height: 48px; padding: 12px 18px; border: 1px solid var(--forest); border-radius: 6px; background: transparent; }
+.secondary:disabled { opacity: .5; }
+.action { background: var(--lime); padding: 20px; border-radius: 6px; }
+.action h2 { margin-top: 10px; }
+.explanation { margin-top: 24px; }
+.explanation p { margin-top: 12px !important; }
+.explanation ul { padding-left: 24px; }
+.explanation li + li { margin-top: 10px; }
+.help { display: grid; gap: 16px; margin: 24px 0; padding-top: 20px; border-top: 1px solid var(--border); }
+.panel .limitation { margin-top: 20px; color: var(--muted); }
