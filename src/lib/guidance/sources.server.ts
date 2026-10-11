@@ -10,7 +10,7 @@ export const guidanceSources: (GuidanceSource & { context: string })[] = [
   {
     id: "ny-income", title: "New York State SNAP income terminology",
     url: "https://www.ny.gov/services/apply-snap", reviewedAt: "2026-10-10",
-    context: "Gross income means money earned before taxes and other deductions. Income guidelines vary with household size, earned income, older or disabled members, and dependent-care expenses. A SNAP budget and official application review determine eligibility and benefit amount. Do not infer eligibility from a single income figure. This context deliberately excludes numeric thresholds and benefit amounts.",
+    context: "Gross income means money earned before taxes and other deductions. Income guidelines vary with household size, earned income, older or disabled members, and dependent-care expenses. A SNAP budget and official application review determine eligibility and benefit amount. Do not infer eligibility from a single income figure. This context deliberately excludes numeric thresholds and benefit amounts. These are New York State rules; do not present them as applying elsewhere.",
   },
   {
     id: "snap-household", title: "SNAP household definition (7 CFR 273.1)",

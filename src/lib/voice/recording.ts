@@ -15,13 +15,15 @@ function encodeWav(samples: Float32Array): Blob {
   return new Blob([bytes], { type: "audio/wav" });
 }
 
-export function recordQuestion(signal: AbortSignal, onRecording: () => void, onSeconds: (seconds: number) => void, onPreparing: (automatic: boolean) => void): { stop: () => void; audio: Promise<Blob> } {
+export function recordQuestion(signal: AbortSignal, onRecording: (analyser: AnalyserNode) => void, onSeconds: (seconds: number) => void, onPreparing: (automatic: boolean) => void): { stop: () => void; audio: Promise<Blob> } {
   if (!isSecureContext || !navigator.mediaDevices?.getUserMedia || !window.MediaRecorder || !window.AudioContext || !window.OfflineAudioContext) {
     throw new Error("This browser cannot record here. Use desktop Chrome on localhost or HTTPS, or type your question.");
   }
   let stream: MediaStream | undefined;
   let recorder: MediaRecorder | undefined;
   let context: AudioContext | undefined;
+  let source: MediaStreamAudioSourceNode | undefined;
+  let analyser: AnalyserNode | undefined;
   let clock: ReturnType<typeof setInterval> | undefined;
   let limit: ReturnType<typeof setTimeout> | undefined;
   let chunks: Blob[] = [];
@@ -34,6 +36,7 @@ export function recordQuestion(signal: AbortSignal, onRecording: () => void, onS
 
   function cleanup() {
     clearInterval(clock); clearTimeout(limit);
+    source?.disconnect(); analyser?.disconnect();
     stream?.getTracks().forEach(track => track.stop());
     if (recorder?.state === "recording") recorder.stop();
     if (context && context.state !== "closed") void context.close().catch(() => { console.error("Microphone audio context cleanup failed."); });
@@ -83,6 +86,8 @@ export function recordQuestion(signal: AbortSignal, onRecording: () => void, onS
       if (settled || signal.aborted) { cleanup(); return; }
       context = new AudioContext(); await context.resume();
       if (settled || signal.aborted) { cleanup(); return; }
+      analyser = context.createAnalyser(); analyser.fftSize = 256;
+      source = context.createMediaStreamSource(stream); source.connect(analyser);
       const mime = ["audio/webm;codecs=opus", "audio/mp4", "audio/ogg;codecs=opus"].find(value => MediaRecorder.isTypeSupported(value));
       recorder = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
       recorder.ondataavailable = event => {
@@ -93,7 +98,7 @@ export function recordQuestion(signal: AbortSignal, onRecording: () => void, onS
       };
       recorder.onerror = () => finish(new Error("Microphone recording failed. Try again or type your question."));
       recorder.onstop = () => { void prepare(); };
-      recorder.start(250); onRecording();
+      recorder.start(250); onRecording(analyser);
       const started = performance.now();
       clock = setInterval(() => onSeconds(Math.min(30, Math.floor((performance.now() - started) / 1000))), 250);
       limit = setTimeout(() => { automatic = true; stop(); }, 30000);

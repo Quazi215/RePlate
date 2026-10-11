@@ -8,6 +8,17 @@
 .form label { font-weight: 700; }
 .form textarea { width: 100%; min-height: 110px; padding: 12px; border: 1px solid var(--forest); border-radius: 5px; font: inherit; color: inherit; background: var(--cream); resize: vertical; }
 .form > p { font-size: .9rem; }
+.questionInput { position: relative; }
+.questionInput textarea { display: block; padding-bottom: 64px; min-height: 150px; }
+.voiceControl { position: absolute; bottom: 10px; right: 12px; max-width: calc(100% - 24px); height: 44px; display: flex; justify-content: flex-end; align-items: center; overflow: hidden; border: 1px solid var(--border); border-radius: 22px; background: var(--lime); }
+.voiceButton { display: grid; place-items: center; flex: 0 0 42px; height: 42px; border: 0; border-radius: 50%; color: var(--forest); background: transparent; }
+.voiceButton:hover:not(:disabled) { background: #234b3614; }
+.voiceButton:disabled { opacity: .5; }
+.voiceControl:focus-within { outline: 3px solid var(--forest); outline-offset: 3px; }
+.voiceButton:focus-visible { outline: none; }
+.voiceMeter { display: flex; align-items: center; gap: 8px; padding-left: 14px; white-space: nowrap; }
+.voiceWaveform { width: 96px; height: 32px; fill: var(--forest); }
+.voiceTime { font-size: .75rem; font-variant-numeric: tabular-nums; }
 .actions { display: flex; flex-wrap: wrap; gap: 12px; }
 .answer { margin-top: 24px; padding: 24px; border: 1px solid var(--forest); border-radius: 12px; overflow-wrap: anywhere; }
 .answer p { margin: 12px 0 20px; white-space: pre-wrap; max-width: 80ch; }
@@ -15,3 +26,22 @@
 .answer li a { display: inline-block; min-height: 44px; padding: 10px 0; }
 .answer li span { display: block; font-size: .85rem; }
 .answer audio { display: block; width: 100%; max-width: 480px; min-height: 44px; margin-bottom: 12px; }
+.livePanel { margin-top: 24px; max-width: 70ch; padding: 24px; border: 1px solid var(--border); border-radius: 18px; background: var(--cream); text-align: center; }
+.liveHeader { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; text-align: left; }
+.liveHeader > p { font-size: .85rem; font-weight: 600; }
+.livePanel h3 { font-size: 1.6rem; }
+.livePanel > p { margin-top: 10px; }
+.liveHelp { color: var(--muted); font-size: .85rem; }
+.orb { width: 200px; height: 200px; margin: 24px auto 12px; padding: 8px; border: 1px solid var(--border); border-radius: 50%; }
+.orbCanvas { width: 100%; height: 100%; }
+.orbFallback { width: 100%; height: 100%; border-radius: 50%; background: radial-gradient(circle at 30% 25%, #e8f7a5, #d9ef70 20%, #547b40 65%, #234b36 90%); box-shadow: inset -8px -12px 24px #234b3640; }
+.liveStatus { font-weight: 700; }
+.startConversation { width: 100%; justify-content: center; margin: 20px 0 12px; }
+.liveTranscript { text-align: left; overflow-wrap: anywhere; }
+.liveTurn { border-top: 1px solid var(--border); padding: 18px 0; }
+.liveTurn p { margin-top: 8px; white-space: pre-wrap; }
+.liveTurn p span { color: var(--muted); font-size: .85rem; }
+.liveTurn ul { padding-left: 20px; }
+.liveTurn a { display: inline-block; padding: 10px 0; min-height: 44px; }
+.livePartial { padding: 16px; border-radius: 8px; background: #eef0df; white-space: pre-wrap; }
+@media (max-width: 480px) { .livePanel { padding: 18px; } .liveHeader { justify-content: center; text-align: center; } }

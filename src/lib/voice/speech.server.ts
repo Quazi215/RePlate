@@ -16,6 +16,7 @@ export async function speakAnswer(answer: string, signal: AbortSignal, provider:
   const operation = AbortSignal.any([signal, AbortSignal.timeout(10000)]);
   let reader: ReadableStreamDefaultReader<Uint8Array> | undefined;
   let rejectAbort: (() => void) | undefined;
+  let message = "Speech is unavailable. You can still read the answer and official sources.";
   try {
     operation.throwIfAborted();
     const cancelled = new Promise<never>((_, reject) => {
@@ -29,6 +30,7 @@ export async function speakAnswer(answer: string, signal: AbortSignal, provider:
     const response = await Promise.race([pending, cancelled]);
     operation.throwIfAborted();
     if (!response.ok || !/^audio\/mpeg(?:\s*;|$)/i.test(response.headers.get("content-type") ?? "")) {
+      if (response.status === 402) message = "Shosai’s voice requires ElevenLabs credits or a paid plan for the configured voice. You can still type or record a question below.";
       void response.body?.cancel().catch(() => {}); throw new Error("Invalid speech response");
     }
     reader = response.body?.getReader();
@@ -46,7 +48,7 @@ export async function speakAnswer(answer: string, signal: AbortSignal, provider:
     if (!size) throw new Error("Empty speech");
     return { audio: { mimeType: "audio/mpeg", base64: Buffer.concat(chunks).toString("base64") }, warning: null };
   } catch {
-    return { audio: null, warning: { code: "SPEECH_UNAVAILABLE", message: "Speech is unavailable. You can still read the answer and official sources." } };
+    return { audio: null, warning: { code: "SPEECH_UNAVAILABLE", message } };
   } finally {
     if (rejectAbort) operation.removeEventListener("abort", rejectAbort);
     reader?.releaseLock();

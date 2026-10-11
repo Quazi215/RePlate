@@ -1,10 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import dynamic from "next/dynamic";
 import type { GuidanceSuccess } from "../../lib/guidance/guidance";
 import { recordQuestion } from "../../lib/voice/recording";
 import brand from "../site.module.css";
 import styles from "./guidance.module.css";
+import VoiceInput from "./components/voice-input";
+const LiveConversation = dynamic(() => import("./live-conversation"), {
+  ssr: false, loading: () => <p role="status">Opening conversation…</p>,
+});
 
 export default function GuidanceJourney() {
   const [consented, setConsented] = useState(false);
@@ -14,7 +19,11 @@ export default function GuidanceJourney() {
   const [message, setMessage] = useState("");
   const [stage, setStage] = useState("");
   const [seconds, setSeconds] = useState(0);
+  const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
   const [spoken, setSpoken] = useState(false);
+  const [liveOpen, setLiveOpen] = useState(false);
+  const [liveActive, setLiveActive] = useState(false);
+  const liveButton = useRef<HTMLButtonElement>(null);
   const playback = useRef<HTMLAudioElement>(null);
   const stopRecording = useRef<(() => void) | null>(null);
   const active = useRef<AbortController | null>(null);
@@ -25,6 +34,7 @@ export default function GuidanceJourney() {
     active.current?.abort();
     active.current = null;
     stopRecording.current = null;
+    setAnalyser(null);
     setQuestion(""); setResult(null); setBusy(false); setMessage(""); setStage(""); setSeconds(0);
   }
 
@@ -33,7 +43,9 @@ export default function GuidanceJourney() {
       playback.current?.pause(); setSpoken(false);
       active.current?.abort(); active.current = null;
       stopRecording.current = null;
+      setAnalyser(null);
       setQuestion(""); setResult(null); setBusy(false); setMessage(""); setConsented(false); setStage(""); setSeconds(0);
+      setLiveOpen(false); setLiveActive(false);
     };
     const visibility = () => { if (document.visibilityState === "hidden") leave(); };
     document.addEventListener("visibilitychange", visibility);
@@ -68,7 +80,7 @@ export default function GuidanceJourney() {
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!consented || active.current) return;
+    if (!consented || active.current || liveActive) return;
     const trimmed = question.trim();
     if (!trimmed || trimmed.length > 2000) { setMessage("Ask a question between 1 and 2,000 characters."); return; }
     playback.current?.pause();
@@ -99,17 +111,18 @@ export default function GuidanceJourney() {
   }
 
   async function startVoice() {
-    if (!consented || active.current) return;
+    if (!consented || active.current || liveActive) return;
     playback.current?.pause(); setSpoken(false);
     const controller = new AbortController(); active.current = controller;
     setBusy(true); setQuestion(""); setResult(null); setMessage(""); setSeconds(0); setStage("Waiting for microphone permission…");
     try {
       const recording = recordQuestion(controller.signal,
-        () => { if (active.current === controller) setStage("Recording your question…"); },
+        node => { if (active.current === controller) { setAnalyser(node); setStage("Recording your question…"); } },
         value => { if (active.current === controller) setSeconds(value); },
         automatic => {
           if (active.current !== controller) return;
           stopRecording.current = null;
+          setAnalyser(null);
           setStage(automatic ? "30-second limit reached. Preparing audio…" : "Preparing audio…");
         });
       stopRecording.current = recording.stop;
@@ -135,17 +148,17 @@ export default function GuidanceJourney() {
         error instanceof Error && error.name === "Error" ? error.message : "Shosai could not connect. Try again or type your question.");
       setStage("");
     } finally {
-      if (active.current === controller) { active.current = null; stopRecording.current = null; setBusy(false); }
+      if (active.current === controller) { active.current = null; stopRecording.current = null; setAnalyser(null); setBusy(false); }
     }
   }
 
   return <section id="shosai" className={styles.panel} aria-labelledby="shosai-title">
     <p className={styles.eyebrow}>General NYC SNAP guidance · English</p>
     <h2 id="shosai-title">Talk to Shosai</h2>
-    <p>Record or type a general question about SNAP, applying in NYC, household or income terms, or using our screening tool. Recorded questions also receive a spoken answer when speech is available.</p>
+    <p>Record or type a general question about SNAP, applying in NYC, household or income terms, or using our screening tool. Recorded questions also receive a spoken answer when speech is available. Choose Talk to Shosai for a live conversation.</p>
     {!consented ? <div className={styles.disclosure}>
       <h3>Before you ask</h3>
-      <p>Your recorded audio is sent to Google Gemini for transcription. Review or edit the text, then choose Ask Shosai to send your question for an AI answer. For recorded questions, that written answer is sent to ElevenLabs to create speech. Typed questions stay text-only. Hiraku keeps recordings, questions, answers, and speech only in page memory and clears them when you leave or background this page. Google and ElevenLabs may retain submissions under their own policies. Cancelling cannot retract content already sent or undo provider billing. Microphone access is requested only when you choose Start recording.</p>
+      <p>With the voice icon, your audio is sent to Google Gemini for transcription. Review or edit the text, then choose Ask Shosai to send your question for an AI answer. For recorded questions, that written answer is sent to ElevenLabs to create speech. Typed questions stay text-only. Hiraku keeps recordings, questions, answers, and speech only in page memory and clears them when you leave or background this page. Google and ElevenLabs may retain submissions under their own policies. Cancelling cannot retract content already sent or undo provider billing. Microphone access is requested only when you choose the voice icon or Start conversation.</p>
       <p>Do not share names, addresses, Social Security numbers, case numbers, documents, or private case details. We cannot guarantee automatic redaction. Use fictional, general questions for this local demo.</p>
       <p>Shosai gives general information and may make mistakes. HRA decides eligibility. Your screening answers are never sent to Shosai. <a href="https://ai.google.dev/gemini-api/terms" referrerPolicy="no-referrer">Read Google’s processing terms ↗</a>. <a href="https://elevenlabs.io/privacy-policy" referrerPolicy="no-referrer">Read ElevenLabs’ privacy policy ↗</a>.</p>
       <button type="button" className={brand.primary} onClick={() => {
@@ -153,19 +166,25 @@ export default function GuidanceJourney() {
         requestAnimationFrame(() => input.current?.focus());
       }}>I agree — ask Shosai</button>
     </div> : <><div className={styles.form}>
-      <p>Record up to 30 seconds in English. Stop transcribes into the question box; review or edit it before choosing Ask Shosai. Cancel discards the recording. Longer questions are excluded to bound cost and waiting time. Voice capture was checked in desktop Chrome; Android and iPhone support are unverified. You can always type instead.</p>
+      <p>Use the voice icon in the question box to record up to 30 seconds in English. The stop icon transcribes into the box; review or edit it before choosing Ask Shosai. Cancel discards the recording. You can always type instead.</p>
       <div className={styles.actions}>
-        <button type="button" className={brand.primary} disabled={busy} onClick={() => { void startVoice(); }}>Start recording</button>
-        {stage === "Recording your question…" && <button type="button" className={brand.primary} onClick={() => stopRecording.current?.()}>Stop recording</button>}
+        <button ref={liveButton} type="button" className={brand.secondary} disabled={busy || liveOpen} aria-expanded={liveOpen} aria-controls="live-shosai-panel"
+          onClick={() => { clear(); setLiveOpen(true); }}>Talk to Shosai</button>
       </div>
       {stage === "Recording your question…" && <p aria-live="off">Recording: {seconds} / 30 seconds</p>}
-    </div><form onSubmit={submit} className={styles.form}>
+    </div>{liveOpen && <LiveConversation disabled={busy} onSessionChange={setLiveActive} onClose={() => {
+      setLiveOpen(false); setLiveActive(false); requestAnimationFrame(() => liveButton.current?.focus());
+    }} />}<form onSubmit={submit} className={styles.form}>
       <label htmlFor="shosai-question">Your general SNAP question</label>
+      <div className={styles.questionInput}>
       <textarea id="shosai-question" ref={input} value={question} onChange={event => setQuestion(event.target.value)}
-        maxLength={2000} required rows={3} disabled={busy} aria-describedby="shosai-question-help" autoComplete="off" />
+        maxLength={2000} required rows={3} disabled={busy || liveActive} aria-describedby="shosai-question-help" autoComplete="off" />
+      <VoiceInput analyser={analyser} requesting={stage === "Waiting for microphone permission…"} disabled={busy || liveActive}
+        seconds={seconds} onStart={() => { void startVoice(); }} onStop={() => stopRecording.current?.()} />
+      </div>
       <p id="shosai-question-help">Up to 2,000 characters. Leave out identifiers and private case details. Each question starts fresh.</p>
       <div className={styles.actions}>
-        <button className={brand.primary} disabled={busy} type="submit">Ask Shosai</button>
+        <button className={brand.primary} disabled={busy || liveActive} type="submit">Ask Shosai</button>
         <button className={brand.secondary} type="button" onClick={() => { clear(); if (busy) setMessage("Question cancelled. Ask again when ready."); input.current?.focus(); }}>{busy ? "Cancel question" : "Clear question and answer"}</button>
       </div>
     </form></>}

@@ -3,3 +3,4 @@ export type GuidanceSuccess = { status: "ready"; answer: string; sources: Guidan
   audio?: { mimeType: "audio/mpeg"; base64: string } | null;
   warning?: { code: "SPEECH_UNAVAILABLE"; message: string } | null };
 export type GuidanceError = { status: "error"; code: string; message: string };
+export type ConversationMessage = { role: "user" | "assistant"; text: string };

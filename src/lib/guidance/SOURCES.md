@@ -8,7 +8,9 @@ Reviewed October 10, 2026 for slice #19. `sources.server.ts` contains short para
 
 Hiraku screener usage instructions are verified against `src/app/screening/screening-journey.tsx` and [screening evidence](../screening/SOURCES.md). They describe our own interface; official citations substantiate the screening limitation and general SNAP concepts rather than imply government endorsement of Hiraku.
 
-Coverage is English NYC SNAP basics, applying, using the existing screener, and basic income/household terminology. Personal eligibility, benefit amounts, immigration, student exceptions, sanctions, work-rule decisions, and unclear circumstances need official help. Unrelated questions redirect to supported topics. The model receives no screening answers or conversational history, and no search tools.
+Coverage is English NYC SNAP basics, applying, using the existing screener, and basic income/household terminology. Shosai may explain general rules even when a user includes personal details, but must not apply them to the user's situation. Offer the limited NYC screener only when a user requests a personal eligibility assessment; never estimate eligibility or benefits. Other-location or uncovered location-specific rules must be identified as unverified and referred to that area's official agency. Immigration, student exceptions, sanctions, work-rule decisions, benefits amounts, and unclear circumstances need official help. Unrelated questions redirect to supported topics. The model receives no screening answers or search tools. Typed and reviewed-recording questions start fresh; live conversations supply bounded session history as untrusted context solely to understand follow-up questions. Earlier replies cannot override the reviewed context. Both paths use the same full-answer and source-ID checks before speech.
+
+These controls are prompt-based and answers cite reviewed source excerpts with visible review dates and a determination caveat. Recheck official sources before demos or when guidance may have changed; the model does not fetch live policy updates. HRA alone makes official NYC eligibility determinations.
 
 ## Provider gate and retention
 
