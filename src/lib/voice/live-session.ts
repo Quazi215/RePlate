@@ -1,4 +1,5 @@
 import type { ConversationMessage, GuidanceSuccess } from "../guidance/guidance";
+<<<<<<< HEAD
 import type { Locale } from "../i18n/locale";
 
 export type LiveTurn = { question: string; result?: GuidanceSuccess; interrupted?: boolean };
@@ -8,6 +9,18 @@ async function requestAnswer(question: string, history: ConversationMessage[], s
   const response = await fetch("/api/voice/live", {
     method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store",
     body: JSON.stringify({ question, history, locale }), signal: AbortSignal.any([signal, AbortSignal.timeout(50000)]),
+=======
+import type { ScreeningAnswers } from "../screening/snap-screening";
+
+export type LiveTurn = { question: string; result?: GuidanceSuccess; interrupted?: boolean };
+export type LiveRequestOptions = { screening?: ScreeningAnswers; spoken?: false };
+export type LiveAnswerProvider = (question: string, history: ConversationMessage[], signal: AbortSignal, options?: LiveRequestOptions) => Promise<GuidanceSuccess>;
+
+async function sendRequest(payload: object, signal: AbortSignal): Promise<GuidanceSuccess> {
+  const response = await fetch("/api/voice/live", {
+    method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store",
+    body: JSON.stringify(payload), signal: AbortSignal.any([signal, AbortSignal.timeout(50000)]),
+>>>>>>> origin
   });
   const body = await response.json();
   if (!response.ok || body.status !== "ready" || typeof body.answer !== "string" || !Array.isArray(body.sources)) {
@@ -16,13 +29,26 @@ async function requestAnswer(question: string, history: ConversationMessage[], s
   return body;
 }
 
+function requestAnswer(question: string, history: ConversationMessage[], signal: AbortSignal, options?: LiveRequestOptions) {
+  return sendRequest({ question, history, ...options }, signal);
+}
+
+export function requestScreeningGreeting(screening: ScreeningAnswers, signal: AbortSignal) {
+  return sendRequest({ history: [], screening, greeting: true }, signal);
+}
+
 // Owns turn cancellation and memory so late responses cannot revive a closed session.
 export class LiveSession {
   private turns: LiveTurn[] = [];
   private pending: AbortController | null = null;
   private closed = false;
 
+<<<<<<< HEAD
   constructor(private changed: (turns: LiveTurn[]) => void, private provider: LiveAnswerProvider = requestAnswer, private locale: Locale = "en") {}
+=======
+  constructor(private changed: (turns: LiveTurn[]) => void, private provider: LiveAnswerProvider = requestAnswer,
+    private options?: LiveRequestOptions) {}
+>>>>>>> origin
 
   interrupt(speaking = false): void {
     if (this.closed) return;
@@ -45,7 +71,11 @@ export class LiveSession {
     this.turns.push(turn); this.changed([...this.turns]);
     const controller = new AbortController(); this.pending = controller;
     try {
+<<<<<<< HEAD
       const result = await this.provider(turn.question, history, controller.signal, this.locale);
+=======
+      const result = await this.provider(turn.question, history, controller.signal, this.options);
+>>>>>>> origin
       if (this.closed || this.pending !== controller) return null;
       turn.result = result; this.changed([...this.turns]);
       return result;

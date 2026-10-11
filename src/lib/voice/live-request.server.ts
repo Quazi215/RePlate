@@ -1,7 +1,11 @@
 import type { ConversationMessage } from "../guidance/guidance";
 import { getGuidance, type GuidanceProvider } from "../guidance/guidance.server";
 import { speakAnswer, type SpeechProvider } from "./speech.server";
+<<<<<<< HEAD
 import { isLocale, realtimeCodes } from "../i18n/locale";
+=======
+import { readScreeningContext, screeningGreeting } from "../screening/screening-context";
+>>>>>>> origin
 
 const headers = { "Cache-Control": "private, no-store, max-age=0", "X-Content-Type-Options": "nosniff" };
 function error(status: number, message: string, code = "INVALID_REQUEST"): Response {
@@ -45,9 +49,17 @@ export async function handleLiveGuidanceRequest(request: Request, provider?: Gui
     const body = await readRequest(request, signal);
     if (body instanceof Response) return body;
     const data = body as Record<string, unknown>;
+<<<<<<< HEAD
     if (Object.keys(data).some(key => !["history", "question", "locale"].includes(key)) || !('history' in data) || !('question' in data) ||
       ("locale" in data && !isLocale(data.locale)) || typeof data.question !== "string" ||
       !data.question.trim() || data.question.trim().length > 2000 || !Array.isArray(data.history) || data.history.length > 60) {
+=======
+    if (Object.keys(data).some(key => !["history", "question", "screening", "spoken", "greeting"].includes(key)) ||
+      ("spoken" in data && data.spoken !== false) || ("greeting" in data && data.greeting !== true) ||
+      !Array.isArray(data.history) || data.history.length > 60 ||
+      (data.greeting === true ? "question" in data || data.history.length !== 0 || !("screening" in data) :
+        typeof data.question !== "string" || !data.question.trim() || data.question.trim().length > 2000)) {
+>>>>>>> origin
       return error(400, "Ask a shorter question, or start a fresh conversation.");
     }
     let historyLength = 0;
@@ -60,15 +72,26 @@ export async function handleLiveGuidanceRequest(request: Request, provider?: Gui
       historyLength += message.text.length;
     }
     if (historyLength > 60000) return error(400, "This conversation is too long. Start again.");
+<<<<<<< HEAD
     const locale = isLocale(data.locale) ? data.locale : "en";
     if (!realtimeCodes[locale]) return error(400, "Live voice is unavailable in the selected language.", "LIVE_VOICE_UNAVAILABLE");
     const result = await getGuidance(data.question.trim(), signal, provider, data.history as ConversationMessage[], locale);
+=======
+    const screening = "screening" in data ? readScreeningContext(data.screening) : undefined;
+    if (screening === null) return error(400, "Review your screening answers, then start a fresh conversation.");
+    const result = data.greeting === true ? { status: "ready" as const, answer: screeningGreeting, sources: [] } :
+      await getGuidance((data.question as string).trim(), signal, provider, data.history as ConversationMessage[], screening);
+>>>>>>> origin
     if (result.status === "error") {
       const { httpStatus, ...payload } = result;
       return Response.json(payload, { status: httpStatus, headers });
     }
     signal.throwIfAborted();
+<<<<<<< HEAD
     const audio = await speakAnswer(result.answer, signal, speech, locale);
+=======
+    const audio = data.spoken === false ? {} : await speakAnswer(result.answer, signal, speech);
+>>>>>>> origin
     signal.throwIfAborted();
     return Response.json({ ...result, ...audio }, { headers });
   } catch {
