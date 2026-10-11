@@ -2,9 +2,10 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import brand from "./site.module.css";
 import styles from "./info.module.css";
+import GuidanceJourney from "./guidance/guidance-journey";
 
 export const metadata: Metadata = {
-  title: "RePlate · SNAP information",
+  title: "Hiraku · SNAP information",
   description: "Understand NYC's October 2026 SNAP work-rule reset and find official next steps.",
 };
 
@@ -18,8 +19,8 @@ export default function InfoPage() {
   return <div className={`${brand.site} ${styles.page}`}>
     <a className={styles.skipLink} href="#snap-content">Skip to content</a>
     <header className={styles.header}>
-      <Link className={brand.brand} href="/" aria-label="RePlate home">
-        <span className={brand.brandMark} aria-hidden="true" />RePlate<span className={brand.brandPeriod}>.</span>
+      <Link className={brand.brand} href="/" aria-label="Hiraku home">
+        <span className={brand.brandMark} aria-hidden="true" />Hiraku<span className={brand.brandPeriod}>.</span>
       </Link>
       <nav className={brand.navigation} aria-label="Main navigation"><Link href="/" aria-current="page">Info</Link><Link href="/explore">Explore</Link></nav>
       <a className={styles.headerHelp} href="#help">Get help <span aria-hidden="true">↗</span></a>
@@ -32,6 +33,7 @@ export default function InfoPage() {
           <p className={styles.lead}>Lost SNAP because of work rules? The October 1 reset may give you a way back.</p>
           <div className={styles.heroActions}>
             <Link className={styles.primary} href="/screening">Find your next step <span aria-hidden="true">→</span></Link>
+            <a className={styles.primary} href="#shosai">Talk to Shosai <span aria-hidden="true">↓</span></a>
             <a href={workRules}>Read HRA’s reset guidance <span aria-hidden="true">↗</span></a>
           </div>
         </div>
@@ -43,6 +45,7 @@ export default function InfoPage() {
         </figure>
       </section>
 
+      <GuidanceJourney />
       <section className={styles.explainer} aria-labelledby="reset-title">
         <div className={styles.sectionHeading}><h2 id="reset-title">What reset. What didn’t.</h2><p>The allowance restarted. The work rules still apply.</p></div>
         <ol className={styles.timeline}>
@@ -68,7 +71,7 @@ export default function InfoPage() {
 
       <section className={styles.keepBenefits} aria-labelledby="keep-title">
         <div><span className={styles.ruleLabel}>Beyond the reset</span><h2 id="keep-title">Reapplying buys time.<br />Plan for what comes next.</h2><p>People subject to ABAWD rules generally need 80 hours a month of work or qualifying activities, unless exempt. Approved community-service hours follow a different calculation.</p></div>
-        <div className={styles.tools}><h3>Let the official tools help.</h3><p>The city’s guide includes an exemption checker, volunteer-hours calculator, reporting instructions, and forms. HRA must document an exemption.</p><a className={styles.primary} href={workGuide}>Explore work-rule tools <span aria-hidden="true">↗</span></a><p className={styles.small}>ABAWD is the official name for these work rules. RePlate does not determine your eligibility or case status.</p></div>
+        <div className={styles.tools}><h3>Let the official tools help.</h3><p>The city’s guide includes an exemption checker, volunteer-hours calculator, reporting instructions, and forms. HRA must document an exemption.</p><a className={styles.primary} href={workGuide}>Explore work-rule tools <span aria-hidden="true">↗</span></a><p className={styles.small}>ABAWD is the official name for these work rules. Hiraku does not determine your eligibility or case status.</p></div>
       </section>
 
       <section id="help" className={styles.help} aria-labelledby="help-title">
@@ -76,7 +79,7 @@ export default function InfoPage() {
         <div className={styles.helpLinks}><a href={workRules}>HRA work-rule assistance &amp; forms ↗</a><a href="https://www.nyc.gov/site/mayorspeu/resources/oh-snap-new-work-requirements.page">Official guides in other languages ↗</a><a href={snapGuide}>Find immediate food help &amp; SNAP support ↗</a></div>
       </section>
       <section className={styles.explore} aria-labelledby="explore-title"><h2 id="explore-title">Explore grocery options.</h2><p>Browse the grocery map and ZIP search. It currently uses clearly labeled sample stores.</p><Link className={styles.textAction} href="/explore">Explore nearby groceries <span aria-hidden="true">→</span></Link></section>
-      <footer className={styles.footer}><p><strong>RePlate.</strong> Clear information. Official next steps.</p><p>Sources reviewed <time dateTime="2026-10-10">October 10, 2026</time>.<br />Independent information. Not an HRA service or an eligibility decision.</p></footer>
+      <footer className={styles.footer}><p><strong>Hiraku.</strong> Clear information. Official next steps.</p><p>Sources reviewed <time dateTime="2026-10-10">October 10, 2026</time>.<br />Independent information. Not an HRA service or an eligibility decision.</p></footer>
     </main>
   </div>;
 }

@@ -1,17 +1,19 @@
-# RePlate
+# Hiraku (RePlate repository)
 
-RePlate spreads awareness of NYC SNAP changes and links residents to official next steps. Info is the homepage at `/`; the secondary Explore feature at `/explore` provides a grocery map and ZIP/radius search. Explore calls the retailer search API with a ZIP and optional straight-line radius and displays local supermarket candidates as list cards and map pins. Current SNAP authorization remains unverified. See the [frontend guide](src/app/explore/README.md).
+Hiraku spreads awareness of NYC SNAP changes and links residents to official next steps. Info is the homepage at `/`; the secondary Explore feature at `/explore` provides a grocery map and ZIP/radius search. Explore calls the retailer search API with a ZIP and optional straight-line radius and displays local supermarket candidates as list cards and map pins. Current SNAP authorization remains unverified. See the [frontend guide](src/app/explore/README.md).
 
 ## Local setup
 
 1. Install Node.js 20.9 or newer and npm.
 2. Run `npm ci`.
-3. Copy `.env.example` to `.env.local` only if you add optional Gemini assistance.
+3. For optional local Shosai guidance, copy `.env.example` to `.env.local`, set `GEMINI_API_KEY`, and keep the verified server-only `GEMINI_MODEL=gemini-3.5-flash-lite`. Otherwise no provider configuration is needed.
 4. Run `npm run dev` and open http://localhost:3000.
 
-The backend uses a reviewed local NYC ZIP Code Tabulation Area reference and needs no routing API key or payment card. `GEMINI_API_KEY` is only for optional server-side explanations. Never prefix secret keys with `NEXT_PUBLIC_` or commit `.env.local`. Explore calls the same-origin retailer API and loads an OpenStreetMap basemap. Store coordinates and computed distances come from the validated local dataset. Neither page calls Gemini.
+The backend uses a reviewed local NYC ZIP Code Tabulation Area reference and needs no routing API key or payment card. `GEMINI_API_KEY` is only for optional server-side explanations. Never prefix secret keys with `NEXT_PUBLIC_` or commit `.env.local`. Explore calls the same-origin retailer API and loads an OpenStreetMap basemap. Store coordinates and computed distances come from the validated local dataset. Info offers optional, explicitly opted-in typed Shosai guidance; Explore and screening do not call Gemini.
 
 ## Project commands
+
+On Info, choose Talk to Shosai, review the Google processing disclosure, explicitly opt in, and submit a fictional English NYC SNAP question. Answers are text-only with reviewed official citations. Questions are independent; no screening inputs are transferred. Cancel, Clear, backgrounding, and leaving discard page state; Google processing cannot be retracted. Missing configuration leaves static guidance and screening available. See [source review](src/lib/guidance/SOURCES.md) and [Slice 1 verification](docs/design/shosai-slice1-verification.md). Voice is deferred to Slice 2.
 
 - `npm run dev` starts the local server.
 - `npm run build` creates a production build.
@@ -26,7 +28,7 @@ This repository is linked to a Vercel project, with the Next.js app at the repos
 
 Create a preview deployment from the Vercel dashboard or with the [Vercel CLI](https://vercel.com/docs/cli), then confirm the build and routes before promoting a production deployment. Check the Vercel dashboard for the current deployment status.
 
-No environment variables are required for the current app. `GEMINI_API_KEY` is optional and should only be configured as a server-side Vercel environment variable if the optional Gemini feature is implemented. The production build command is `npm run build`; use Node.js 20.9 or newer as specified by `package.json`.
+No environment variables are required for the current app. Shosai is restricted to a local presenter-operated demo. Hosted guidance requires a separate access and abuse-control decision; do not enable its keys on public deployments. The production build command is `npm run build`; use Node.js 20.9 or newer as specified by `package.json`.
 
 To verify a locally configured Gemini key, run `npm run gemini:check`. It loads `.env.local`, sends one short prompt to the stable `gemini-3.5-flash-lite` model, and reports only success or an error category; it never prints the key or generated text. This checks API connectivity and model access, not a user-facing Gemini feature.
 
@@ -38,4 +40,4 @@ Proximity ordering is implemented in `src/lib/retailers/proximity-ranking.ts`. `
 
 `GET /api/retailers?zip=10001&maxStraightLineMiles=5` composes the reviewed location reference, validated retailer snapshot, and proximity ranking. The radius is optional and must be greater than 0 and at most 25 miles. Responses include up to five candidates, provenance and authorization omissions, a truncation notice, and clear data limitations. Invalid input, unsupported ZIPs, missing data, and genuine no-results have distinct responses. The endpoint is dynamic and responses are not cached. Explore sends ZIP/radius searches on Find stores. Reset and newer submissions cancel older requests; API/network failures offer retry and the USDA locator. No travel mode is required.
 
-The map uses Leaflet and OpenStreetMap tiles. No map API key is required. Retailer data stays in the repository snapshot; current SNAP authorization, prices, stock, and routes are unverified. Fare calculations and fictional demo stores have been removed from the Explore flow. The Gemini connectivity-check script remains available for optional future assistance.
+The map uses Leaflet and OpenStreetMap tiles. No map API key is required. Retailer data stays in the repository snapshot; current SNAP authorization, prices, stock, and routes are unverified. Fare calculations and fictional demo stores have been removed from the Explore flow. The Gemini connectivity-check script remains available.

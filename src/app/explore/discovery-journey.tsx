@@ -75,7 +75,7 @@ function Sources({ result }: { result: DiscoveryResult | null }) {
     <p>Distances are calculated from an approximate ZIP/ZCTA internal point, not your address or a travel route. {result ? `${result.originLabel} Reference extracted ${result.referenceDate}. ` : null}<a href="https://data.cityofnewyork.us/City-Government/ZIP-Code-Tabulation-Areas/35j5-n34v" target="_blank" rel="noopener noreferrer">NYC ZIP/ZCTA reference ↗</a>.</p>
     <p>Results use the submitted ZIP and straight-line radius. Panning or zooming does not search the visible area. Nearby does not establish a usable walking or bus route.</p>
     <p>SNAP authorization is not verified. Missing evidence does not mean a store does not accept SNAP. <a href={retailerLocatorUrl} target="_blank" rel="noopener noreferrer">Check stores in the official USDA retailer locator ↗</a>.</p>
-    <p>The geographic basemap is supplied by OpenStreetMap. Tile requests share normal browser/network information and the viewed tile area with that provider. RePlate does not request your precise location or send a home address. <a href="https://osmfoundation.org/wiki/Privacy_Policy" target="_blank" rel="noopener noreferrer">OpenStreetMap privacy policy ↗</a>.</p>
+    <p>The geographic basemap is supplied by OpenStreetMap. Tile requests share normal browser/network information and the viewed tile area with that provider. Hiraku does not request your precise location or send a home address. <a href="https://osmfoundation.org/wiki/Privacy_Policy" target="_blank" rel="noopener noreferrer">OpenStreetMap privacy policy ↗</a>.</p>
   </details>;
 }
 
@@ -169,7 +169,7 @@ export default function DiscoveryJourney() {
   const fallback = <div className={styles.mapFailure} role="status"><h2>Map unavailable</h2><p>The map could not load. Your store list is still available.</p><div className={styles.failureActions}><button className={styles.primary} onClick={retryMap}>Retry map</button><button className={styles.secondary} onClick={() => setView("list")}>View store list</button></div></div>;
 
   return <LazyMotion features={domMax} strict><MotionConfig reducedMotion="user"><div className={styles.site}>
-    <header className={styles.header}><Link className={styles.brand} href="/" aria-label="RePlate home"><span className={styles.brandMark} aria-hidden="true" />RePlate<span className={styles.brandPeriod} aria-hidden="true">.</span></Link><nav className={styles.navigation} aria-label="Main navigation"><Link href="/">Info</Link><Link href="/explore" aria-current="page">Explore</Link></nav><button className={styles.textButton} onClick={reset}>Reset</button></header>
+    <header className={styles.header}><Link className={styles.brand} href="/" aria-label="Hiraku home"><span className={styles.brandMark} aria-hidden="true" />Hiraku<span className={styles.brandPeriod} aria-hidden="true">.</span></Link><nav className={styles.navigation} aria-label="Main navigation"><Link href="/">Info</Link><Link href="/explore" aria-current="page">Explore</Link></nav><button className={styles.textButton} onClick={reset}>Reset</button></header>
     <div className={styles.evidenceNotice}><strong>SNAP authorization not verified</strong><span>Confirm current SNAP acceptance with the USDA locator or the store.</span></div>
     <main className={styles.shell}>
       <div className={styles.titleStrip}><div><h1>Your neighborhood, on the map.</h1><p>Find nearby supermarket candidates by NYC ZIP code.</p></div><span className={styles.areaTag}>{result ? `${result.borough} · ${result.zip}` : "NYC · Five boroughs"}</span></div>
@@ -197,7 +197,7 @@ export default function DiscoveryJourney() {
           <Sources result={result} />
         </aside>
       </section>
-      <footer className={styles.footer}><span>RePlate · Explore grocery options.</span><a href="https://www.fns.usda.gov/snap/retailer-locator" target="_blank" rel="noopener noreferrer">Find verified information with USDA ↗</a></footer>
+      <footer className={styles.footer}><span>Hiraku · Explore grocery options.</span><a href="https://www.fns.usda.gov/snap/retailer-locator" target="_blank" rel="noopener noreferrer">Find verified information with USDA ↗</a></footer>
     </main>
   </div></MotionConfig></LazyMotion>;
 }

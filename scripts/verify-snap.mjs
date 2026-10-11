@@ -30,7 +30,9 @@ try {
   assert.equal(await page.getByText('Prototype for review', { exact: true }).count(), 0);
     await page.evaluate(() => document.fonts.ready);
     assert.equal(await page.getByRole('heading', { level: 1 }).count(), 1);
-    assert.equal(await page.locator('form, input').count(), 0, 'P0 must not collect personal information');
+    assert.equal(await page.locator('#shosai textarea').count(), 0, 'Guidance input appears only after disclosure and opt-in');
+    await page.getByRole('button', { name: 'I agree — type a question' }).waitFor();
+    assert.match(await page.locator('#shosai').innerText(), /Google may retain submissions/);
     assert.match(await page.locator('main').innerText(), /not necessarily consecutive/);
     assert.match(await page.locator('main').innerText(), /HRA must still determine eligibility/);
     assert.equal(await page.getByRole('link', { name: /Open ACCESS HRA/ }).getAttribute('href'), 'https://a069-access.nyc.gov/accesshra/');
@@ -383,7 +385,7 @@ try {
     const anchors = await page.locator('a').evaluateAll(elements => elements.map(element => element.getAttribute('href')));
     for (const href of anchors) {
       if (href.startsWith('#')) assert.equal(await page.locator(href).count(), 1, `Working anchor ${href}`);
-      if (href.startsWith('https:')) assert(['www.nyc.gov', 'home4.nyc.gov', 'a069-access.nyc.gov'].includes(new URL(href).hostname), 'Official handoffs only');
+      if (href.startsWith('https:')) assert(href === 'https://ai.google.dev/gemini-api/terms' || ['www.nyc.gov', 'home4.nyc.gov', 'a069-access.nyc.gov'].includes(new URL(href).hostname), 'Official handoffs or the disclosed Google processing terms only');
     }
     mkdirSync(output, { recursive: true });
     await page.evaluate(() => window.scrollTo(0, 0));
