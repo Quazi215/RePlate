@@ -70,17 +70,12 @@ export default function ScreeningJourney() {
       <p>{t("If everyone receives SSI or Cash Assistance, we check that assistance-based path. Otherwise, we compare income for households of 1–8. The guideline depends on income from work, an older/disabled/blind member, or dependent-care costs. We account for child support paid when it applies.")}</p>
       <p>{t("This is a limited financial check. If a required answer is unknown or your circumstances are outside the supported checks, you’ll get an explanation and an official next step.")}</p>
     </aside>
-<<<<<<< HEAD
-    <p>{t("No account, identifying details, or documents. Answers stay on this page and clear when you refresh, start over, or leave.")}</p>
-    <div className={styles.actions}><button className={brand.primary} type="button" onClick={() => navigate(screeningOrder[0])}>{t("Start screening")}</button></div>
-=======
-    <p>No account, identifying details, or documents. Answers stay in page memory and clear when you refresh, start over, or leave. If you choose to talk to Shosai after screening, your answers are shared to help explain your result.</p>
-    <div className={styles.actions}><button className={brand.primary} type="button" onClick={() => navigate(screeningOrder[0])}>Start screening</button></div>
->>>>>>> origin
+    <p>{t("No account, identifying details, or documents. Answers stay on this page and clear when you refresh, start over, or leave.")} {dynamic("If you choose to talk to Shosai after screening, your answers are shared to help explain your result.")}</p>
+    <div className={styles.actions}><button className={brand.primary} type="button" onClick={() => navigate(screeningOrder[0])}>{dynamic("Start screening")}</button></div>
   </section>;
 
   const activeQuestions = activeScreeningQuestions(answers);
-  if (view === "shosai") return <LiveConversation disabled={false} screening={answers} screeningChanged={screeningChanged}
+  if (view === "shosai") return <LiveConversation key={locale} disabled={false} screening={answers} screeningChanged={screeningChanged}
     onReview={() => { setReturnToShosai(true); navigate("review"); }} onClose={() => navigate("result")} />;
   if (view === "result") {
     const result = screenSnap(answers);
@@ -90,16 +85,11 @@ export default function ScreeningJourney() {
       <div className={styles.notice}><h2>{t("Why you got this result")}</h2><ul>{result.reasons.map((reason) => <li key={reason}>{localizeScreeningReason(locale, reason, answers)}</li>)}</ul></div>
       <p>{result.limitation.split(" This does not mean you are officially ineligible.").map((part, index) => index ? `${dynamic(" This does not mean you are officially ineligible. Review your answers or ask HRA about other rules that may apply.")}` : dynamic(part))}</p>
       <div className={styles.actions}>
-<<<<<<< HEAD
-        <button className={brand.primary} type="button" onClick={() => navigate("review")}>{t("Review my answers")}</button>
-        <button className={brand.secondary} type="button" onClick={restart}>{t("Start over")}</button>
-=======
-        <button className={brand.primary} type="button" onClick={() => navigate("review")}>Review my answers</button>
-        <button className={brand.secondary} type="button" onClick={openShosai}>Talk to Shosai</button>
-        <button className={brand.secondary} type="button" onClick={restart}>Start over</button>
->>>>>>> origin
+        <button className={brand.primary} type="button" onClick={() => navigate("review")}>{dynamic("Review my answers")}</button>
+        <button className={brand.secondary} type="button" onClick={openShosai}>{dynamic("Talk to Shosai")}</button>
+        <button className={brand.secondary} type="button" onClick={restart}>{dynamic("Start over")}</button>
       </div>
-      <p>Questions about your result? Talk it through with Shosai.</p>
+      <p>{dynamic("Questions about your result? Talk it through with Shosai.")}</p>
       <section className={styles.preparation} aria-labelledby="prepare-title">
         <h2 id="prepare-title">{t("Prepare your next step")}</h2>
         <p>{t("You can review your answers, ask HRA for help, or apply when you’re ready. HRA can tell you which documents are needed.")}</p>
@@ -125,14 +115,9 @@ export default function ScreeningJourney() {
       </div>)}
     </dl>
     <div className={styles.actions}>
-<<<<<<< HEAD
-      <button className={brand.primary} type="button" onClick={() => navigate("result")}>{t("Back to result")}</button>
-      <button className={brand.secondary} type="button" onClick={restart}>{t("Start over")}</button>
-=======
-      <button className={brand.primary} type="button" onClick={() => navigate("result")}>Back to result</button>
-      {returnToShosai && <button className={brand.secondary} type="button" onClick={() => { setReturnToShosai(false); openShosai(); }}>Back to Shosai</button>}
-      <button className={brand.secondary} type="button" onClick={restart}>Start over</button>
->>>>>>> origin
+      <button className={brand.primary} type="button" onClick={() => navigate("result")}>{dynamic("Back to result")}</button>
+      {returnToShosai && <button className={brand.secondary} type="button" onClick={() => { setReturnToShosai(false); openShosai(); }}>{dynamic("Back to Shosai")}</button>}
+      <button className={brand.secondary} type="button" onClick={restart}>{dynamic("Start over")}</button>
     </div>
   </section>;
 
@@ -186,10 +171,6 @@ export default function ScreeningJourney() {
         <button className={brand.secondary} type="button" onClick={() => navigate(activeQuestions[index - 1] ?? "entry")}>{t("Back")}</button>
       </div>
     </form>
-<<<<<<< HEAD
-    <p className={styles.source}>{t("Your answers stay on this page. Refreshing or leaving clears them.")}</p>
-=======
-    <p className={styles.source}>Your answers stay in page memory. Refreshing or leaving clears them. Sharing with Shosai is optional after screening.</p>
->>>>>>> origin
+    <p className={styles.source}>{t("Your answers stay on this page. Refreshing or leaving clears them.")} {dynamic("Sharing with Shosai is optional after screening.")}</p>
   </section>;
 }

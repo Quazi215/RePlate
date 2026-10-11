@@ -1,23 +1,17 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useSyncExternalStore, type ReactNode } from "react";
 import { direction, isLocale, locales, nativeNames, type Locale } from "./locale";
+import { readLocale, setLocale, subscribeLocale } from "./locale-store";
 import { translate, translateDynamic, type TranslationKey } from "./translations";
 
 const LocaleContext = createContext<{ locale: Locale; setLocale: (locale: Locale) => void }>({ locale: "en", setLocale: () => {} });
 
 export function LocaleProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocale] = useState<Locale>("en");
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("hiraku-locale");
-      if (isLocale(saved)) setLocale(saved);
-    } catch { /* Storage may be disabled; English remains available. */ }
-  }, []);
+  const locale = useSyncExternalStore<Locale>(subscribeLocale, readLocale, () => "en");
   useEffect(() => {
     document.documentElement.lang = locale;
     document.documentElement.dir = direction(locale);
-    try { localStorage.setItem("hiraku-locale", locale); } catch { /* Keep this visit's choice. */ }
   }, [locale]);
   return <LocaleContext.Provider value={{ locale, setLocale }}>{children}</LocaleContext.Provider>;
 }

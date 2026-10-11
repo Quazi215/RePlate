@@ -14,8 +14,13 @@ const LiveConversation = dynamic(() => import("./live-conversation"), {
 });
 
 export default function GuidanceJourney() {
-  const { locale, t, dynamic } = useLocale();
+  const { locale } = useLocale();
   const [consented, setConsented] = useState(false);
+  return <GuidanceSession key={locale} consented={consented} setConsented={setConsented} />;
+}
+
+function GuidanceSession({ consented, setConsented }: { consented: boolean; setConsented: (consented: boolean) => void }) {
+  const { locale, t, dynamic } = useLocale();
   const [question, setQuestion] = useState("");
   const [result, setResult] = useState<GuidanceSuccess | null>(null);
   const [busy, setBusy] = useState(false);
@@ -42,16 +47,6 @@ export default function GuidanceJourney() {
   }
 
   useEffect(() => {
-    active.current?.abort();
-    active.current = null;
-    playback.current?.pause();
-    stopRecording.current?.();
-    stopRecording.current = null;
-    setQuestion(""); setResult(null); setMessage(""); setStage(""); setBusy(false);
-    setLiveOpen(false); setLiveActive(false); setSpoken(false);
-  }, [locale]);
-
-  useEffect(() => {
     const leave = () => {
       playback.current?.pause(); setSpoken(false);
       active.current?.abort(); active.current = null;
@@ -70,7 +65,7 @@ export default function GuidanceJourney() {
       window.removeEventListener("pagehide", leave);
       window.removeEventListener("pageshow", leave);
     };
-  }, []);
+  }, [setConsented]);
 
   useEffect(() => {
     const player = playback.current;
@@ -170,17 +165,10 @@ export default function GuidanceJourney() {
     <h2 id="shosai-title">{t("Talk to Shosai")}</h2>
     <p>{t("Record or type a general question about SNAP, applying in NYC, household or income terms, or using our screening tool. Recorded questions also receive a spoken answer when speech is available. Choose Talk to Shosai for a live conversation.")}</p>
     {!consented ? <div className={styles.disclosure}>
-<<<<<<< HEAD
-      <h3>{t("Before you ask")}</h3>
-      <p>{t("With the voice icon, your audio is sent to Google Gemini for transcription. Review or edit the text, then choose Ask Shosai to send your question for an AI answer. For recorded questions, that written answer is sent to ElevenLabs to create speech. Typed questions stay text-only. Hiraku keeps recordings, questions, answers, and speech only in page memory and clears them when you leave or background this page. Google and ElevenLabs may retain submissions under their own policies. Cancelling cannot retract content already sent or undo provider billing. Microphone access is requested only when you choose the voice icon or Start conversation.")}</p>
-      <p>{t("Do not share names, addresses, Social Security numbers, case numbers, documents, or private case details. We cannot guarantee automatic redaction. Use fictional, general questions for this local demo.")}</p>
-      <p>{t("Shosai gives general information and may make mistakes. HRA decides eligibility. Your screening answers are never sent to Shosai. ")}<a href="https://ai.google.dev/gemini-api/terms" referrerPolicy="no-referrer">{t("Read Google’s processing terms ↗")}</a>. <a href="https://elevenlabs.io/privacy-policy" referrerPolicy="no-referrer">{t("Read ElevenLabs’ privacy policy ↗")}</a>.</p>
-=======
       <h3>Before you ask</h3>
       <p>With the voice icon, your audio is sent to Google Gemini for transcription. Review or edit the text, then choose Ask Shosai to send your question for an AI answer. For recorded questions, that written answer is sent to ElevenLabs to create speech. Typed questions stay text-only. Hiraku keeps recordings, questions, answers, and speech only in page memory and clears them when you leave or background this page. Google and ElevenLabs may retain submissions under their own policies. Cancelling cannot retract content already sent or undo provider billing. Microphone access is requested only when you choose the voice icon or Start conversation.</p>
       <p>Do not share names, addresses, Social Security numbers, case numbers, documents, or private case details. We cannot guarantee automatic redaction. Use fictional, general questions for this local demo.</p>
       <p>Shosai gives general information and may make mistakes. HRA decides eligibility. This general guidance panel does not receive screening answers. You can choose to share them by opening Talk to Shosai from your screening result. <a href="https://ai.google.dev/gemini-api/terms" referrerPolicy="no-referrer">Read Google’s processing terms ↗</a>. <a href="https://elevenlabs.io/privacy-policy" referrerPolicy="no-referrer">Read ElevenLabs’ privacy policy ↗</a>.</p>
->>>>>>> origin
       <button type="button" className={brand.primary} onClick={() => {
         setConsented(true);
         requestAnimationFrame(() => input.current?.focus());

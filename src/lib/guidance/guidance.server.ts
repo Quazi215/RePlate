@@ -1,14 +1,9 @@
 import type { ConversationMessage, GuidanceError, GuidanceSuccess } from "./guidance";
 import { guidanceSources, screenerContext } from "./sources.server";
-<<<<<<< HEAD
+import type { ScreeningContext } from "../screening/screening-context";
 import { languageInstructions, type Locale } from "../i18n/locale";
 
-export type GuidanceProvider = (question: string, signal: AbortSignal, history?: ConversationMessage[], locale?: Locale) => Promise<string | undefined>;
-=======
-import type { ScreeningContext } from "../screening/screening-context";
-
-export type GuidanceProvider = (question: string, signal: AbortSignal, history?: ConversationMessage[], screening?: ScreeningContext) => Promise<string | undefined>;
->>>>>>> origin
+export type GuidanceProvider = (question: string, signal: AbortSignal, history?: ConversationMessage[], locale?: Locale, screening?: ScreeningContext) => Promise<string | undefined>;
 export type GuidanceResult = GuidanceSuccess | (GuidanceError & { httpStatus: number });
 
 const instructions = `You are Shosai, Hiraku's NYC SNAP guide. Answer only from the trusted reviewed context below.
@@ -23,11 +18,7 @@ Application link: ACCESS HRA is linked from the NYC guide. Describe the handoff,
 Trusted application context: ${screenerContext}
 Trusted official context: ${JSON.stringify(guidanceSources)}`;
 
-<<<<<<< HEAD
-async function generateGuidance(question: string, signal: AbortSignal, history: ConversationMessage[] = [], locale: Locale = "en"): Promise<string | undefined> {
-=======
-async function generateGuidance(question: string, signal: AbortSignal, history: ConversationMessage[] = [], screening?: ScreeningContext): Promise<string | undefined> {
->>>>>>> origin
+async function generateGuidance(question: string, signal: AbortSignal, history: ConversationMessage[] = [], locale: Locale = "en", screening?: ScreeningContext): Promise<string | undefined> {
   const apiKey = process.env.GEMINI_API_KEY?.trim();
   const model = process.env.GEMINI_MODEL?.trim();
   if (!apiKey || !model || apiKey.startsWith("<") || model.startsWith("<")) throw { status: 503 };
@@ -39,13 +30,9 @@ async function generateGuidance(question: string, signal: AbortSignal, history: 
       role: message.role === "assistant" ? "model" : "user", parts: [{ text: message.text }],
     })), { role: "user", parts: [{ text: question }] }],
     config: {
-<<<<<<< HEAD
-      systemInstruction: `${instructions}\nRespond in ${languageInstructions[locale]} with plain, accessible wording. Preserve official names such as SNAP and ACCESS HRA. Never present Hiraku's preliminary screening as an official eligibility decision.`, abortSignal: signal,
-=======
-      systemInstruction: instructions + (screening ? `
+      systemInstruction: `${instructions}\nRespond in ${languageInstructions[locale]} with plain, accessible wording. Preserve official names such as SNAP and ACCESS HRA. Never present Hiraku's preliminary screening as an official eligibility decision.` + (screening ? `
 Screening follow-up: the server has validated these user-reported answers and reproduced Hiraku's displayed result: ${JSON.stringify(screening)}
 For this conversation, you may explain that existing screening result, its exact reasons and limitations using the supplied answers. This permission does not allow a new eligibility assessment, recalculation, benefit estimate, or approval prediction. The answers are user reports, not verified facts. Do not invent additional thresholds or rules. Do not ask the user to repeat supplied answers. If they correct an answer or want a different comparison, politely direct them to Review my answers in Hiraku; do not change their answers or reinterpret the result using conversation history. For matters beyond this screening, explain its limits and direct them to HRA or the existing official application links. Be polite and reassuring without promising an outcome.` : ""), abortSignal: signal,
->>>>>>> origin
       httpOptions: { timeout: 15000, retryOptions: { attempts: 1 } },
       temperature: 0, candidateCount: 1, maxOutputTokens: 1024,
       responseMimeType: "application/json",
@@ -63,11 +50,7 @@ function failure(httpStatus: number, code: string, message: string): GuidanceRes
   return { status: "error", httpStatus, code, message };
 }
 
-<<<<<<< HEAD
-export async function getGuidance(question: string, signal: AbortSignal, provider: GuidanceProvider = generateGuidance, history?: ConversationMessage[], locale: Locale = "en"): Promise<GuidanceResult> {
-=======
-export async function getGuidance(question: string, signal: AbortSignal, provider: GuidanceProvider = generateGuidance, history?: ConversationMessage[], screening?: ScreeningContext): Promise<GuidanceResult> {
->>>>>>> origin
+export async function getGuidance(question: string, signal: AbortSignal, provider: GuidanceProvider = generateGuidance, history?: ConversationMessage[], locale: Locale = "en", screening?: ScreeningContext): Promise<GuidanceResult> {
   if (typeof question !== "string" || !question.trim() || question.trim().length > 2000) {
     return failure(400, "INVALID_QUESTION", "Ask a question between 1 and 2,000 characters.");
   }
@@ -80,11 +63,7 @@ export async function getGuidance(question: string, signal: AbortSignal, provide
       rejectAbort = () => reject(operation.reason);
       operation.addEventListener("abort", rejectAbort, { once: true });
     });
-<<<<<<< HEAD
-    const text = await Promise.race([provider(question.trim(), operation, history, locale), cancelled]);
-=======
-    const text = await Promise.race([provider(question.trim(), operation, history, screening), cancelled]);
->>>>>>> origin
+    const text = await Promise.race([provider(question.trim(), operation, history, locale, screening), cancelled]);
     operation.throwIfAborted();
     if (typeof text !== "string" || text.length > 12000) throw new Error("Invalid output");
     const value: unknown = JSON.parse(text);

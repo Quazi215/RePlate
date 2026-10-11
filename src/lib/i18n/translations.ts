@@ -2,6 +2,8 @@
 import type { Locale } from "./locale";
 
 export const english = {
+  "Hello, I have your screening answers and result here, so there’s no need to go through them again. Is there anything about your result you’d like me to help clarify?": "Hello, I have your screening answers and result here, so there’s no need to go through them again. Is there anything about your result you’d like me to help clarify?",
+  "Use text instead": "Use text instead",
   " This does not mean you are officially ineligible. Review your answers or ask HRA about other rules that may apply.": " This does not mean you are officially ineligible. Review your answers or ask HRA about other rules that may apply.",
   " of up to ": " of up to ",
   " · Screening, not applying": " · Screening, not applying",
@@ -350,6 +352,8 @@ export type TranslationKey = keyof typeof english;
 
 export const dictionaries: Record<Locale, Partial<Record<TranslationKey, string>>> = {
   "en": {
+    "Hello, I have your screening answers and result here, so there’s no need to go through them again. Is there anything about your result you’d like me to help clarify?": "Hello, I have your screening answers and result here, so there’s no need to go through them again. Is there anything about your result you’d like me to help clarify?",
+    "Use text instead": "Use text instead",
     " This does not mean you are officially ineligible. Review your answers or ask HRA about other rules that may apply.": " This does not mean you are officially ineligible. Review your answers or ask HRA about other rules that may apply.",
     " of up to ": " of up to ",
     " · Screening, not applying": " · Screening, not applying",
@@ -695,6 +699,8 @@ export const dictionaries: Record<Locale, Partial<Record<TranslationKey, string>
     "· Screening, not applying": "· Screening, not applying"
   },
   "es": {
+    "Hello, I have your screening answers and result here, so there’s no need to go through them again. Is there anything about your result you’d like me to help clarify?": "Hola, tengo aquí sus respuestas y el resultado de la evaluación, así que no necesita repetirlos. ¿Hay algo sobre su resultado que quisiera que le ayude a aclarar?",
+    "Use text instead": "Usar texto en su lugar",
     " This does not mean you are officially ineligible. Review your answers or ask HRA about other rules that may apply.": " Esto no significa que usted no sea elegible oficialmente. Revise sus respuestas o pregúntele a HRA sobre otras reglas que puedan aplicarse.",
     " of up to ": " de hasta ",
     " · Screening, not applying": " · Evaluación preliminar, no es una solicitud",
@@ -1040,6 +1046,8 @@ export const dictionaries: Record<Locale, Partial<Record<TranslationKey, string>
     "· Screening, not applying": "· Evaluación previa, no solicitud"
   },
   "zh-Hant": {
+    "Hello, I have your screening answers and result here, so there’s no need to go through them again. Is there anything about your result you’d like me to help clarify?": "您好，我這裡已有您的篩檢答案和結果，您不需要再次回答。關於結果，有什麼您希望我幫忙說明的地方嗎？",
+    "Use text instead": "改用文字",
     " This does not mean you are officially ineligible. Review your answers or ask HRA about other rules that may apply.": " 這並不意味著您正式不符合資格。請檢視您的答案或向 HRA 詢問可能適用的其他規定。",
     " of up to ": " 最高可達 ",
     " · Screening, not applying": " · 篩選，而非申請",
@@ -1385,6 +1393,8 @@ export const dictionaries: Record<Locale, Partial<Record<TranslationKey, string>
     "· Screening, not applying": "· 篩選評估，而非申請"
   },
   "ar": {
+    "Hello, I have your screening answers and result here, so there’s no need to go through them again. Is there anything about your result you’d like me to help clarify?": "مرحبًا، لدي إجابات الفحص ونتيجته هنا، فلا حاجة لتكرارها. هل هناك شيء في نتيجتك ترغب في أن أساعدك على توضيحه؟",
+    "Use text instead": "استخدم النص بدلًا من ذلك",
     " This does not mean you are officially ineligible. Review your answers or ask HRA about other rules that may apply.": " هذا لا يعني أنك غير مؤهل رسميًا. راجع إجاباتك أو اسأل HRA عن القواعد الأخرى التي قد تنطبق.",
     " of up to ": " يصل إلى ",
     " · Screening, not applying": " · فحص أهلية، وليس تقديم طلب",
@@ -1730,6 +1740,8 @@ export const dictionaries: Record<Locale, Partial<Record<TranslationKey, string>
     "· Screening, not applying": "· فحص وليس تقديم طلب"
   },
   "bn": {
+    "Hello, I have your screening answers and result here, so there’s no need to go through them again. Is there anything about your result you’d like me to help clarify?": "হ্যালো, আপনার প্রাথমিক যাচাইয়ের উত্তর ও ফলাফল আমার কাছে আছে, তাই আবার বলতে হবে না। ফলাফল সম্পর্কে কোনো বিষয় কি আপনি আমাকে বুঝিয়ে বলতে চান?",
+    "Use text instead": "এর বদলে লিখুন",
     " This does not mean you are officially ineligible. Review your answers or ask HRA about other rules that may apply.": " এর অর্থ এই নয় যে আপনি আনুষ্ঠানিকভাবে অযোগ্য। আপনার উত্তরগুলি পর্যালোচনা করুন বা প্রযোজ्य হতে পারে এমন অন্যান্য নিয়ম সম্পর্কে HRA-কে জিজ্ঞাসা করুন।",
     " of up to ": " সর্বোচ্চ ",
     " · Screening, not applying": " · স্ক্রিনিং, আবেদন নয়",
@@ -2075,6 +2087,8 @@ export const dictionaries: Record<Locale, Partial<Record<TranslationKey, string>
     "· Screening, not applying": "· স্ক্রিনিং, আবেদন করা নয়"
   },
   "fr": {
+    "Hello, I have your screening answers and result here, so there’s no need to go through them again. Is there anything about your result you’d like me to help clarify?": "Bonjour, j’ai ici vos réponses et le résultat de votre évaluation, vous n’avez donc pas besoin de les répéter. Souhaitez-vous que je vous aide à clarifier un point de votre résultat ?",
+    "Use text instead": "Utiliser le texte",
     " This does not mean you are officially ineligible. Review your answers or ask HRA about other rules that may apply.": " Cela ne signifie pas que vous n'êtes pas officiellement éligible. Vérifiez vos réponses ou demandez à HRA quelles autres règles peuvent s'appliquer.",
     " of up to ": " pouvant aller jusqu'à ",
     " · Screening, not applying": " · Évaluation, pas une demande",
@@ -2420,6 +2434,8 @@ export const dictionaries: Record<Locale, Partial<Record<TranslationKey, string>
     "· Screening, not applying": "· Évaluation, pas une demande"
   },
   "ht": {
+    "Hello, I have your screening answers and result here, so there’s no need to go through them again. Is there anything about your result you’d like me to help clarify?": "Bonjou, mwen gen repons ou yo ak rezilta premye evalyasyon an isit la, kidonk ou pa bezwen repete yo. Èske gen yon bagay nan rezilta ou a ou ta renmen mwen ede w klarifye?",
+    "Use text instead": "Sèvi ak tèks pito",
     " This does not mean you are officially ineligible. Review your answers or ask HRA about other rules that may apply.": " Sa pa vle di ou pa kalifye ofisyèlman. Revize repons ou yo oswa mande HRA sou lòt règleman ki ka aplike.",
     " of up to ": " ki rive jiska ",
     " · Screening, not applying": " · Evalyasyon preliminè, se pa yon demann",
@@ -2765,6 +2781,8 @@ export const dictionaries: Record<Locale, Partial<Record<TranslationKey, string>
     "· Screening, not applying": "· Evalyasyon, pa yon aplikasyon"
   },
   "ko": {
+    "Hello, I have your screening answers and result here, so there’s no need to go through them again. Is there anything about your result you’d like me to help clarify?": "안녕하세요. 사전 심사 답변과 결과가 여기 있어 다시 말씀하실 필요가 없습니다. 결과에 대해 제가 설명해 드렸으면 하는 부분이 있나요?",
+    "Use text instead": "대신 텍스트 사용",
     " This does not mean you are officially ineligible. Review your answers or ask HRA about other rules that may apply.": " 이것이 귀하가 공식적으로 자격이 없다는 의미는 아닙니다. 답변을 검토하거나 적용될 수 있는 다른 규정에 대해 HRA에 문의하십시오.",
     " of up to ": " 최대 ",
     " · Screening, not applying": " · 사전 자격 확인 (신청이 아님)",
@@ -3110,6 +3128,8 @@ export const dictionaries: Record<Locale, Partial<Record<TranslationKey, string>
     "· Screening, not applying": "· 사전 심사이며, 신청이 아님"
   },
   "pl": {
+    "Hello, I have your screening answers and result here, so there’s no need to go through them again. Is there anything about your result you’d like me to help clarify?": "Dzień dobry, mam tutaj Twoje odpowiedzi i wynik wstępnej oceny, więc nie musisz ich powtarzać. Czy mogę pomóc wyjaśnić coś dotyczącego Twojego wyniku?",
+    "Use text instead": "Użyj tekstu",
     " This does not mean you are officially ineligible. Review your answers or ask HRA about other rules that may apply.": " To nie oznacza, że oficjalnie nie kwalifikujesz się. Sprawdź swoje odpowiedzi lub zapytaj HRA o inne zasady, które mogą mieć zastosowanie.",
     " of up to ": " do maksymalnie ",
     " · Screening, not applying": " · Wstępna ocena, a nie wniosek",
@@ -3455,6 +3475,8 @@ export const dictionaries: Record<Locale, Partial<Record<TranslationKey, string>
     "· Screening, not applying": "· Wstępna ocena, a nie składanie wniosku"
   },
   "ru": {
+    "Hello, I have your screening answers and result here, so there’s no need to go through them again. Is there anything about your result you’d like me to help clarify?": "Здравствуйте, у меня уже есть ваши ответы и результат предварительной проверки, поэтому повторять их не нужно. Хотите, чтобы я помог объяснить что-то в вашем результате?",
+    "Use text instead": "Использовать текст",
     " This does not mean you are officially ineligible. Review your answers or ask HRA about other rules that may apply.": " Это не значит, что вы официально не имеете права на получение помощи. Проверьте свои ответы или обратитесь в HRA, чтобы узнать о других правилах, которые могут применяться.",
     " of up to ": " до ",
     " · Screening, not applying": " · Предварительная оценка, а не подача заявления",
@@ -3800,6 +3822,8 @@ export const dictionaries: Record<Locale, Partial<Record<TranslationKey, string>
     "· Screening, not applying": "· Предварительная проверка, а не подача заявления"
   },
   "ur": {
+    "Hello, I have your screening answers and result here, so there’s no need to go through them again. Is there anything about your result you’d like me to help clarify?": "سلام، آپ کے ابتدائی جائزے کے جوابات اور نتیجہ میرے پاس ہیں، اس لیے انہیں دوبارہ بتانے کی ضرورت نہیں۔ کیا آپ کے نتیجے کے بارے میں کوئی بات ہے جسے سمجھنے میں آپ میری مدد چاہتے ہیں؟",
+    "Use text instead": "اس کے بجائے متن استعمال کریں",
     " This does not mean you are officially ineligible. Review your answers or ask HRA about other rules that may apply.": " اس کا مطلب یہ نہیں ہے کہ آپ باضابطہ طور پر نااہل ہیں۔ اپنے جوابات کا جائزہ لیں یا HRA سے دیگر قوانین کے بارے میں پوچھیں جو لاگو ہو سکتے ہیں۔",
     " of up to ": " زیادہ سے زیادہ ",
     " · Screening, not applying": " · اسکریننگ، درخواست دینا نہیں",

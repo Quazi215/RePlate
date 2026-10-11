@@ -3,6 +3,7 @@ import { test } from "node:test";
 import { handleLiveGuidanceRequest, handleLiveTokenRequest } from "../src/lib/voice/live-request.server";
 import { screenSnap } from "../src/lib/screening/snap-screening";
 import { screeningGreeting } from "../src/lib/screening/screening-context";
+import { translateDynamic } from "../src/lib/i18n/translations";
 
 function request(body: unknown = {}, origin = "http://localhost", signal?: AbortSignal) {
   return new Request("http://localhost/api/voice/live", {
@@ -14,15 +15,33 @@ const screening = { allAssistance: "no", householdSize: "3", olderOrDisabled: "y
 
 test("screening follow-ups reproduce the displayed result and text fallback avoids speech", async () => {
   let speechCalls = 0;
-  const response = await handleLiveGuidanceRequest(request({ question: "Why this result?", history: [], screening, spoken: false }),
-    async (_, __, history, context) => {
+  const response = await handleLiveGuidanceRequest(request({ question: "Why this result?", history: [], screening, spoken: false, locale: "ht" }),
+    async (_, __, history, locale, context) => {
       assert.deepEqual(history, []);
+      assert.equal(locale, "ht");
       assert.deepEqual(context, { answers: screening, result: screenSnap(screening) });
       return JSON.stringify({ answer: "This is a limited screening result. HRA makes the official decision.", sourceIds: ["nyc-snap"] });
     }, async () => { speechCalls++; return new Response(); });
   assert.equal(response.status, 200);
   assert.equal((await response.json()).audio, undefined);
   assert.equal(speechCalls, 0);
+});
+
+test("localized screening greetings bypass the model and use the selected speech language", async () => {
+  let modelCalls = 0;
+  let speechCalls = 0;
+  const response = await handleLiveGuidanceRequest(request({ history: [], screening, greeting: true, locale: "es" }),
+    async () => { modelCalls++; return ""; }, async (text, _, locale) => {
+      speechCalls++;
+      assert.equal(locale, "es");
+      assert.equal(text, translateDynamic("es", screeningGreeting));
+      assert.notEqual(text, screeningGreeting);
+      return new Response(new Uint8Array([1, 2]), { headers: { "Content-Type": "audio/mpeg" } });
+    });
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).answer, translateDynamic("es", screeningGreeting));
+  assert.equal(modelCalls, 0);
+  assert.equal(speechCalls, 1);
 });
 
 test("screening greetings use polite fixed copy without asking the model or reading answers aloud", async () => {
@@ -56,7 +75,7 @@ test("invalid screening context and request modes are rejected before either pro
 test("all screening outcomes, including unresolved answers, can be explained", async () => {
   for (const answers of [{ allAssistance: "unknown" }, { allAssistance: "yes" }, { ...screening, monthlyIncome: "9000" }]) {
     const response = await handleLiveGuidanceRequest(request({ question: "What next?", history: [], screening: answers, spoken: false }),
-      async (_, __, ___, context) => {
+      async (_, __, ___, _locale, context) => {
         assert.deepEqual(context?.result, screenSnap(answers as typeof screening));
         return JSON.stringify({ answer: "Review your answers or ask HRA for help.", sourceIds: ["nyc-snap"] });
       });

@@ -1,9 +1,26 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { GuidanceSuccess } from "../src/lib/guidance/guidance";
-import { LiveSession, type LiveAnswerProvider } from "../src/lib/voice/live-session";
+import { LiveSession, requestScreeningGreeting, type LiveAnswerProvider } from "../src/lib/voice/live-session";
 
 const answer: GuidanceSuccess = { status: "ready", answer: "HRA decides eligibility.", sources: [] };
+
+test("live requests carry language and screening together for questions and greetings", async context => {
+  const payloads: unknown[] = [];
+  context.mock.method(globalThis, "fetch", async (_url: unknown, init: RequestInit) => {
+    payloads.push(JSON.parse(init.body as string));
+    return Response.json(answer);
+  });
+  const screening = { allAssistance: "yes" } as const;
+  const session = new LiveSession(() => {}, undefined, { screening, spoken: false, locale: "es" });
+  await session.ask("Why this result?");
+  await requestScreeningGreeting(screening, new AbortController().signal, "es");
+  assert.deepEqual(payloads, [
+    { question: "Why this result?", history: [], screening, spoken: false, locale: "es" },
+    { history: [], screening, greeting: true, locale: "es" },
+  ]);
+  session.close();
+});
 
 test("a newer turn cancels and discards a late answer, while keeping session context", async () => {
   let finish!: (answer: GuidanceSuccess) => void;
@@ -55,7 +72,7 @@ test("empty transcripts make no request and oversized speech is rejected", async
 
 test("each follow-up carries its screening snapshot and text mode, while a new session has no old history", async () => {
   const screening = { allAssistance: "yes" } as const;
-  const options = { screening, spoken: false } as const;
+  const options = { screening, spoken: false, locale: "es" } as const;
   let calls = 0;
   const provider: LiveAnswerProvider = async (_, history, __, received) => {
     assert.deepEqual(received, options);

@@ -3,15 +3,11 @@
 import dynamic from "next/dynamic";
 import { Component, useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { CommitStrategy, useScribe } from "@elevenlabs/react";
-<<<<<<< HEAD
-import { LiveSession, type LiveTurn } from "../../lib/voice/live-session";
-import { useLocale } from "../../lib/i18n/client";
-import { nativeNames, realtimeCodes } from "../../lib/i18n/locale";
-=======
 import { LiveSession, requestScreeningGreeting, type LiveTurn } from "../../lib/voice/live-session";
 import type { ScreeningAnswers } from "../../lib/screening/snap-screening";
+import { useLocale } from "../../lib/i18n/client";
+import { nativeNames, realtimeCodes } from "../../lib/i18n/locale";
 import { screeningGreeting } from "../../lib/screening/screening-context";
->>>>>>> origin
 import brand from "../site.module.css";
 import styles from "./guidance.module.css";
 
@@ -46,12 +42,8 @@ export default function LiveConversation({ onClose, onSessionChange = ignoreSess
   onClose: () => void; onSessionChange?: (active: boolean) => void; disabled: boolean;
   screening?: ScreeningAnswers; onReview?: () => void; screeningChanged?: boolean;
 }) {
-<<<<<<< HEAD
   const { locale, t, dynamic } = useLocale();
-  const [started, setStarted] = useState(false);
-=======
   const [mode, setMode] = useState<"voice" | "text" | null>(null);
->>>>>>> origin
   const [message, setMessage] = useState("");
   const startButton = useRef<HTMLButtonElement>(null);
   useEffect(() => { startButton.current?.focus(); }, []);
@@ -65,53 +57,37 @@ export default function LiveConversation({ onClose, onSessionChange = ignoreSess
       <p>{t("HIRAKU / SHOSAI")}</p>
       <button className={brand.secondary} type="button" onClick={onClose}>{t("Close conversation panel")}</button>
     </div>
-<<<<<<< HEAD
-    <h3 id="live-shosai-title">{t("Talk to Shosai")}</h3>
-    <p>{t("Ask general questions about SNAP rules, including income. Shosai can explain NYC guidance but cannot assess your eligibility or estimate benefits. If you want to check your own situation, use Hiraku’s screener or apply through NYC HRA.")}</p>
-    <p className={styles.liveHelp}>{t("Hiraku clears this conversation when the session ends.")}</p>
-    {!realtimeCodes[locale] ? <p role="status">{t("Voice is unavailable in the selected language. You can still read the answer and official sources.")}</p> : started ? <ConversationSession onEnd={finish} /> : <>
-=======
-    <h3 id="live-shosai-title">Talk to Shosai</h3>
-    <p>{screening ? "Ask questions about your screening result or anything that feels unclear. Shosai has your answers and can help explain your result and next steps. This is guidance, not an official eligibility decision." : "Ask general questions about SNAP rules, including income. Shosai can explain NYC guidance but cannot assess your eligibility or estimate benefits. If you want to check your own situation, use Hiraku’s screener or apply through NYC HRA."}</p>
+    <h3 id="live-shosai-title">{dynamic("Talk to Shosai")}</h3>
+    <p>{dynamic(screening ? "Ask questions about your screening result or anything that feels unclear. Shosai has your answers and can help explain your result and next steps. This is guidance, not an official eligibility decision." : "Ask general questions about SNAP rules, including income. Shosai can explain NYC guidance but cannot assess your eligibility or estimate benefits. If you want to check your own situation, use Hiraku’s screener or apply through NYC HRA.")}</p>
     {screening && !mode && <>
-      {screeningChanged && <p role="status">Your screening has changed. Start a new conversation to discuss your updated result.</p>}
-      <p className={styles.liveHelp}>Starting shares your screening answers, result, and questions with Google Gemini. Voice also uses ElevenLabs.</p>
+      {screeningChanged && <p role="status">{dynamic("Your screening has changed. Start a new conversation to discuss your updated result.")}</p>}
+      <p className={styles.liveHelp}>{dynamic("Starting shares your screening answers, result, and questions with Google Gemini. Voice also uses ElevenLabs.")}</p>
       <details className={styles.liveHelp}>
-        <summary>How your information is used</summary>
-        <p>Google Gemini explains your result. ElevenLabs transcribes live voice and creates spoken replies. Providers may retain submissions under their policies; ending a conversation cannot retract information already sent. Please leave out names, addresses, case numbers, and other identifying details. Use fictional information for this local demo.</p>
-        <p><a href="https://ai.google.dev/gemini-api/terms" referrerPolicy="no-referrer">Google’s processing terms</a> · <a href="https://elevenlabs.io/privacy-policy" referrerPolicy="no-referrer">ElevenLabs’ privacy policy</a></p>
+        <summary>{dynamic("How your information is used")}</summary>
+        <p>{dynamic("Google Gemini explains your result. ElevenLabs transcribes live voice and creates spoken replies. Providers may retain submissions under their policies; ending a conversation cannot retract information already sent. Please leave out names, addresses, case numbers, and other identifying details. Use fictional information for this local demo.")}</p>
+        <p><a href="https://ai.google.dev/gemini-api/terms" referrerPolicy="no-referrer">{dynamic("Google’s processing terms")}</a> · <a href="https://elevenlabs.io/privacy-policy" referrerPolicy="no-referrer">{dynamic("ElevenLabs’ privacy policy")}</a></p>
       </details>
     </>}
-    <p className={styles.liveHelp}>Hiraku clears this conversation when the session ends.</p>
+    <p className={styles.liveHelp}>{dynamic("Hiraku clears this conversation when the session ends.")}</p>
+    {!realtimeCodes[locale] && <p role="status">{t("Voice is unavailable in the selected language. You can still read the answer and official sources.")}</p>}
     {mode === "voice" ? <ConversationSession onEnd={finish} screening={screening} /> : mode === "text" ? <TextConversation onEnd={finish} screening={screening} /> : <>
->>>>>>> origin
       <ShosaiOrb />
       {message && <p role="status">{locale !== "en" && dynamic(message) === message ? t("The conversation could not continue. Start again when ready.") : dynamic(message)}</p>}
-      <button ref={startButton} type="button" disabled={disabled} className={`${brand.primary} ${styles.startConversation}`} onClick={() => {
-<<<<<<< HEAD
-        setMessage(""); setStarted(true); onSessionChange(true);
-      }}>{message ? t("Start again") : t("Start conversation")}</button>
-      <p className={styles.liveHelp}><span lang={locale}>{nativeNames[locale]}</span> · {t("General NYC SNAP guidance · Up to 5 minutes")}</p>
-=======
+      <button ref={realtimeCodes[locale] ? startButton : undefined} type="button" disabled={disabled || !realtimeCodes[locale]} className={`${brand.primary} ${styles.startConversation}`} onClick={() => {
         setMessage(""); setMode("voice"); onSessionChange(true);
-      }}>{message ? "Start again" : "Start conversation"}</button>
-      <button type="button" disabled={disabled} className={brand.secondary} onClick={() => {
+      }}>{message ? t("Start again") : t("Start conversation")}</button>
+      <button ref={!realtimeCodes[locale] ? startButton : undefined} type="button" disabled={disabled} className={brand.secondary} onClick={() => {
         setMessage(""); setMode("text"); onSessionChange(true);
-      }}>Use text instead</button>
-      <p className={styles.liveHelp}>English · {screening ? "Your screening result" : "General NYC SNAP guidance"} · Up to 5 minutes</p>
->>>>>>> origin
+      }}>{dynamic("Use text instead")}</button>
+      <p className={styles.liveHelp}><span lang={locale}>{nativeNames[locale]}</span> · {screening ? dynamic("Your screening result") : dynamic("General NYC SNAP guidance")} · {dynamic("Up to 5 minutes")}</p>
     </>}
-    {onReview && <button type="button" className={brand.secondary} onClick={onReview}>Review my answers</button>}
-    {screening && <p className={styles.liveHelp}>Need official help? <a href="tel:+17185571399">Call HRA at 718-557-1399</a> or <a href="https://a069-access.nyc.gov/accesshra/" referrerPolicy="no-referrer">apply on ACCESS HRA</a>. No application has been submitted by Hiraku.</p>}
+    {onReview && <button type="button" className={brand.secondary} onClick={onReview}>{dynamic("Review my answers")}</button>}
+    {screening && <p className={styles.liveHelp}>{dynamic("Need official help? ")}<a href="tel:+17185571399">{dynamic("Call HRA at 718-557-1399")}</a>{dynamic(" or ")}<a href="https://a069-access.nyc.gov/accesshra/" referrerPolicy="no-referrer">{dynamic("apply on ACCESS HRA")}</a>{dynamic(". No application has been submitted by Hiraku.")}</p>}
   </section>;
 }
 
-<<<<<<< HEAD
-function ConversationSession({ onEnd }: { onEnd: (reason: string) => void }) {
-  const { locale, t, dynamic } = useLocale();
-=======
 function ConversationSession({ onEnd, screening }: { onEnd: (reason: string) => void; screening?: ScreeningAnswers }) {
->>>>>>> origin
+  const { locale, t, dynamic } = useLocale();
   const [turns, setTurns] = useState<LiveTurn[]>([]);
   const [phase, setPhase] = useState<"connecting" | "listening" | "thinking" | "talking">("connecting");
   const [seconds, setSeconds] = useState(0);
@@ -182,11 +158,7 @@ function ConversationSession({ onEnd, screening }: { onEnd: (reason: string) => 
 
   useEffect(() => {
     live.current = true;
-<<<<<<< HEAD
-    session.current = new LiveSession(setTurns, undefined, locale);
-=======
-    session.current = new LiveSession(setTurns, undefined, screening ? { screening } : undefined);
->>>>>>> origin
+    session.current = new LiveSession(setTurns, undefined, { screening, locale });
     const controller = new AbortController();
     const started = Date.now();
     const timer = setInterval(() => { if (live.current) setSeconds(Math.floor((Date.now() - started) / 1000)); }, 1000);
@@ -198,7 +170,7 @@ function ConversationSession({ onEnd, screening }: { onEnd: (reason: string) => 
     void (async () => {
       try {
         if (screening) {
-          const greeting = await requestScreeningGreeting(screening, controller.signal);
+          const greeting = await requestScreeningGreeting(screening, controller.signal, locale);
           if (controller.signal.aborted || !live.current) return;
           if (!greeting.audio) { finish(greeting.warning?.message ?? "Speech is unavailable. Please choose Use text instead."); return; }
           const player = audio.current;
@@ -239,33 +211,25 @@ function ConversationSession({ onEnd, screening }: { onEnd: (reason: string) => 
       if (startupTimer.current) clearTimeout(startupTimer.current);
       document.removeEventListener("visibilitychange", visibility); window.removeEventListener("pagehide", leave);
     };
-  }, [connect, disconnect, clearTranscripts, failed, finish, stopAudio, screening]);
+  }, [connect, disconnect, clearTranscripts, failed, finish, stopAudio, screening, locale]);
 
   const label = { connecting: "Connecting…", listening: "Listening", thinking: "Thinking…", talking: "Shosai is speaking" }[phase];
   return <>
     <ShosaiOrb phase={phase === "connecting" ? null : phase} />
-<<<<<<< HEAD
+    {screening && <p>{dynamic(screeningGreeting)}</p>}
     <p role="status" aria-live="polite" className={styles.liveStatus}>{dynamic(label)}</p>
     <p className={styles.liveHelp}>{Math.floor(seconds / 60)}:{String(seconds % 60).padStart(2, "0")}{t("/ 5:00 · Speak naturally. Pause for a reply, or talk to interrupt.")}</p>
-    <button type="button" className={`${brand.primary} ${styles.startConversation}`} onClick={() => finish("Conversation ended. Hiraku cleared the session.")}>{t("End conversation")}</button>
-    <audio ref={audio} hidden onEnded={() => { if (live.current) { stopAudio(); setPhase("listening"); } }}
-      onError={() => { if (live.current && audioUrl.current) finish("Speech playback failed. Start again, or type a question below."); }} />
-    <div className={styles.liveTranscript} aria-label={t("Conversation transcript")}>
-=======
-    {screening && <p>{screeningGreeting}</p>}
-    <p role="status" aria-live="polite" className={styles.liveStatus}>{label}</p>
-    <p className={styles.liveHelp}>{Math.floor(seconds / 60)}:{String(seconds % 60).padStart(2, "0")} / 5:00 · Speak naturally. Pause for a reply, or talk to interrupt.</p>
-    <button type="button" className={`${brand.primary} ${styles.startConversation}`} onClick={() => finish("Conversation ended. Hiraku cleared the session.")}>End conversation</button>
+    <button type="button" className={`${brand.primary} ${styles.startConversation}`} onClick={() => finish("Conversation ended. Hiraku cleared the session.")}>{dynamic("End conversation")}</button>
     <audio ref={audio} hidden onEnded={() => { if (live.current) { stopAudio(); setPhase("listening"); } }}
       onError={() => { if (live.current && audioUrl.current) finish("Speech playback failed. Start again, or choose Use text instead."); }} />
     <ConversationTranscript turns={turns} />
-    {partialTranscript && <p className={styles.livePartial}><strong>You · Speaking</strong><br />{partialTranscript}</p>}
+    {partialTranscript && <p className={styles.livePartial}><strong>{dynamic("You · Speaking")}</strong><br />{partialTranscript}</p>}
   </>;
 }
 
 function ConversationTranscript({ turns }: { turns: LiveTurn[] }) {
-  return <div className={styles.liveTranscript} aria-label="Conversation transcript">
->>>>>>> origin
+  const { t } = useLocale();
+  return <div className={styles.liveTranscript} aria-label={t("Conversation transcript")}>
       {turns.map((turn, index) => <div key={index} className={styles.liveTurn}>
         <p><strong>{t("You")}</strong></p><p>{turn.question}</p>
         {turn.result && <>
@@ -277,14 +241,11 @@ function ConversationTranscript({ turns }: { turns: LiveTurn[] }) {
         </>}
         {!turn.result && turn.interrupted && <p>{t("Reply interrupted.")}</p>}
       </div>)}
-<<<<<<< HEAD
-      {partialTranscript && <p className={styles.livePartial}><strong>{t("You · Speaking")}</strong><br />{partialTranscript}</p>}
-    </div>
-=======
     </div>;
 }
 
 function TextConversation({ onEnd, screening }: { onEnd: (reason: string) => void; screening?: ScreeningAnswers }) {
+  const { locale, t, dynamic } = useLocale();
   const [turns, setTurns] = useState<LiveTurn[]>([]);
   const [question, setQuestion] = useState("");
   const [busy, setBusy] = useState(false);
@@ -292,7 +253,7 @@ function TextConversation({ onEnd, screening }: { onEnd: (reason: string) => voi
   const session = useRef<LiveSession | null>(null);
   const input = useRef<HTMLTextAreaElement>(null);
   useEffect(() => {
-    const current = new LiveSession(setTurns, undefined, { ...(screening ? { screening } : {}), spoken: false });
+    const current = new LiveSession(setTurns, undefined, { screening, spoken: false, locale });
     session.current = current; input.current?.focus();
     const end = () => onEnd("Conversation ended. Hiraku cleared the session.");
     const visibility = () => { if (document.visibilityState === "hidden") end(); };
@@ -302,7 +263,7 @@ function TextConversation({ onEnd, screening }: { onEnd: (reason: string) => voi
       current.close(); session.current = null; clearTimeout(limit);
       document.removeEventListener("visibilitychange", visibility); window.removeEventListener("pagehide", end);
     };
-  }, [onEnd, screening]);
+  }, [onEnd, screening, locale]);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -322,18 +283,17 @@ function TextConversation({ onEnd, screening }: { onEnd: (reason: string) => voi
 
   return <>
     <ShosaiOrb phase={busy ? "thinking" : null} />
-    {screening && <p>{screeningGreeting}</p>}
+    {screening && <p>{dynamic(screeningGreeting)}</p>}
     <ConversationTranscript turns={turns} />
     <form className={styles.form} onSubmit={submit}>
-      <label htmlFor="shosai-follow-up">{screening ? "Your question about your result" : "Your SNAP question"}</label>
+      <label htmlFor="shosai-follow-up">{dynamic(screening ? "Your question about your result" : "Your SNAP question")}</label>
       <textarea ref={input} id="shosai-follow-up" value={question} onChange={event => setQuestion(event.target.value)}
         disabled={busy} maxLength={2000} required rows={3} autoComplete="off" />
-      <p>Up to 2,000 characters. Please leave out identifying details.</p>
-      <button className={brand.primary} type="submit" disabled={busy}>Ask Shosai</button>
+      <p>{dynamic("Up to 2,000 characters. Please leave out identifying details.")}</p>
+      <button className={brand.primary} type="submit" disabled={busy}>{dynamic("Ask Shosai")}</button>
     </form>
-    <p role="status">{busy ? "Preparing your answer…" : message}</p>
-    <button className={brand.secondary} type="button" onClick={() => onEnd("Conversation ended. Hiraku cleared the session.")}>End conversation</button>
-    <p className={styles.liveHelp}>English · Up to 5 minutes</p>
->>>>>>> origin
+    <p role="status">{busy ? t("Preparing your answer…") : dynamic(message)}</p>
+    <button className={brand.secondary} type="button" onClick={() => onEnd("Conversation ended. Hiraku cleared the session.")}>{dynamic("End conversation")}</button>
+    <p className={styles.liveHelp}><span lang={locale}>{nativeNames[locale]}</span> · {dynamic("Up to 5 minutes")}</p>
   </>;
 }
