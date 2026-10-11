@@ -33,7 +33,7 @@ Sources: City Guide pp. 26–28 and [current NY State tables](https://www.ny.gov
 
 The following maps the published guide, not a claim that RePlate implements every branch:
 
-1. **NYC residence**: RePlate's confirmed product scope is NYC residents. Ask whether the user lives in one of the five boroughs; no address is necessary. A no/unknown answer goes to uncertainty. The guide's SNAP section has no explicit NYC gate, so this gate is product coverage rather than a claim that non-NYC residents cannot get SNAP.
+1. **NYC audience**: RePlate's confirmed product scope is NYC residents, stated on the entry screen. Residence is not collected or used as a screening gate; the journey starts with household assistance. Results must not describe NYC residence as a reported answer. The guide's SNAP section has no explicit NYC gate.
 2. **Already applied**: product scope is residents who have not applied; an existing application is outside this journey. Do not infer eligibility from application status.
 3. **SNAP household size**: needed only for table comparison. Accept known whole numbers 1–8 for the initial path; unknown, larger, or uncertain composition must not be fabricated.
 4. **All members receive SSI or Cash Assistance**: guide branch 1 asks whether every household member has an income source of SSI **or** Cash Assistance grant. A yes produces potential eligibility without income-table comparison in the published guide. A no continues. #15 supports this shortcut without asking the household-size or income-table questions. Unknown remains uncertainty.

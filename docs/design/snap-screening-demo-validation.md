@@ -10,7 +10,7 @@ Reviewed October 10, 2026. These are **fictional household scenarios**. The comp
 
 ## Exact scenario inputs and outputs
 
-All scenarios set `nyc=yes`, `allAssistance=no`, `householdSize=1`, `olderOrDisabled=no`, `dependentCare=no`, `earnedIncome=yes`, `childSupportPaid=no`, and `monthlyIncome=1995`, except for the explicit replacements below. `childSupportAmount` is absent unless shown. All amounts are **USD per month**. “May” below is RePlate's *You may qualify for SNAP*; “not established” is *We couldn't establish likely eligibility from your answers*; “need info” is *We need more information*. The RePlate outputs were recorded by calling `screenSnap` on these exact inputs on October 10, 2026. For numeric rows, the reference output is the published State comparison plus the City guide's applicable branch, not a full eligibility verdict.
+All scenarios set `allAssistance=no`, `householdSize=1`, `olderOrDisabled=no`, `dependentCare=no`, `earnedIncome=yes`, `childSupportPaid=no`, and `monthlyIncome=1995`, except for the explicit replacements below. `childSupportAmount` is absent unless shown. All amounts are **USD per month**. “May” below is RePlate's *You may qualify for SNAP*; “not established” is *We couldn't establish likely eligibility from your answers*; “need info” is *We need more information*. The RePlate outputs were recorded by calling `screenSnap` on these exact inputs on October 10, 2026. For numeric rows, the reference output is the published State comparison plus the City guide's applicable branch, not a full eligibility verdict.
 
 | Case and exact replacements | RePlate output | Published reference output | Comparison |
 | --- | --- | --- | --- |

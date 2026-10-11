@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { screenSnap, type ScreeningAnswers } from "../src/lib/screening/snap-screening";
 
 const ordinaryHousehold: ScreeningAnswers = {
-  nyc: "yes", householdSize: "1", allAssistance: "no", olderOrDisabled: "no",
+  householdSize: "1", allAssistance: "no", olderOrDisabled: "no",
   dependentCare: "no", earnedIncome: "yes", childSupportPaid: "no", monthlyIncome: "1995",
 };
 
@@ -14,11 +14,12 @@ test("a NYC household at the current earned-income limit receives a qualified po
   assert.ok(result.reasons.some((reason) => /\$1,995.*at or below.*\$1,995/.test(reason)));
   assert.match(result.limitation, /limited.*income/i);
   assert.match(result.limitation, /HRA/);
+  assert.doesNotMatch(result.reasons.join(" "), /You live in NYC/, "Residence is the product audience, not a collected answer");
 });
 
 test("all household members receiving SSI or Cash Assistance supports the assistance shortcut without financial questions", () => {
   for (const answers of [
-    { nyc: "yes", allAssistance: "yes" },
+    { allAssistance: "yes" },
     { ...ordinaryHousehold, allAssistance: "yes", householdSize: "unknown", monthlyIncome: "unknown" },
   ] satisfies ScreeningAnswers[]) {
     const result = screenSnap(answers);
@@ -41,7 +42,7 @@ test("missing, unknown, invalid, and unsupported circumstances yield uncertainty
     }
   }
   for (const input of [
-    { nyc: "no" }, { childSupportPaid: "yes" },
+    { childSupportPaid: "yes" },
     ...["0", "-1", "1.5", "9", "100", "", "NaN", "1e0", "Infinity"].map((householdSize) => ({ householdSize })),
     ...["-1", "1.001", "", "NaN", "Infinity", "1e3", "1,995", "$1995", "9007199254740992"].map((monthlyIncome) => ({ monthlyIncome })),
   ] satisfies Partial<ScreeningAnswers>[]) {
@@ -53,7 +54,6 @@ test("missing, unknown, invalid, and unsupported circumstances yield uncertainty
 
 test("unresolved result reasons name the factor that needs an answer", () => {
   for (const [question, factor] of [
-    ["nyc", /live in NYC/i],
     ["allAssistance", /everyone receives SSI or Cash Assistance/i],
     ["olderOrDisabled", /60 or older, disabled, or blind/i],
     ["dependentCare", /dependent-care costs/i],

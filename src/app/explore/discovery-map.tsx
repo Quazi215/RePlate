@@ -73,7 +73,7 @@ export default function DiscoveryMap({ stores, selectedId, hoveredId, select, ho
       if (!hasLocation(store) || !store.location) return;
       const marker = L.marker([store.location.latitude, store.location.longitude], {
         icon: L.divIcon({ className: styles.pin, html: `<span>${index + 1}</span>`, iconSize: [44, 48], iconAnchor: [22, 48] }),
-        title: `Store ${index + 1}: ${store.name}. SNAP authorization unverified.`,
+        title: `Store ${index + 1}: ${store.name}.`,
         keyboard: true,
       }).addTo(group);
       const element = marker.getElement();
@@ -95,7 +95,7 @@ export default function DiscoveryMap({ stores, selectedId, hoveredId, select, ho
       const name = document.createElement("strong");
       name.textContent = store.name;
       const detail = document.createElement("span");
-      detail.textContent = `${store.miles.toFixed(2)} mi straight-line · SNAP not verified`;
+      detail.textContent = `${store.miles.toFixed(2)} mi straight-line`;
       label.append(name, detail);
       marker.bindTooltip(label, { permanent: true, direction: "right", offset: [14, -26], className: styles.mapCallout });
       pins.set(store.id, marker);
