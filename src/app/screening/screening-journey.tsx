@@ -1,9 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import dynamic from "next/dynamic";
 import { activeScreeningQuestions, answerError, screeningOrder, screenSnap, type ScreeningAnswers, type ScreeningQuestion } from "../../lib/screening/snap-screening";
 import brand from "../site.module.css";
 import styles from "./screening.module.css";
+
+const LiveConversation = dynamic(() => import("../guidance/live-conversation"), {
+  ssr: false, loading: () => <p role="status">Opening conversation…</p>,
+});
 
 const questions: Record<ScreeningQuestion, { title: string; help: string; kind: "choice" | "size" | "money" }> = {
   householdSize: { title: "How many people are in your SNAP household?", help: "Usually, count yourself and people you live with who buy food and prepare meals together. Spouses living together and children under 22 living with a parent generally count together, even if meals are separate. Children under 18 in a household member’s care generally count too. A roommate who buys and prepares food separately usually does not count. If your household is unclear, choose I don’t know.", kind: "size" },
@@ -16,12 +21,15 @@ const questions: Record<ScreeningQuestion, { title: string; help: string; kind: 
   monthlyIncome: { title: "What is your household’s monthly gross income?", help: "Add the household’s monthly income from work and other sources, such as unemployment, Social Security, and child support received. Gross means before taxes or paycheck deductions: if a pay stub shows $1,500 before tax and $1,250 take-home, use $1,500. Use a monthly total, not one week’s pay. If you’re unsure which income to count, including self-employment or boarder income, choose I don’t know.", kind: "money" },
 };
 
-type View = "entry" | "result" | "review" | ScreeningQuestion;
+type View = "entry" | "result" | "review" | "shosai" | ScreeningQuestion;
 
 export default function ScreeningJourney() {
   const [answers, setAnswers] = useState<ScreeningAnswers>({});
   const [view, setView] = useState<View>("entry");
   const [error, setError] = useState<string | null>(null);
+  const [screeningChanged, setScreeningChanged] = useState(false);
+  const [returnToShosai, setReturnToShosai] = useState(false);
+  const sharedAnswers = useRef<ScreeningAnswers | null>(null);
   const heading = useRef<HTMLHeadingElement>(null);
   const form = useRef<HTMLFormElement>(null);
 
@@ -31,7 +39,7 @@ export default function ScreeningJourney() {
 
   useEffect(() => {
     // Also clear on browser back/forward-cache restoration after leaving the page.
-    function clearSession() { setAnswers({}); setView("entry"); setError(null); }
+    function clearSession() { setAnswers({}); setView("entry"); setError(null); setScreeningChanged(false); setReturnToShosai(false); sharedAnswers.current = null; }
     function clearOnRestore(event: PageTransitionEvent) { if (event.persisted) clearSession(); }
     window.addEventListener("pagehide", clearSession);
     window.addEventListener("pageshow", clearOnRestore);
@@ -42,7 +50,12 @@ export default function ScreeningJourney() {
   }, []);
 
   function navigate(next: View) { setError(null); setView(next); }
-  function restart() { setAnswers({}); navigate(screeningOrder[0]); }
+  function restart() { setAnswers({}); setScreeningChanged(false); setReturnToShosai(false); sharedAnswers.current = null; navigate(screeningOrder[0]); }
+  function openShosai() {
+    setScreeningChanged(sharedAnswers.current !== null && JSON.stringify(sharedAnswers.current) !== JSON.stringify(answers));
+    sharedAnswers.current = answers;
+    navigate("shosai");
+  }
 
   if (view === "entry") return <section className={styles.panel} aria-labelledby="screening-title">
     <p className={styles.eyebrow}>NYC SNAP · A first check</p>
@@ -54,11 +67,13 @@ export default function ScreeningJourney() {
       <p>If everyone receives SSI or Cash Assistance, we check that assistance-based path. Otherwise, we compare income for households of 1–8. The guideline depends on income from work, an older/disabled/blind member, or dependent-care costs. We account for child support paid when it applies.</p>
       <p>This is a limited financial check. If a required answer is unknown or your circumstances are outside the supported checks, you’ll get an explanation and an official next step.</p>
     </aside>
-    <p>No account, identifying details, or documents. Answers stay on this page and clear when you refresh, start over, or leave.</p>
+    <p>No account, identifying details, or documents. Answers stay in page memory and clear when you refresh, start over, or leave. If you choose to talk to Shosai after screening, your answers are shared to help explain your result.</p>
     <div className={styles.actions}><button className={brand.primary} type="button" onClick={() => navigate(screeningOrder[0])}>Start screening</button></div>
   </section>;
 
   const activeQuestions = activeScreeningQuestions(answers);
+  if (view === "shosai") return <LiveConversation disabled={false} screening={answers} screeningChanged={screeningChanged}
+    onReview={() => { setReturnToShosai(true); navigate("review"); }} onClose={() => navigate("result")} />;
   if (view === "result") {
     const result = screenSnap(answers);
     return <section className={styles.panel} aria-labelledby="screening-title">
@@ -68,8 +83,10 @@ export default function ScreeningJourney() {
       <p>{result.limitation}</p>
       <div className={styles.actions}>
         <button className={brand.primary} type="button" onClick={() => navigate("review")}>Review my answers</button>
+        <button className={brand.secondary} type="button" onClick={openShosai}>Talk to Shosai</button>
         <button className={brand.secondary} type="button" onClick={restart}>Start over</button>
       </div>
+      <p>Questions about your result? Talk it through with Shosai.</p>
       <section className={styles.preparation} aria-labelledby="prepare-title">
         <h2 id="prepare-title">Prepare your next step</h2>
         <p>You can review your answers, ask HRA for help, or apply when you’re ready. HRA can tell you which documents are needed.</p>
@@ -96,6 +113,7 @@ export default function ScreeningJourney() {
     </dl>
     <div className={styles.actions}>
       <button className={brand.primary} type="button" onClick={() => navigate("result")}>Back to result</button>
+      {returnToShosai && <button className={brand.secondary} type="button" onClick={() => { setReturnToShosai(false); openShosai(); }}>Back to Shosai</button>}
       <button className={brand.secondary} type="button" onClick={restart}>Start over</button>
     </div>
   </section>;
@@ -123,7 +141,9 @@ export default function ScreeningJourney() {
       form.current?.querySelector<HTMLInputElement>("input")?.focus();
       return;
     }
-    navigate(activeQuestions[index + 1] ?? "result");
+    const nextView = activeQuestions[index + 1];
+    if (!nextView && returnToShosai) { setReturnToShosai(false); openShosai(); }
+    else navigate(nextView ?? "result");
   }
 
   return <section className={styles.panel} aria-labelledby="screening-title">
@@ -148,6 +168,6 @@ export default function ScreeningJourney() {
         <button className={brand.secondary} type="button" onClick={() => navigate(activeQuestions[index - 1] ?? "entry")}>Back</button>
       </div>
     </form>
-    <p className={styles.source}>Your answers stay on this page. Refreshing or leaving clears them.</p>
+    <p className={styles.source}>Your answers stay in page memory. Refreshing or leaving clears them. Sharing with Shosai is optional after screening.</p>
   </section>;
 }

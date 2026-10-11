@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { GuidanceSuccess } from "../src/lib/guidance/guidance";
-import { LiveSession } from "../src/lib/voice/live-session";
+import { LiveSession, type LiveAnswerProvider } from "../src/lib/voice/live-session";
 
 const answer: GuidanceSuccess = { status: "ready", answer: "HRA decides eligibility.", sources: [] };
 
@@ -51,4 +51,19 @@ test("empty transcripts make no request and oversized speech is rejected", async
   const session = new LiveSession(() => {}, async () => { calls++; return answer; });
   assert.equal(await session.ask("  "), null);
   await assert.rejects(session.ask("x".repeat(2001)), /too long/); assert.equal(calls, 0);
+});
+
+test("each follow-up carries its screening snapshot and text mode, while a new session has no old history", async () => {
+  const screening = { allAssistance: "yes" } as const;
+  const options = { screening, spoken: false } as const;
+  let calls = 0;
+  const provider: LiveAnswerProvider = async (_, history, __, received) => {
+    assert.deepEqual(received, options);
+    if (++calls === 1 || calls === 3) assert.deepEqual(history, []);
+    else assert.equal(history.length, 2);
+    return answer;
+  };
+  const session = new LiveSession(() => {}, provider, options);
+  await session.ask("Why this result?"); await session.ask("What next?"); session.close();
+  await new LiveSession(() => {}, provider, options).ask("Explain again");
 });

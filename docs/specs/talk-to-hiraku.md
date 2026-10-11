@@ -1,5 +1,11 @@
 # Talk to Shosai — Hiraku voice SNAP guidance MVP
 
+## Screening follow-up revision — approved October 11, 2026
+
+The user approved implementation of a Talk to Shosai action beside Review my answers on every completed screening outcome. This supersedes the screening-context and conversational-memory exclusions below for this entry point. Reuse the existing panel, adapt its introduction to the current result, and disclose sharing before the user explicitly starts voice or chooses text. Pass validated screening answers; the server reproduces the exact deterministic result, reasons, and limitations for Shosai to explain without making a new eligibility assessment. A fixed, polite spoken opening acknowledges context without reading personal details aloud. Text mode carries the same screening context and follow-up history without speech synthesis.
+
+Answer corrections return to the screener. Returning to Shosai starts a fresh conversation using updated answers, with a changed-screening notice. Closing preserves the result and clears conversation history. End, backgrounding, navigation, and the five-minute limit clear the conversation and cancel pending work. Voice failures offer text and retry; full outages leave result review and HRA/application handoffs available. Preserve English, the existing visual design, and local-demo restrictions. No persistence, new dependencies, commit, push, or deployment is authorized by this revision.
+
 Product decisions, important-case testing boundaries, and four-slice breakdown approved October 10, 2026. Planning only; implementation is not authorized by this document. Published to Quazi215/RePlate as planning parent #18 and slice issues #19–#22; only slice tickets receive `ready-for-agent`. Publication and labeling do not authorize implementation.
 
 Slice 2 interaction revision approved directly by the user on October 10, 2026: recording transcribes into the editable question box. Guidance waits for an explicit Ask Shosai action. No separate “What we heard” section or automatic answer is shown. This supersedes the original stop-to-answer orchestration and voice response contract in the published ticket. Speech delivery must be adapted to this reviewed-question flow in Slice 3; no speech implementation is included here.
