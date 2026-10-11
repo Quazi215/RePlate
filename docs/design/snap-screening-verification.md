@@ -24,4 +24,20 @@ The screening component keeps answers in React page state. A code search of the 
 | `node scripts/verify-snap.mjs` with existing Playwright/Brave and `REPLATE_BASE_URL=http://127.0.0.1:3002` | Passed against `npm run start -- -p 3002` |
 | `node scripts/verify-discovery.mjs` with the same browser and base URL | Passed |
 
-An initial browser attempt against an existing Next.js development server on port 3000 stopped before the first question; its HMR WebSocket connections failed. The production build on port 3002 passed the same browser script. The local development-server failure was not investigated as a product defect. Official-reference scenario comparisons, independent policy review, observed completion, and deployed-environment verification remain open under #17 or release work.
+An initial browser attempt against an existing Next.js development server on port 3000 stopped before the first question; its HMR WebSocket connections failed. The production build on port 3002 passed the same browser script. The local development-server failure was not investigated as a product defect. At the time of this initial #16 record, official-reference scenario comparisons, independent policy review, observed completion, and deployed-environment verification were open under #17 or release work; the follow-up below records the subsequent published-reference comparison.
+
+## October 10 follow-up for #16 and #17
+
+The radio fieldset now takes its accessible group name from the visible question heading. A new browser assertion first failed against the original production build (`0 !== 1` group named “Do you live in New York City?”), then passed on the updated build. The browser check now asserts the question name for every exercised radio group. This is browser accessibility-tree evidence, not a screen-reader study.
+
+| Command | Outcome |
+| --- | --- |
+| `npx tsc -p tsconfig.test.json --outDir /private/tmp/replate-ticket17-tests` and `node --test /private/tmp/replate-ticket17-tests/tests/snap-screening.test.js` | Passed: 9/9 focused tests |
+| `npm test` | Passed: 50/50 tests |
+| `npm run lint` | Passed |
+| `npm run typecheck` | Passed |
+| `npm run build` | Passed; `/screening` generated in the production build |
+| `REPLATE_PLAYWRIGHT_MODULE=/private/tmp/replate-browser-check/node_modules/playwright/index.mjs REPLATE_BROWSER_EXECUTABLE='/Applications/Brave Browser.app/Contents/MacOS/Brave Browser' REPLATE_BASE_URL=http://127.0.0.1:3004 REPLATE_SCREENSHOT_DIR=/private/tmp/replate-review-shots node scripts/verify-snap.mjs` | Passed against `npm run start -- -p 3004 -H 127.0.0.1`; all exercised radio groups had the question as their accessible name |
+| Same environment with `node scripts/verify-discovery.mjs` | Passed; Explore journey and its mobile/error checks preserved |
+
+The production-build script exercised the English flow at 1440px, 390px, and 320px, with normal/enlarged text and reduced motion. Its 1440px and 390px result captures were visually inspected: the limited-check caveat, no-submission message, preparation, and official handoff were visible. This is an agent-led local demo rehearsal; no live presentation, deployed-environment check, screen-reader session, or uncoached participant observation was performed. Published-reference scenario results and the ACCESS NYC limitation are in [#17 demo validation](snap-screening-demo-validation.md). The team's friend observation remains required before #17 can be marked complete.

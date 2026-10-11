@@ -94,7 +94,11 @@ try {
     }
     async function continueWith(answer) {
       if (/^\d/.test(answer)) await page.getByRole('textbox').fill(answer);
-      else await page.getByRole('radio', { name: answer, exact: true }).check();
+      else {
+        const question = await page.getByRole('heading', { level: 1 }).innerText();
+        assert.equal(await page.getByRole('group', { name: question, exact: true }).count(), 1, `Answer group is named by: ${question}`);
+        await page.getByRole('radio', { name: answer, exact: true }).check();
+      }
       await page.getByRole('button', { name: /^(Continue|See my result)$/ }).click();
     }
     async function submitAnswer(answer) {
@@ -107,6 +111,7 @@ try {
     await page.getByRole('button', { name: 'Start screening', exact: true }).click();
     await page.getByRole('heading', { name: 'Do you live in New York City?', exact: true }).waitFor({ timeout: 10000 });
     await focusIs('Do you live in New York City?');
+    assert.equal(await page.getByRole('group', { name: 'Do you live in New York City?' }).count(), 1, 'The answer group is named by its question');
     assert.equal(await page.locator('input:checked').count(), 0, 'No answer is preselected');
     await page.getByRole('button', { name: 'Continue', exact: true }).click();
     assert.match(await page.locator('main').getByRole('alert').innerText(), /Choose Yes, No, or I don’t know/);
@@ -125,6 +130,9 @@ try {
     assert.equal(await page.getByRole('link', { name: /Apply on ACCESS HRA/ }).getAttribute('href'), 'https://a069-access.nyc.gov/accesshra/');
     mkdirSync(output, { recursive: true });
     await page.screenshot({ path: `${output}/screening-result-desktop.png`, fullPage: true });
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.screenshot({ path: `${output}/screening-result-mobile.png`, fullPage: true });
+    await page.setViewportSize({ width: 1440, height: 1000 });
     await page.getByRole('button', { name: 'Review my answers', exact: true }).click();
     await focusIs('Review your answers');
     assert.equal(await page.locator('dl > div').count(), 8);

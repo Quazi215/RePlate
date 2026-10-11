@@ -136,7 +136,7 @@ export default function ScreeningJourney() {
         <label htmlFor="screening-number">{question.kind === "size" ? "Number of people, including you" : questionId === "childSupportAmount" ? "Monthly child support paid in dollars" : "Total monthly income in dollars"}</label>
         <input id="screening-number" type="text" inputMode={question.kind === "size" ? "numeric" : "decimal"} value={value === "unknown" ? "" : value ?? ""} disabled={value === "unknown"} onChange={(event) => change(event.target.value)} aria-describedby={describedBy} aria-invalid={Boolean(error)} autoComplete="off" />
         <label className={styles.choice}><input type="checkbox" checked={value === "unknown"} onChange={(event) => change(event.target.checked ? "unknown" : "")} />I don’t know</label>
-      </div> : <fieldset className={styles.choices} aria-describedby={describedBy}>
+      </div> : <fieldset className={styles.choices} aria-labelledby="screening-title" aria-describedby={describedBy}>
         <legend className={styles.legend}>Choose an answer</legend>
         {(["yes", "no", "unknown"] as const).map((choice) => <label className={styles.choice} key={choice}>
           <input type="radio" name={view} value={choice} checked={value === choice} onChange={() => change(choice)} aria-describedby={describedBy} />
