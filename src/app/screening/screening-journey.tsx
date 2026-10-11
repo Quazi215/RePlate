@@ -48,7 +48,7 @@ export default function ScreeningJourney() {
     <p className={styles.eyebrow}>NYC SNAP · A first check</p>
     <h1 id="screening-title">Could SNAP help your household?</h1>
     <p>Answer a few questions to check a limited income guideline and understand what to do next. This is for NYC residents who haven’t applied.</p>
-    <p><strong>This is screening, not an application.</strong> RePlate cannot approve benefits or make an official eligibility decision.</p>
+    <p><strong>This is screening, not an application.</strong> Hiraku cannot approve benefits or make an official eligibility decision.</p>
     <aside className={styles.notice}>
       <h2>What we check</h2>
       <p>If everyone receives SSI or Cash Assistance, we check that assistance-based path. Otherwise, we compare income for households of 1–8. The guideline depends on income from work, an older/disabled/blind member, or dependent-care costs. We account for child support paid when it applies.</p>
@@ -77,7 +77,7 @@ export default function ScreeningJourney() {
         <p>Based on <a href="https://access.nyc.gov/programs/supplemental-nutrition-assistance-program-snap/" referrerPolicy="no-referrer">ACCESS NYC’s preparation guidance</a> and <a href="https://www.nyc.gov/site/hra/help/snap-application-frequently-asked-questions.page" referrerPolicy="no-referrer">HRA’s application FAQ</a>.</p>
         <p>Questions? <a href="tel:+17185571399">Call HRA at 718-557-1399</a>.</p>
         <a className={styles.applicationLink} href="https://a069-access.nyc.gov/accesshra/" referrerPolicy="no-referrer">Apply on ACCESS HRA (optional) ↗</a>
-        <p>You’ll leave RePlate and enter your information again on the official service. Your screening answers are not transferred. No application has been submitted by RePlate.</p>
+        <p>You’ll leave Hiraku and enter your information again on the official service. Your screening answers are not transferred. No application has been submitted by Hiraku.</p>
       </section>
       <p className={styles.source}>Income guideline effective October 1, 2026; reviewed October 10, 2026. <a href="https://www.ny.gov/services/apply-snap" referrerPolicy="no-referrer">Read New York’s income standards</a>.</p>
     </section>;
