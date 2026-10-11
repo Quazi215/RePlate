@@ -2,6 +2,8 @@
 
 Product decisions, important-case testing boundaries, and four-slice breakdown approved October 10, 2026. Planning only; implementation is not authorized by this document. Published to Quazi215/RePlate as planning parent #18 and slice issues #19–#22; only slice tickets receive `ready-for-agent`. Publication and labeling do not authorize implementation.
 
+Slice 2 interaction revision approved directly by the user on October 10, 2026: recording transcribes into the editable question box. Guidance waits for an explicit Ask Shosai action. No separate “What we heard” section or automatic answer is shown. This supersedes the original stop-to-answer orchestration and voice response contract in the published ticket. Speech delivery must be adapted to this reviewed-question flow in Slice 3; no speech implementation is included here.
+
 ## Problem Statement
 
 People seeking SNAP help may find written forms and bureaucratic language difficult to use. They need to ask a short question aloud, read what the assistant understood, receive understandable guidance with official next steps, and hear that same guidance.
@@ -10,7 +12,7 @@ The application is now named Hiraku; its repository and package remain RePlate. 
 
 ## Solution
 
-Add a prominent “Talk to Shosai” action to the existing SNAP information homepage at `/`. Explain external processing before first use of either input mode and before requesting microphone permission. The user clicks to start, clicks to stop, and receives a visible transcript, a concise written answer, official citations, and playable speech. Replay uses the returned audio without another provider request. The user can ask another independent question or type a question through the same guidance service. Typed answers are text-only.
+Add a prominent “Talk to Shosai” action to the existing SNAP information homepage at `/`. Explain external processing before first use of either input mode and before requesting microphone permission. The user clicks to start, clicks to stop, and receives the transcript directly in the editable question box. They review or edit it and choose Ask Shosai for a concise written answer and official citations. Playable speech and local replay remain later-slice work. Typed and transcribed questions use the same guidance service.
 
 The experience supplements existing information and official handoffs. It never decides eligibility, submits applications, modifies screening answers, or implies retailer SNAP authorization is verified.
 
@@ -28,13 +30,13 @@ The experience supplements existing information and official handoffs. It never 
 - Place the first interface on Info at `/`. English, NYC scope, and independent questions are the MVP; conversational memory and automatic screening-context transfer are deferred.
 - Initial release is a local presenter-operated hackathon demo with fictional questions. Attendees watch or use the presenter's device. Hosted/external access requires a later access and abuse-control decision.
 - Coverage: what SNAP is, how to apply in NYC, how to use the existing screener, and basic household/income terminology. Benefits amounts, immigration, student exceptions, sanctions, and individual work-rule decisions receive official handoffs, not inferred advice. Recheck reviewed official excerpts before the demo; no live web search.
-- Stopping submits automatically. Show the transcript with the result; let the user explicitly copy/edit it in the typed form and resubmit. Transcription mistakes may produce an initial answer before correction.
+- Stopping submits audio for transcription only. Fill and focus the editable question box; the user may correct it before choosing Ask Shosai. No separate transcript panel or answer is shown before that explicit action.
 - Give both modes a first-use provider disclosure and warning against identifiers/private case details. Guidance must avoid repeating those details and remind users to ask a general question; no automatic-redaction guarantee.
 - Backgrounding/leaving cancels work, releases the microphone, stops playback, discards recording buffers, and clears the latest transcript/answer/audio. Returning starts fresh. Submitted content cannot be retracted from providers.
-- Desktop Chrome and Android Chrome are required device checks. Claim iPhone Safari voice support only after actual testing; otherwise explicitly list it as unverified and offer typed fallback when capture is unsupported.
+- Desktop Chrome is the required device check. The user removed Android checks from Slice 2 scope on October 10, 2026; Android support remains unverified. Claim iPhone Safari voice support only after actual testing; otherwise explicitly list it as unverified and offer typed fallback when capture is unsupported.
 - Keep one complete voice response; text waits for synthesis completion or timeout. Target a measured median stop-to-result latency of at most 20 seconds; revise if rehearsal waits are unacceptable.
-- Add a minimal typed-question path because no existing text assistant is available. Both input modes call one guidance function; voice is an adapter around it.
-- Use two Route Handlers: voice orchestration and the prerequisite text guidance endpoint. Do not expose separate transcription or speech endpoints.
+- Add a minimal typed-question path because no existing text assistant is available. Both typed and reviewed transcribed questions use one guidance function through the existing typed form.
+- Reuse two Route Handlers for Slice 2: `/api/voice` for bounded transcription and `/api/guidance` for explicitly requested guidance. No additional endpoint is introduced. Adapt later speech delivery to this interaction in Slice 3.
 - Record at most 30 seconds, auto-stop and submit with a timer and advance notice. Tradeoff: bounded cost and waiting time exclude longer questions. Normalize to mono 16 kHz, 16-bit PCM WAV in the browser, subject to an early required-browser feasibility gate. This allows exact server-side duration enforcement without installing a media parser or transcoder. If infeasible, revise the approach before further voice work; adding dependencies still needs approval.
 
 ## User Stories
@@ -72,7 +74,7 @@ The experience supplements existing information and official handoffs. It never 
 ### Architecture and responsibilities
 
 - Reuse the installed Google Gen AI SDK, native fetch for ElevenLabs, existing npm tooling, CSS modules, house button styles, focus conventions, and Node test runner. No new runtime or infrastructure dependency is proposed.
-- Keep Route Handlers responsible for HTTP validation and response mapping. A server guidance function owns trusted source context, prompts, provider-output validation, and official handoffs. A voice orchestration function invokes transcription, the shared guidance function, and speech synthesis sequentially.
+- Keep Route Handlers responsible for HTTP validation and response mapping. A server guidance function owns trusted source context, prompts, provider-output validation, and official handoffs. The voice service transcribes only; the existing guidance endpoint runs after the user reviews the question and submits the form.
 - The voice client owns permission, recording, conversion, cancellation, rendering, and native audio controls. A small typed form shares the same response view. No reusable recording framework or standalone chat platform is needed.
 - A server-owned, reviewed NYC SNAP source set is the grounding boundary. Reuse existing screening source notes and Info handoffs as starting points, but verify current policy before writing excerpts. Store source IDs, official URLs, reviewed dates, and approved factual context; do not treat a list of URLs as retrieved evidence.
 - Source excerpts and system instructions are trusted context. Questions and transcripts are untrusted data and cannot override them. No arbitrary URL fetching, browser-supplied prompts, voice/model selection, or client-supplied source text.
@@ -102,12 +104,10 @@ Success HTTP 200, application/json:
 
 | Field | Contract |
 | --- | --- |
-| status | `ready` or `text-only` |
+| status | `ready` |
 | transcript | Nonempty plain text, at most 2,000 characters |
-| answer | Nonempty plain text, at most 1,500 characters |
-| sources | 1–3 server-resolved objects with `id`, `title`, `url`, and `reviewedAt` (YYYY-MM-DD) |
-| audio | `{ mimeType: "audio/mpeg", base64: string }` for ready; null for text-only |
-| warning | null for ready; `{ code: "SPEECH_UNAVAILABLE", message: string }` for text-only |
+
+This endpoint does not generate an answer or speech. The client fills and focuses the question box, then waits for Ask Shosai. Answer/source fields come from the separate guidance request after review.
 
 Speech uses exactly the validated answer text. Links are separate and remain accessible in writing; no second model rewrites or summarizes away cautions. Validate the provider audio content type and enforce a 2 MiB binary response limit while reading. Base64 expansion remains below Vercel's response cap. Invalid/oversized/failed speech returns text-only. Complete audio in JSON avoids multipart response parsing and temporary storage; it delays text display until synthesis completes or its short timeout expires.
 
@@ -117,7 +117,7 @@ Request: application/json, bounded to 16 KiB, object containing only `question`,
 
 **Error contract**
 
-JSON `{ status: "error", code: string, message: string }`; include `transcript` only when transcription succeeded but guidance failed. The UI can reuse that transcript in the typed field on explicit user action. Errors never expose raw provider responses, keys, prompts, or submitted bytes.
+JSON `{ status: "error", code: string, message: string }`. Transcription and guidance are separate requests. A successful transcript becomes the question field; guidance failures leave that field intact for editing/retry. Errors never expose raw provider responses, keys, prompts, or submitted bytes.
 
 | HTTP | Codes / behavior |
 | --- | --- |
@@ -142,9 +142,9 @@ Missing ElevenLabs configuration, quota, timeout, invalid audio, or provider fai
 
 ### UI states and privacy lifecycle
 
-- States: idle, requesting permission, recording, preparing audio, processing, ready, text-only, and recoverable error. The single request cannot honestly announce individual server stages; show “Preparing your answer” during network work.
+- Slice 2 states: idle, requesting permission, recording, preparing audio, transcribing, editable question ready, preparing an explicitly requested answer, answer ready, and recoverable error. Show “Transcribing your question” for the voice request and “Preparing your answer” for the guidance request.
 - First use of either mode presents processing disclosure; voice disclosure precedes permission. Start/stop is click-to-toggle, not press-and-hold. Recording shows a timer; reaching 30 seconds stops and submits with a clear notice. Cancel discards recording; stopping normally submits it.
-- Controls remain keyboard operable, have visible focus and 44px minimum targets, and communicate status without relying on color. Announce status/error via appropriate live regions without repeatedly announcing the full answer. Render transcript as “What we heard” and distinguish it from the answer.
+- Controls remain keyboard operable, have visible focus and 44px minimum targets, and communicate status without relying on color. Announce status/error via appropriate live regions without repeatedly announcing the full answer. Put the transcript directly into the editable question field and focus it after transcription; do not add a separate transcript section.
 - Disable duplicate starts/submissions synchronously. Stop old playback before recording, allow only one active operation, and ignore stale completions using a per-operation identity. Abort outstanding work on cancel, reset, navigation, and page lifecycle changes.
 - Stop every media track on stop/error/cancel/unmount, including late permission resolution after cancellation. Close audio contexts, discard capture buffers after normalization/submission, revoke playback object URLs when replaced or cleared, and cancel/clear recording, transcript, answer, and playback on backgrounding, leaving, restart, or bfcache restoration. Returning starts fresh.
 - Attempt playback after ready; catch rejection and show a Play response action. Provide native pause/replay controls. Playback failure retains text and citations.
@@ -162,7 +162,7 @@ Missing ElevenLabs configuration, quota, timeout, invalid audio, or provider fai
 ### Implementation milestones
 
 1. **Shared typed guidance and Hiraku branding:** verify model access and reviewed source excerpts; update existing user-facing branding without repository/package renames; implement responsible-use disclosure, bounded typed input, shared grounded service, official citations and errors; ship a usable typed form. Verify supported, unsupported, adversarial, private-detail, and provider-failure behavior before adding voice. Update the old homepage no-input browser assertion to verify opt-in guidance while preserving local-only screening checks.
-2. **Capture to written answer:** implement disclosure, permission, start/stop/cancel, WAV preparation, authoritative upload validation, transcription, and reuse of guidance. Deliver transcript plus written response. Verify duration/size boundaries, no-speech, permission denial, duplicate prevention, and browser decoding.
+2. **Capture to editable question:** implement disclosure, permission, start/stop/cancel, WAV preparation, authoritative upload validation, and transcription into the question box. Only explicit Ask Shosai submits the reviewed question to shared guidance. Verify duration/size boundaries, no-speech, permission denial, duplicate prevention, browser decoding, and no guidance call/answer before submission.
 3. **Speech completion:** add bounded ElevenLabs conversion, ready/text-only responses, native playback and replay. Verify exact answer text sent, quota/timeouts, invalid audio, autoplay rejection, and replay without network calls.
 4. **Local demo acceptance:** verify keyboard/mobile access, cleanup/cancellation, no sensitive storage/logging, request/deadline bounds, and five fictional grounded questions. Run repository checks and record required real-device and local rehearsal results. No milestone is complete on a mocked happy path alone. Hosted deployment is deferred.
 
@@ -184,14 +184,14 @@ Published planning parent: [#18](https://github.com/Quazi215/RePlate/issues/18).
 - Keep automated tests to important trust boundaries and user-visible failures, using compact representative/table-driven cases: question/upload limits (including streamed body enforcement and the 30-second boundary), malformed/noncanonical input and duplicate/unknown fields rejected before paid calls; invalid transcripts/answers/source IDs; no speech; provider configuration/quota/timeouts; transcript preservation after guidance failure; and speech partial success/oversize. Use fictional fixtures and no live external calls. Do not add exhaustive permutations or tests that mirror implementation.
 - Cover cancellation and avoided downstream calls at meaningful stage boundaries. Browser checks prioritize microphone cleanup including delayed permission, stale completions, keyboard/status access, no sensitive storage, autoplay rejection, and replay without network calls; avoid exact render snapshots and incidental React internals.
 - A browser boundary is necessary for behavior HTTP tests cannot observe. Follow the existing optional Playwright verification-script pattern using an available installation; mock media/provider responses for deterministic state/cleanup checks. Verify keyboard controls, live status, double-click races, cancel during permission, stale results, no storage writes, autoplay rejection, and replay without a request.
-- Real-device manual checks: current desktop Chrome and mobile Chrome/Android are required; Safari/iOS support is claimed only after testing. Verify actual recording, decode/WAV conversion, permission denial, phone interruption/backgrounding, microphone release, and MP3 playback. Record untested devices explicitly; support claims require actual checks.
+- Real-device manual checks: current desktop Chrome is required. Android checks were removed from Slice 2 scope by the user on October 10, 2026; Android remains unverified. Safari/iOS support is claimed only after testing. Verify actual recording, decode/WAV conversion, permission denial, backgrounding, microphone release, and MP3 playback when speech is implemented. Phone interruption checks apply only to a tested phone. Record untested devices explicitly; support claims require actual checks.
 - Manually review five fictional SNAP answers against reviewed source excerpts, covering supported guidance, personal eligibility handoff, unknown/unsupported questions, prompt injection, and accidentally supplied fictional identifiers. Citations alone are not a factual-accuracy test. Serious coverage, injection, or private-detail repetition failures block demo readiness.
 - During approved implementation run npm test, npm run lint, npm run typecheck, and npm run build plus the browser checks. Start with failing focused regression cases for nontrivial behavior. No application checks or paid provider calls are needed merely to produce this draft.
 
 ### Acceptance criteria
 
 1. Opting into voice records only after user action; stop/limit/cancel reliably releases the microphone.
-2. A supported fictional spoken question yields an accurate visible transcript, grounded concise answer, accessible official sources, and playable audio of that answer.
+2. A supported fictional spoken question fills the editable input with an accurate transcript. After the user reviews/edits it and explicitly chooses Ask Shosai, it yields grounded guidance and official sources; playable audio is later-slice work.
 3. Replay makes no network request; another question prevents overlapping recording/playback and stale responses.
 4. Invalid or excessive uploads are rejected before provider calls, including falsified client duration/headers.
 5. Silence does not produce invented guidance. Provider failures and permission denial expose a recoverable next action.

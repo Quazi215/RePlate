@@ -35,7 +35,7 @@ try {
   assert.match(await page.locator('#shosai').innerText(), /Google Gemini/);
   const storageBefore = await page.context().storageState({ indexedDB: true });
   const sessionBefore = await page.evaluate(() => ({ ...sessionStorage }));
-  const consent = page.getByRole('button', { name: 'I agree — type a question' });
+  const consent = page.getByRole('button', { name: 'I agree — ask Shosai' });
   await consent.focus(); await page.keyboard.press('Enter');
   const input = page.getByRole('textbox', { name: 'Your general SNAP question' });
   await input.waitFor();
