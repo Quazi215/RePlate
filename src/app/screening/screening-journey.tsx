@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { activeScreeningQuestions, answerError, screeningOrder, screenSnap, type ScreeningAnswers, type ScreeningQuestion } from "../../lib/screening/snap-screening";
+import { useLocale } from "../../lib/i18n/client";
+import { localizeScreeningReason, localizeValidation } from "../../lib/i18n/screening";
 import brand from "../site.module.css";
 import styles from "./screening.module.css";
 
@@ -19,6 +21,7 @@ const questions: Record<ScreeningQuestion, { title: string; help: string; kind: 
 type View = "entry" | "result" | "review" | ScreeningQuestion;
 
 export default function ScreeningJourney() {
+  const { locale, t, dynamic } = useLocale();
   const [answers, setAnswers] = useState<ScreeningAnswers>({});
   const [view, setView] = useState<View>("entry");
   const [error, setError] = useState<string | null>(null);
@@ -45,58 +48,58 @@ export default function ScreeningJourney() {
   function restart() { setAnswers({}); navigate(screeningOrder[0]); }
 
   if (view === "entry") return <section className={styles.panel} aria-labelledby="screening-title">
-    <p className={styles.eyebrow}>NYC SNAP · A first check</p>
-    <h1 id="screening-title">Could SNAP help your household?</h1>
-    <p>Answer a few questions to check a limited income guideline and understand what to do next. This is for NYC residents who haven’t applied.</p>
-    <p><strong>This is screening, not an application.</strong> Hiraku cannot approve benefits or make an official eligibility decision.</p>
+    <p className={styles.eyebrow}>{t("NYC SNAP · A first check")}</p>
+    <h1 id="screening-title">{t("Could SNAP help your household?")}</h1>
+    <p>{t("Answer a few questions to check a limited income guideline and understand what to do next. This is for NYC residents who haven’t applied.")}</p>
+    <p><strong>{t("This is screening, not an application.")}</strong>{t("Hiraku cannot approve benefits or make an official eligibility decision.")}</p>
     <aside className={styles.notice}>
-      <h2>What we check</h2>
-      <p>If everyone receives SSI or Cash Assistance, we check that assistance-based path. Otherwise, we compare income for households of 1–8. The guideline depends on income from work, an older/disabled/blind member, or dependent-care costs. We account for child support paid when it applies.</p>
-      <p>This is a limited financial check. If a required answer is unknown or your circumstances are outside the supported checks, you’ll get an explanation and an official next step.</p>
+      <h2>{t("What we check")}</h2>
+      <p>{t("If everyone receives SSI or Cash Assistance, we check that assistance-based path. Otherwise, we compare income for households of 1–8. The guideline depends on income from work, an older/disabled/blind member, or dependent-care costs. We account for child support paid when it applies.")}</p>
+      <p>{t("This is a limited financial check. If a required answer is unknown or your circumstances are outside the supported checks, you’ll get an explanation and an official next step.")}</p>
     </aside>
-    <p>No account, identifying details, or documents. Answers stay on this page and clear when you refresh, start over, or leave.</p>
-    <div className={styles.actions}><button className={brand.primary} type="button" onClick={() => navigate(screeningOrder[0])}>Start screening</button></div>
+    <p>{t("No account, identifying details, or documents. Answers stay on this page and clear when you refresh, start over, or leave.")}</p>
+    <div className={styles.actions}><button className={brand.primary} type="button" onClick={() => navigate(screeningOrder[0])}>{t("Start screening")}</button></div>
   </section>;
 
   const activeQuestions = activeScreeningQuestions(answers);
   if (view === "result") {
     const result = screenSnap(answers);
     return <section className={styles.panel} aria-labelledby="screening-title">
-      <p className={styles.eyebrow}>Your screening result · Not an official decision</p>
-      <h1 id="screening-title" ref={heading} tabIndex={-1}>{result.title}</h1>
-      <div className={styles.notice}><h2>Why you got this result</h2><ul>{result.reasons.map((reason) => <li key={reason}>{reason}</li>)}</ul></div>
-      <p>{result.limitation}</p>
+      <p className={styles.eyebrow}>{t("Your screening result · Not an official decision")}</p>
+      <h1 id="screening-title" ref={heading} tabIndex={-1}>{dynamic(result.title)}</h1>
+      <div className={styles.notice}><h2>{t("Why you got this result")}</h2><ul>{result.reasons.map((reason) => <li key={reason}>{localizeScreeningReason(locale, reason, answers)}</li>)}</ul></div>
+      <p>{result.limitation.split(" This does not mean you are officially ineligible.").map((part, index) => index ? `${dynamic(" This does not mean you are officially ineligible. Review your answers or ask HRA about other rules that may apply.")}` : dynamic(part))}</p>
       <div className={styles.actions}>
-        <button className={brand.primary} type="button" onClick={() => navigate("review")}>Review my answers</button>
-        <button className={brand.secondary} type="button" onClick={restart}>Start over</button>
+        <button className={brand.primary} type="button" onClick={() => navigate("review")}>{t("Review my answers")}</button>
+        <button className={brand.secondary} type="button" onClick={restart}>{t("Start over")}</button>
       </div>
       <section className={styles.preparation} aria-labelledby="prepare-title">
-        <h2 id="prepare-title">Prepare your next step</h2>
-        <p>You can review your answers, ask HRA for help, or apply when you’re ready. HRA can tell you which documents are needed.</p>
-        <ul><li>Have information about who lives in your household.</li><li>Find recent pay stubs and other income records.</li><li>Have a lease and utility bills available, if they apply.</li><li>Find photo ID or other documents HRA requests. Don’t upload anything here.</li></ul>
-        <p>Based on <a href="https://access.nyc.gov/programs/supplemental-nutrition-assistance-program-snap/" referrerPolicy="no-referrer">ACCESS NYC’s preparation guidance</a> and <a href="https://www.nyc.gov/site/hra/help/snap-application-frequently-asked-questions.page" referrerPolicy="no-referrer">HRA’s application FAQ</a>.</p>
-        <p>Questions? <a href="tel:+17185571399">Call HRA at 718-557-1399</a>.</p>
-        <a className={styles.applicationLink} href="https://a069-access.nyc.gov/accesshra/" referrerPolicy="no-referrer">Apply on ACCESS HRA (optional) ↗</a>
-        <p>You’ll leave Hiraku and enter your information again on the official service. Your screening answers are not transferred. No application has been submitted by Hiraku.</p>
+        <h2 id="prepare-title">{t("Prepare your next step")}</h2>
+        <p>{t("You can review your answers, ask HRA for help, or apply when you’re ready. HRA can tell you which documents are needed.")}</p>
+        <ul><li>{t("Have information about who lives in your household.")}</li><li>{t("Find recent pay stubs and other income records.")}</li><li>{t("Have a lease and utility bills available, if they apply.")}</li><li>{t("Find photo ID or other documents HRA requests. Don’t upload anything here.")}</li></ul>
+        <p>{t("Based on ")}<a href="https://access.nyc.gov/programs/supplemental-nutrition-assistance-program-snap/" referrerPolicy="no-referrer">{t("ACCESS NYC’s preparation guidance")}</a>{t("and ")}<a href="https://www.nyc.gov/site/hra/help/snap-application-frequently-asked-questions.page" referrerPolicy="no-referrer">{t("HRA’s application FAQ")}</a>.</p>
+        <p>{t("Questions? ")}<a href="tel:+17185571399">{t("Call HRA at 718-557-1399")}</a>.</p>
+        <a className={styles.applicationLink} href="https://a069-access.nyc.gov/accesshra/" referrerPolicy="no-referrer">{t("Apply on ACCESS HRA (optional) ↗")}</a>
+        <p>{t("You’ll leave Hiraku and enter your information again on the official service. Your screening answers are not transferred. No application has been submitted by Hiraku.")}</p>
       </section>
-      <p className={styles.source}>Income guideline effective October 1, 2026; reviewed October 10, 2026. <a href="https://www.ny.gov/services/apply-snap" referrerPolicy="no-referrer">Read New York’s income standards</a>.</p>
+      <p className={styles.source}>{t("Income guideline effective October 1, 2026; reviewed October 10, 2026. ")}<a href="https://www.ny.gov/services/apply-snap" referrerPolicy="no-referrer">{t("Read New York’s income standards")}</a>.</p>
     </section>;
   }
 
   if (view === "review") return <section className={styles.panel} aria-labelledby="screening-title">
-    <p className={styles.eyebrow}>Your current answers</p>
-    <h1 id="screening-title" ref={heading} tabIndex={-1}>Review your answers</h1>
-    <p>Change an answer, then continue to update your result. If a changed answer leads to a different path, questions that no longer apply will clear.</p>
+    <p className={styles.eyebrow}>{t("Your current answers")}</p>
+    <h1 id="screening-title" ref={heading} tabIndex={-1}>{t("Review your answers")}</h1>
+    <p>{t("Change an answer, then continue to update your result. If a changed answer leads to a different path, questions that no longer apply will clear.")}</p>
     <dl className={styles.review}>
       {activeQuestions.map((question) => <div key={question}>
-        <dt>{questions[question].title}</dt>
-        <dd>{answers[question] === "unknown" ? "I don’t know" : answers[question] === "yes" ? "Yes" : answers[question] === "no" ? "No" : answers[question] ?? "Not answered"}</dd>
-        <dd><button className={brand.secondary} type="button" onClick={() => navigate(question)} aria-label={`Change: ${questions[question].title}`}>Change answer</button></dd>
+        <dt>{dynamic(questions[question].title)}</dt>
+        <dd>{answers[question] === "unknown" ? t("I don’t know") : answers[question] === "yes" ? t("Yes") : answers[question] === "no" ? t("No") : answers[question] ?? t("Not answered")}</dd>
+        <dd><button className={brand.secondary} type="button" onClick={() => navigate(question)} aria-label={`${t("Change: ")}${dynamic(questions[question].title)}`}>{t("Change answer")}</button></dd>
       </div>)}
     </dl>
     <div className={styles.actions}>
-      <button className={brand.primary} type="button" onClick={() => navigate("result")}>Back to result</button>
-      <button className={brand.secondary} type="button" onClick={restart}>Start over</button>
+      <button className={brand.primary} type="button" onClick={() => navigate("result")}>{t("Back to result")}</button>
+      <button className={brand.secondary} type="button" onClick={restart}>{t("Start over")}</button>
     </div>
   </section>;
 
@@ -119,7 +122,7 @@ export default function ScreeningJourney() {
     event.preventDefault();
     const message = answerError(questionId, value);
     if (message) {
-      setError(message);
+      setError(localizeValidation(locale, questionId));
       form.current?.querySelector<HTMLInputElement>("input")?.focus();
       return;
     }
@@ -127,27 +130,27 @@ export default function ScreeningJourney() {
   }
 
   return <section className={styles.panel} aria-labelledby="screening-title">
-    <p className={styles.eyebrow}>Question {index + 1} of up to {screeningOrder.length} · Screening, not applying</p>
-    <h1 id="screening-title" ref={heading} tabIndex={-1}>{question.title}</h1>
-    <p id="question-help">{question.help}</p>
+    <p className={styles.eyebrow}>{t("Question ")}{index + 1} {t("of up to ")}{screeningOrder.length} {t("· Screening, not applying")}</p>
+    <h1 id="screening-title" ref={heading} tabIndex={-1}>{dynamic(question.title)}</h1>
+    <p id="question-help">{dynamic(question.help)}</p>
     <form ref={form} onSubmit={next} noValidate autoComplete="off" className={styles.form}>
       {numeric ? <div className={styles.numberField}>
-        <label htmlFor="screening-number">{question.kind === "size" ? "Number of people, including you" : questionId === "childSupportAmount" ? "Monthly child support paid in dollars" : "Total monthly income in dollars"}</label>
+        <label htmlFor="screening-number">{dynamic(question.kind === "size" ? "Number of people, including you" : questionId === "childSupportAmount" ? "Monthly child support paid in dollars" : "Total monthly income in dollars")}</label>
         <input id="screening-number" type="text" inputMode={question.kind === "size" ? "numeric" : "decimal"} value={value === "unknown" ? "" : value ?? ""} disabled={value === "unknown"} onChange={(event) => change(event.target.value)} aria-describedby={describedBy} aria-invalid={Boolean(error)} autoComplete="off" />
-        <label className={styles.choice}><input type="checkbox" checked={value === "unknown"} onChange={(event) => change(event.target.checked ? "unknown" : "")} />I don’t know</label>
+        <label className={styles.choice}><input type="checkbox" checked={value === "unknown"} onChange={(event) => change(event.target.checked ? "unknown" : "")} />{t("I don’t know")}</label>
       </div> : <fieldset className={styles.choices} aria-labelledby="screening-title" aria-describedby={describedBy}>
-        <legend className={styles.legend}>Choose an answer</legend>
+        <legend className={styles.legend}>{t("Choose an answer")}</legend>
         {(["yes", "no", "unknown"] as const).map((choice) => <label className={styles.choice} key={choice}>
           <input type="radio" name={view} value={choice} checked={value === choice} onChange={() => change(choice)} aria-describedby={describedBy} />
-          {choice === "unknown" ? "I don’t know" : choice === "yes" ? "Yes" : "No"}
+          {choice === "unknown" ? t("I don’t know") : choice === "yes" ? t("Yes") : t("No")}
         </label>)}
       </fieldset>}
       {error && <p className={styles.error} id="answer-error" role="alert">{error}</p>}
       <div className={styles.actions}>
-        <button className={brand.primary} type="submit">{view === "monthlyIncome" ? "See my result" : "Continue"}</button>
-        <button className={brand.secondary} type="button" onClick={() => navigate(activeQuestions[index - 1] ?? "entry")}>Back</button>
+        <button className={brand.primary} type="submit">{view === "monthlyIncome" ? t("See my result") : t("Continue")}</button>
+        <button className={brand.secondary} type="button" onClick={() => navigate(activeQuestions[index - 1] ?? "entry")}>{t("Back")}</button>
       </div>
     </form>
-    <p className={styles.source}>Your answers stay on this page. Refreshing or leaving clears them.</p>
+    <p className={styles.source}>{t("Your answers stay on this page. Refreshing or leaving clears them.")}</p>
   </section>;
 }

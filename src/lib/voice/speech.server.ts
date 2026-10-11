@@ -1,18 +1,20 @@
 import type { GuidanceSuccess } from "../guidance/guidance";
+import { speechCodes, type Locale } from "../i18n/locale";
 
-export type SpeechProvider = (answer: string, signal: AbortSignal) => Promise<Response>;
+export type SpeechProvider = (answer: string, signal: AbortSignal, locale?: Locale) => Promise<Response>;
 
-async function convertSpeech(answer: string, signal: AbortSignal): Promise<Response> {
+async function convertSpeech(answer: string, signal: AbortSignal, locale: Locale = "en"): Promise<Response> {
   const key = process.env.ELEVENLABS_API_KEY?.trim();
   const voice = process.env.ELEVENLABS_VOICE_ID?.trim();
   if (!key || !voice || key.startsWith("<") || voice.startsWith("<")) throw new Error("Speech not configured");
   return fetch(`https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voice)}?output_format=mp3_44100_128`, {
     method: "POST", headers: { "xi-api-key": key, "Content-Type": "application/json", Accept: "audio/mpeg" },
-    body: JSON.stringify({ text: answer, model_id: "eleven_flash_v2_5" }), signal, cache: "no-store", redirect: "error",
+    body: JSON.stringify({ text: answer, model_id: "eleven_flash_v2_5", language_code: speechCodes[locale] }), signal, cache: "no-store", redirect: "error",
   });
 }
 
-export async function speakAnswer(answer: string, signal: AbortSignal, provider: SpeechProvider = convertSpeech): Promise<Pick<GuidanceSuccess, "audio" | "warning">> {
+export async function speakAnswer(answer: string, signal: AbortSignal, provider: SpeechProvider = convertSpeech, locale: Locale = "en"): Promise<Pick<GuidanceSuccess, "audio" | "warning">> {
+  if (!speechCodes[locale]) return { audio: null, warning: { code: "SPEECH_UNAVAILABLE", message: "Voice is unavailable in the selected language. You can still read the answer and official sources." } };
   const operation = AbortSignal.any([signal, AbortSignal.timeout(10000)]);
   let reader: ReadableStreamDefaultReader<Uint8Array> | undefined;
   let rejectAbort: (() => void) | undefined;
@@ -23,7 +25,7 @@ export async function speakAnswer(answer: string, signal: AbortSignal, provider:
       rejectAbort = () => { void reader?.cancel().catch(() => {}); reject(operation.reason); };
       operation.addEventListener("abort", rejectAbort, { once: true });
     });
-    const pending = provider(answer, operation).then(response => {
+    const pending = provider(answer, operation, locale).then(response => {
       if (operation.aborted) void response.body?.cancel().catch(() => {});
       return response;
     });

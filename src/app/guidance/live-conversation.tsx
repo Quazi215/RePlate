@@ -4,6 +4,8 @@ import dynamic from "next/dynamic";
 import { Component, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { CommitStrategy, useScribe } from "@elevenlabs/react";
 import { LiveSession, type LiveTurn } from "../../lib/voice/live-session";
+import { useLocale } from "../../lib/i18n/client";
+import { nativeNames, realtimeCodes } from "../../lib/i18n/locale";
 import brand from "../site.module.css";
 import styles from "./guidance.module.css";
 
@@ -36,6 +38,7 @@ function ShosaiOrb({ phase = null }: { phase?: "thinking" | "listening" | "talki
 export default function LiveConversation({ onClose, onSessionChange, disabled }: {
   onClose: () => void; onSessionChange: (active: boolean) => void; disabled: boolean;
 }) {
+  const { locale, t, dynamic } = useLocale();
   const [started, setStarted] = useState(false);
   const [message, setMessage] = useState("");
   const startButton = useRef<HTMLButtonElement>(null);
@@ -47,24 +50,25 @@ export default function LiveConversation({ onClose, onSessionChange, disabled }:
 
   return <section id="live-shosai-panel" className={styles.livePanel} aria-labelledby="live-shosai-title">
     <div className={styles.liveHeader}>
-      <p>HIRAKU / SHOSAI</p>
-      <button className={brand.secondary} type="button" onClick={onClose}>Close conversation panel</button>
+      <p>{t("HIRAKU / SHOSAI")}</p>
+      <button className={brand.secondary} type="button" onClick={onClose}>{t("Close conversation panel")}</button>
     </div>
-    <h3 id="live-shosai-title">Talk to Shosai</h3>
-    <p>Ask general questions about SNAP rules, including income. Shosai can explain NYC guidance but cannot assess your eligibility or estimate benefits. If you want to check your own situation, use Hiraku’s screener or apply through NYC HRA.</p>
-    <p className={styles.liveHelp}>Hiraku clears this conversation when the session ends.</p>
-    {started ? <ConversationSession onEnd={finish} /> : <>
+    <h3 id="live-shosai-title">{t("Talk to Shosai")}</h3>
+    <p>{t("Ask general questions about SNAP rules, including income. Shosai can explain NYC guidance but cannot assess your eligibility or estimate benefits. If you want to check your own situation, use Hiraku’s screener or apply through NYC HRA.")}</p>
+    <p className={styles.liveHelp}>{t("Hiraku clears this conversation when the session ends.")}</p>
+    {!realtimeCodes[locale] ? <p role="status">{t("Voice is unavailable in the selected language. You can still read the answer and official sources.")}</p> : started ? <ConversationSession onEnd={finish} /> : <>
       <ShosaiOrb />
-      {message && <p role="status">{message}</p>}
+      {message && <p role="status">{locale !== "en" && dynamic(message) === message ? t("The conversation could not continue. Start again when ready.") : dynamic(message)}</p>}
       <button ref={startButton} type="button" disabled={disabled} className={`${brand.primary} ${styles.startConversation}`} onClick={() => {
         setMessage(""); setStarted(true); onSessionChange(true);
-      }}>{message ? "Start again" : "Start conversation"}</button>
-      <p className={styles.liveHelp}>English · General NYC SNAP guidance · Up to 5 minutes</p>
+      }}>{message ? t("Start again") : t("Start conversation")}</button>
+      <p className={styles.liveHelp}><span lang={locale}>{nativeNames[locale]}</span> · {t("General NYC SNAP guidance · Up to 5 minutes")}</p>
     </>}
   </section>;
 }
 
 function ConversationSession({ onEnd }: { onEnd: (reason: string) => void }) {
+  const { locale, t, dynamic } = useLocale();
   const [turns, setTurns] = useState<LiveTurn[]>([]);
   const [phase, setPhase] = useState<"connecting" | "listening" | "thinking" | "talking">("connecting");
   const [seconds, setSeconds] = useState(0);
@@ -128,14 +132,14 @@ function ConversationSession({ onEnd }: { onEnd: (reason: string) => void }) {
   const failed = useCallback(() => { finish("Live voice could not connect. You can still type or record a question below."); }, [finish]);
   const disconnected = useCallback(() => { finish("The connection ended. Start again when ready."); }, [finish]);
   const { connect, disconnect, clearTranscripts, partialTranscript } = useScribe({
-    modelId: "scribe_v2_realtime", languageCode: "en", commitStrategy: CommitStrategy.VAD,
+    modelId: "scribe_v2_realtime", languageCode: realtimeCodes[locale], commitStrategy: CommitStrategy.VAD,
     onSessionStarted: connected, onPartialTranscript: partial, onCommittedTranscript: committed,
     onError: failed, onDisconnect: disconnected,
   });
 
   useEffect(() => {
     live.current = true;
-    session.current = new LiveSession(setTurns);
+    session.current = new LiveSession(setTurns, undefined, locale);
     const controller = new AbortController();
     const started = Date.now();
     const timer = setInterval(() => { if (live.current) setSeconds(Math.floor((Date.now() - started) / 1000)); }, 1000);
@@ -170,24 +174,24 @@ function ConversationSession({ onEnd }: { onEnd: (reason: string) => void }) {
   const label = { connecting: "Connecting…", listening: "Listening", thinking: "Thinking…", talking: "Shosai is speaking" }[phase];
   return <>
     <ShosaiOrb phase={phase === "connecting" ? null : phase} />
-    <p role="status" aria-live="polite" className={styles.liveStatus}>{label}</p>
-    <p className={styles.liveHelp}>{Math.floor(seconds / 60)}:{String(seconds % 60).padStart(2, "0")} / 5:00 · Speak naturally. Pause for a reply, or talk to interrupt.</p>
-    <button type="button" className={`${brand.primary} ${styles.startConversation}`} onClick={() => finish("Conversation ended. Hiraku cleared the session.")}>End conversation</button>
+    <p role="status" aria-live="polite" className={styles.liveStatus}>{dynamic(label)}</p>
+    <p className={styles.liveHelp}>{Math.floor(seconds / 60)}:{String(seconds % 60).padStart(2, "0")}{t("/ 5:00 · Speak naturally. Pause for a reply, or talk to interrupt.")}</p>
+    <button type="button" className={`${brand.primary} ${styles.startConversation}`} onClick={() => finish("Conversation ended. Hiraku cleared the session.")}>{t("End conversation")}</button>
     <audio ref={audio} hidden onEnded={() => { if (live.current) { stopAudio(); setPhase("listening"); } }}
       onError={() => { if (live.current && audioUrl.current) finish("Speech playback failed. Start again, or type a question below."); }} />
-    <div className={styles.liveTranscript} aria-label="Conversation transcript">
+    <div className={styles.liveTranscript} aria-label={t("Conversation transcript")}>
       {turns.map((turn, index) => <div key={index} className={styles.liveTurn}>
-        <p><strong>You</strong></p><p>{turn.question}</p>
+        <p><strong>{t("You")}</strong></p><p>{turn.question}</p>
         {turn.result && <>
-          <p><strong>Shosai</strong>{turn.interrupted && <span> · Interrupted</span>}</p>
+          <p><strong>{t("Shosai")}</strong>{turn.interrupted && <span>{t("· Interrupted")}</span>}</p>
           <p>{turn.result.answer}</p>
           <ul>{turn.result.sources.map(source => <li key={source.id}>
             <a href={source.url} target="_blank" rel="noreferrer" referrerPolicy="no-referrer">{source.title} ↗</a>
           </li>)}</ul>
         </>}
-        {!turn.result && turn.interrupted && <p>Reply interrupted.</p>}
+        {!turn.result && turn.interrupted && <p>{t("Reply interrupted.")}</p>}
       </div>)}
-      {partialTranscript && <p className={styles.livePartial}><strong>You · Speaking</strong><br />{partialTranscript}</p>}
+      {partialTranscript && <p className={styles.livePartial}><strong>{t("You · Speaking")}</strong><br />{partialTranscript}</p>}
     </div>
   </>;
 }

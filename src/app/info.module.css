@@ -6,7 +6,7 @@
 .page p { line-height: 1.55; }
 .page section { scroll-margin-top: 24px; }
 .header { display: flex; flex-wrap: wrap; align-items: center; gap: 28px; padding: 18px max(24px, calc((100vw - 1200px) / 2)); border-bottom: 1px solid var(--border); }
-.headerHelp { margin-left: auto; padding: 10px 16px; border: 1px solid var(--forest); border-radius: 6px; text-decoration: none; min-height: 44px; }
+.headerHelp { margin-inline-start: auto; padding: 10px 16px; border: 1px solid var(--forest); border-radius: 6px; text-decoration: none; min-height: 44px; }
 .main { max-width: 1200px; padding: 0 24px; margin: 0 auto; }
 .hero { display: grid; grid-template-columns: 1.2fr 1fr; gap: 60px; align-items: center; padding: 64px 0; }
 .eyebrow { font-size: .95rem; font-weight: 700; margin-bottom: 20px !important; }

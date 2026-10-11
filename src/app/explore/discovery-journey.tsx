@@ -5,12 +5,18 @@ import dynamic from "next/dynamic";
 import { Component, useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { AnimatePresence, LazyMotion, MotionConfig, domMax, m, useReducedMotion } from "motion/react";
 import { findStores, hasLocation, retailerLocatorUrl, validateSearch, type DiscoveryError, type DiscoveryResult, type Search, type SearchErrors, type Store } from "./discovery";
+import { LanguageSelector, useLocale } from "../../lib/i18n/client";
 import styles from "../site.module.css";
 
 const DiscoveryMap = dynamic(() => import("./discovery-map"), {
   ssr: false,
-  loading: () => <p className={styles.mapLoading} role="status">Loading map. The list is ready to use.</p>,
+  loading: () => <MapLoading />,
 });
+
+function MapLoading() {
+  const { t } = useLocale();
+  return <p className={styles.mapLoading} role="status">{t("Loading map. The list is ready to use.")}</p>;
+}
 
 class MapBoundary extends Component<{ children: ReactNode; fallback: ReactNode }, { failed: boolean }> {
   state = { failed: false };
@@ -22,63 +28,67 @@ function SearchForm({ search, errors, update, submit, validateField }: {
   search: Search; errors: SearchErrors; update: (next: Search) => void;
   submit: (event: FormEvent<HTMLFormElement>) => void; validateField: (field: keyof SearchErrors) => void;
 }) {
+  const { t, dynamic } = useLocale();
   const [advancedOpen, setAdvancedOpen] = useState(false);
   return <form className={styles.searchForm} onSubmit={submit} noValidate>
     <div className={styles.field}>
-      <label htmlFor="zip">NYC ZIP code</label>
+      <label htmlFor="zip">{t("NYC ZIP code")}</label>
       <input id="zip" name="zip" inputMode="numeric" autoComplete="postal-code" maxLength={5} value={search.zip}
         aria-invalid={Boolean(errors.zip)} aria-describedby={errors.zip ? "zip-help zip-error" : "zip-help"}
         onChange={event => update({ ...search, zip: event.target.value })} onBlur={() => validateField("zip")} />
-      <p id="zip-help" className={styles.help}>No home address needed. Enter a NYC ZIP code.</p>
-      {errors.zip ? <p id="zip-error" className={styles.error} role="alert">{errors.zip}</p> : null}
+      <p id="zip-help" className={styles.help}>{t("No home address needed. Enter a NYC ZIP code.")}</p>
+      {errors.zip ? <p id="zip-error" className={styles.error} role="alert">{dynamic(errors.zip)}</p> : null}
     </div>
     <button className={styles.advancedToggle} type="button" aria-controls="search-radius" aria-expanded={advancedOpen || Boolean(errors.radius)} onClick={() => setAdvancedOpen(previous => !previous)}>
-      <span>Radius <strong>{search.radius ? `${search.radius} mi` : "No limit"}</strong></span><span aria-hidden="true">{advancedOpen ? "−" : "+"}</span>
+      <span>{t("Radius ")}<strong>{search.radius ? `${search.radius} mi` : t("No limit")}</strong></span><span aria-hidden="true">{advancedOpen ? "−" : "+"}</span>
     </button>
     <div id="search-radius" className={`${styles.advancedFields} ${advancedOpen || errors.radius ? styles.advancedOpen : ""}`}>
     <div className={styles.field}>
-      <label htmlFor="radius">Straight-line radius <span className={styles.optional}>(optional)</span></label>
-      <div className={styles.inputUnit}><input id="radius" name="radius" type="number" min="0.01" max="25" step="any" value={search.radius} placeholder="No limit"
+      <label htmlFor="radius">{t("Straight-line radius ")}<span className={styles.optional}>{t("(optional)")}</span></label>
+      <div className={styles.inputUnit}><input id="radius" name="radius" type="number" min="0.01" max="25" step="any" value={search.radius} placeholder={t("No limit")}
         aria-invalid={Boolean(errors.radius)} aria-describedby={errors.radius ? "radius-help radius-error" : "radius-help"}
-        onChange={event => update({ ...search, radius: event.target.value })} onBlur={() => validateField("radius")} /><span>miles</span></div>
-      <p id="radius-help" className={styles.help}>Approximate proximity, not route distance.</p>
-      {errors.radius ? <p id="radius-error" className={styles.error} role="alert">{errors.radius}</p> : null}
+        onChange={event => update({ ...search, radius: event.target.value })} onBlur={() => validateField("radius")} /><span>{t("miles")}</span></div>
+      <p id="radius-help" className={styles.help}>{t("Approximate proximity, not route distance.")}</p>
+      {errors.radius ? <p id="radius-error" className={styles.error} role="alert">{dynamic(errors.radius)}</p> : null}
     </div>
     </div>
-    <button className={styles.primary} type="submit">Find stores <span aria-hidden="true">→</span></button>
+    <button className={styles.primary} type="submit">{t("Find stores ")}<span aria-hidden="true">→</span></button>
   </form>;
 }
 
 function StoreCard({ store, index, selected, select, hover }: {
   store: Store; index: number; selected: boolean; select: (id: string) => void; hover: (id: string | null) => void;
 }) {
+  const { t } = useLocale();
   const located = hasLocation(store);
   const reducedMotion = useReducedMotion();
   return <m.article layout={reducedMotion ? false : "position"} transition={{ duration: 0.16 }} id={`card-${store.id}`} data-store-id={store.id} data-selected={selected} className={`${styles.storeCard} ${selected ? styles.cardSelected : ""}`}
     onMouseEnter={() => hover(store.id)} onMouseLeave={() => hover(null)}>
-    <div className={styles.cardTop}><span className={styles.storeNumber} aria-hidden="true">{index + 1}</span><div><span className={styles.storeTag}>Retailer candidate</span><h3>{store.name}</h3></div>{selected ? <span className={styles.selectedLabel}>Selected</span> : null}</div>
+    <div className={styles.cardTop}><span className={styles.storeNumber} aria-hidden="true">{index + 1}</span><div><span className={styles.storeTag}>{t("Retailer candidate")}</span><h3>{store.name}</h3></div>{selected ? <span className={styles.selectedLabel}>{t("Selected")}</span> : null}</div>
     <p className={styles.address}>{store.address}</p>
-    <p className={styles.distance}>{store.miles.toFixed(2)} mi <span>approx. straight-line</span></p>
-    <p className={styles.help}>Prices &amp; stock unknown. Route, time &amp; trip fare unknown.</p>
-    {!located ? <p className={styles.help}>Location unavailable. This store remains in the list.</p> : null}
+    <p className={styles.distance}>{store.miles.toFixed(2)}{t("mi ")}<span>{t("approx. straight-line")}</span></p>
+    <p className={styles.help}>{t("Prices & stock unknown. Route, time & trip fare unknown.")}</p>
+    {!located ? <p className={styles.help}>{t("Location unavailable. This store remains in the list.")}</p> : null}
     <div className={styles.cardActions}>
-      <button className={styles.mapAction} disabled={!located} aria-label={`Show ${store.name} on map`} aria-pressed={selected} onClick={() => select(store.id)}>Show on map <span aria-hidden="true">↗</span></button>
+      <button className={styles.mapAction} disabled={!located} aria-label={`${t("Show on map ")}${store.name}`} aria-pressed={selected} onClick={() => select(store.id)}>{t("Show on map ")}<span aria-hidden="true">↗</span></button>
     </div>
   </m.article>;
 }
 
 function Sources({ result }: { result: DiscoveryResult | null }) {
+  const { t } = useLocale();
   return <details className={styles.assumptions}>
-    <summary>Sources &amp; limitations</summary>
-    <p>Retailers come from the local supermarket snapshot. Prices and inventory are unknown.</p>
-    <p>Distances are calculated from an approximate ZIP/ZCTA internal point, not your address or a travel route. {result ? `${result.originLabel} Reference extracted ${result.referenceDate}. ` : null}<a href="https://data.cityofnewyork.us/City-Government/ZIP-Code-Tabulation-Areas/35j5-n34v" target="_blank" rel="noopener noreferrer">NYC ZIP/ZCTA reference ↗</a>.</p>
-    <p>Results use the submitted ZIP and straight-line radius. Panning or zooming does not search the visible area. Nearby does not establish a usable walking or bus route.</p>
-    <p>SNAP authorization is not verified. Missing evidence does not mean a store does not accept SNAP. <a href={retailerLocatorUrl} target="_blank" rel="noopener noreferrer">Check stores in the official USDA retailer locator ↗</a>.</p>
-    <p>The geographic basemap is supplied by OpenStreetMap. Tile requests share normal browser/network information and the viewed tile area with that provider. Hiraku does not request your precise location or send a home address. <a href="https://osmfoundation.org/wiki/Privacy_Policy" target="_blank" rel="noopener noreferrer">OpenStreetMap privacy policy ↗</a>.</p>
+    <summary>{t("Sources & limitations")}</summary>
+    <p>{t("Retailers come from the local supermarket snapshot. Prices and inventory are unknown.")}</p>
+    <p>{t("Distances are calculated from an approximate ZIP/ZCTA internal point, not your address or a travel route. ")}{result ? `${result.originLabel} Reference extracted ${result.referenceDate}. ` : null}<a href="https://data.cityofnewyork.us/City-Government/ZIP-Code-Tabulation-Areas/35j5-n34v" target="_blank" rel="noopener noreferrer">{t("NYC ZIP/ZCTA reference ↗")}</a>.</p>
+    <p>{t("Results use the submitted ZIP and straight-line radius. Panning or zooming does not search the visible area. Nearby does not establish a usable walking or bus route.")}</p>
+    <p>{t("SNAP authorization is not verified. Missing evidence does not mean a store does not accept SNAP. ")}<a href={retailerLocatorUrl} target="_blank" rel="noopener noreferrer">{t("Check stores in the official USDA retailer locator ↗")}</a>.</p>
+    <p>{t("The geographic basemap is supplied by OpenStreetMap. Tile requests share normal browser/network information and the viewed tile area with that provider. Hiraku does not request your precise location or send a home address. ")}<a href="https://osmfoundation.org/wiki/Privacy_Policy" target="_blank" rel="noopener noreferrer">{t("OpenStreetMap privacy policy ↗")}</a>.</p>
   </details>;
 }
 
 export default function DiscoveryJourney() {
+  const { t, dynamic } = useLocale();
   const reducedMotion = useReducedMotion();
   const [search, setSearch] = useState<Search>({ zip: "", radius: "" });
   const [applied, setApplied] = useState<Search | null>(null);
@@ -165,38 +175,38 @@ export default function DiscoveryJourney() {
     });
   }
   function retryMap() { setMapFailed(false); setMapAttempt(previous => previous + 1); }
-  const fallback = <div className={styles.mapFailure} role="status"><h2>Map unavailable</h2><p>The map could not load. Your store list is still available.</p><div className={styles.failureActions}><button className={styles.primary} onClick={retryMap}>Retry map</button><button className={styles.secondary} onClick={() => setView("list")}>View store list</button></div></div>;
+  const fallback = <div className={styles.mapFailure} role="status"><h2>{t("Map unavailable")}</h2><p>{t("The map could not load. Your store list is still available.")}</p><div className={styles.failureActions}><button className={styles.primary} onClick={retryMap}>{t("Retry map")}</button><button className={styles.secondary} onClick={() => setView("list")}>{t("View store list")}</button></div></div>;
 
   return <LazyMotion features={domMax} strict><MotionConfig reducedMotion="user"><div className={styles.site}>
-    <header className={styles.header}><Link className={styles.brand} href="/" aria-label="Hiraku home"><span className={styles.brandMark} aria-hidden="true" />Hiraku<span className={styles.brandPeriod} aria-hidden="true">.</span></Link><nav className={styles.navigation} aria-label="Main navigation"><Link href="/">Info</Link><Link href="/explore" aria-current="page">Explore</Link></nav><button className={styles.textButton} onClick={reset}>Reset</button></header>
-    <div className={styles.evidenceNotice}><strong>SNAP authorization not verified</strong><span>Confirm current SNAP acceptance with the USDA locator or the store.</span></div>
+    <header className={styles.header}><Link className={styles.brand} href="/" aria-label={t("Hiraku home")}><span className={styles.brandMark} aria-hidden="true" />{t("Hiraku")}<span className={styles.brandPeriod} aria-hidden="true">.</span></Link><nav className={styles.navigation} aria-label={t("Main navigation")}><Link href="/">{t("Info")}</Link><Link href="/explore" aria-current="page">{t("Explore")}</Link></nav><LanguageSelector /><button className={styles.textButton} onClick={reset}>{t("Reset")}</button></header>
+    <div className={styles.evidenceNotice}><strong>{t("SNAP authorization not verified")}</strong><span>{t("Confirm current SNAP acceptance with the USDA locator or the store.")}</span></div>
     <main className={styles.shell}>
-      <div className={styles.titleStrip}><div><h1>Your neighborhood, on the map.</h1><p>Find nearby supermarket candidates by NYC ZIP code.</p></div><span className={styles.areaTag}>{result ? `${result.borough} · ${result.zip}` : "NYC · Five boroughs"}</span></div>
-      <div className={styles.mobileSwitch} aria-label="Discovery view">{(["map", "list"] as const).map(option => <button key={option} className={view === option ? styles.viewSelected : ""} aria-pressed={view === option} onClick={() => setView(option)}>
-        {view === option ? <m.span className={styles.viewIndicator} layoutId={reducedMotion ? undefined : "discovery-view"} transition={{ duration: reducedMotion ? 0 : 0.16 }} aria-hidden="true" /> : null}<span>{option === "map" ? "Map" : "List"}</span>
+      <div className={styles.titleStrip}><div><h1>{t("Your neighborhood, on the map.")}</h1><p>{t("Find nearby supermarket candidates by NYC ZIP code.")}</p></div><span className={styles.areaTag}>{result ? `${result.borough} · ${result.zip}` : t("NYC · Five boroughs")}</span></div>
+      <div className={styles.mobileSwitch} aria-label={t("Discovery view")}>{(["map", "list"] as const).map(option => <button key={option} className={view === option ? styles.viewSelected : ""} aria-pressed={view === option} onClick={() => setView(option)}>
+        {view === option ? <m.span className={styles.viewIndicator} layoutId={reducedMotion ? undefined : "discovery-view"} transition={{ duration: reducedMotion ? 0 : 0.16 }} aria-hidden="true" /> : null}<span>{option === "map" ? t("Map") : t("List")}</span>
       </button>)}</div>
-      <section className={`${styles.discovery} ${view === "list" ? styles.listView : styles.mapView}`} aria-label="Grocery discovery">
+      <section className={`${styles.discovery} ${view === "list" ? styles.listView : styles.mapView}`} aria-label={t("Grocery discovery")}>
         <div className={styles.mapStage}>
-          {result && results.some(hasLocation) ? <MapBoundary key={mapAttempt} fallback={fallback}>{mapFailed ? fallback : <DiscoveryMap stores={results} selectedId={selectedId} hoveredId={hoveredId} select={selectPin} hover={setHoveredId} failed={failMap} />}</MapBoundary> : <div className={styles.mapPlaceholder}><span className={styles.placeholderMark} aria-hidden="true">↗</span><h2>{loading ? "Finding nearby stores…" : requestError ? "Search unavailable" : result ? "No nearby stores to show" : "Your next stop starts here"}</h2><p>{loading ? "The map and list will update together." : requestError ? "Check the search message in the list and try again." : result ? "Adjust or clear your radius to search again." : "Enter a NYC ZIP code to explore nearby stores."}</p></div>}
-          <div className={styles.mapCaption}><span className={styles.mapCaptionDot} aria-hidden="true" /><strong>Retailer locations</strong><span>Map movement does not change results.</span></div>
-          <AnimatePresence initial={false}>{selected && !mapFailed ? <m.aside className={styles.selectedSummary} aria-label="Selected store" key={selected.id}
+          {result && results.some(hasLocation) ? <MapBoundary key={mapAttempt} fallback={fallback}>{mapFailed ? fallback : <DiscoveryMap stores={results} selectedId={selectedId} hoveredId={hoveredId} select={selectPin} hover={setHoveredId} failed={failMap} />}</MapBoundary> : <div className={styles.mapPlaceholder}><span className={styles.placeholderMark} aria-hidden="true">↗</span><h2>{t(loading ? "Finding nearby stores…" : requestError ? "Search unavailable" : result ? "No nearby stores to show" : "Your next stop starts here")}</h2><p>{t(loading ? "The map and list will update together." : requestError ? "Check the search message in the list and try again." : result ? "Adjust or clear your radius to search again." : "Enter a NYC ZIP code to explore nearby stores.")}</p></div>}
+          <div className={styles.mapCaption}><span className={styles.mapCaptionDot} aria-hidden="true" /><strong>{t("Retailer locations")}</strong><span>{t("Map movement does not change results.")}</span></div>
+          <AnimatePresence initial={false}>{selected && !mapFailed ? <m.aside className={styles.selectedSummary} aria-label={t("Selected store")} key={selected.id}
             initial={{ opacity: reducedMotion ? 1 : 0, y: reducedMotion ? 0 : 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: reducedMotion ? 1 : 0, y: reducedMotion ? 0 : 4 }} transition={{ duration: reducedMotion ? 0 : 0.16 }}>
-            <div className={styles.summaryTop}><span className={styles.storeNumber} aria-hidden="true">{selectedNumber}</span><span className={styles.storeTag}>Retailer candidate · selected</span><button className={styles.closeSummary} aria-label="Close selected store summary" onClick={() => setSelectedId(null)}>×</button></div>
-            <h2>{selected.name}</h2><p>{selected.address}</p><p className={styles.distance}>{selected.miles.toFixed(2)} mi <span>approx. straight-line</span></p><p className={styles.help}>Prices, stock, route, time &amp; trip fare unknown.</p><button className={styles.primary} onClick={viewInList} aria-label="View selected store in list">View in list <span aria-hidden="true">→</span></button>
+            <div className={styles.summaryTop}><span className={styles.storeNumber} aria-hidden="true">{selectedNumber}</span><span className={styles.storeTag}>{t("Retailer candidate · selected")}</span><button className={styles.closeSummary} aria-label={t("Close selected store summary")} onClick={() => setSelectedId(null)}>×</button></div>
+            <h2>{selected.name}</h2><p>{selected.address}</p><p className={styles.distance}>{selected.miles.toFixed(2)} {t("mi ")}<span>{t("approx. straight-line")}</span></p><p className={styles.help}>{t("Prices, stock, route, time & trip fare unknown.")}</p><button className={styles.primary} onClick={viewInList} aria-label={t("View selected store in list")}>{t("View in list ")}<span aria-hidden="true">→</span></button>
           </m.aside> : null}</AnimatePresence>
         </div>
-        <aside className={styles.sidePanel} aria-label="Search and store list">
-          <div className={styles.panelHeading}><div><span className={styles.panelEyebrow}>A little closer to home</span><h2>Find your grocery stop</h2></div><span className={styles.panelAccent} aria-hidden="true">↗</span></div>
+        <aside className={styles.sidePanel} aria-label={t("Search and store list")}>
+          <div className={styles.panelHeading}><div><span className={styles.panelEyebrow}>{t("A little closer to home")}</span><h2>{t("Find your grocery stop")}</h2></div><span className={styles.panelAccent} aria-hidden="true">↗</span></div>
           <SearchForm search={search} errors={errors} update={update} submit={submit} validateField={validateField} />
-          {dirty ? <p className={styles.pendingNotice} role="status">Changes not applied. Select Find stores to update results.</p> : null}
-          <div className={styles.resultHeading}><h2>{loading ? "Finding stores…" : requestError ? "Search could not complete" : result ? `${results.length} stores` : "Ready when you are"}</h2><p role="status">{applied ? `Near ${applied.zip} · ${applied.radius ? `${applied.radius}-mile radius` : "No radius limit"}` : "Enter a NYC ZIP code to get started."}</p>{result ? <p className={styles.help}>Ordered by approximate straight-line distance.</p> : null}{result?.capNotice ? <p className={styles.help}>{result.capNotice}</p> : null}</div>
-          <div className={`${styles.resultsBody} ${loading || requestError || result?.status === "no-results" ? styles.searchFeedback : ""}`} data-store-list role="region" aria-label="Nearby store results" tabIndex={0} aria-busy={loading}>
-            {loading ? <div className={styles.empty} role="status"><p>Loading nearby stores…</p></div> : requestError ? <div className={styles.empty} role="alert"><h3>{requestError.code === "UNSUPPORTED_ZIP" ? "ZIP not supported" : "Stores unavailable"}</h3><p>{requestError.message}</p><div className={styles.failureActions}><button className={styles.secondary} onClick={() => { if (applied) void apply(applied); }}>Retry search</button><a href={retailerLocatorUrl} target="_blank" rel="noopener noreferrer">Find stores with USDA ↗</a></div></div> : !result ? <div className={styles.empty}><h3>A few possibilities, nearby.</h3><p>Find stores to explore nearby supermarket candidates. No precise location needed.</p></div> : results.length === 0 ? <div className={styles.empty} role="status"><h3>No stores in this radius</h3><p>Try a wider straight-line radius or clear it to see nearby candidates.</p><button className={styles.secondary} onClick={() => { if (applied) { const next = { ...applied, radius: "" }; setSearch(next); void apply(next); } }}>Clear radius</button></div> : results.map((store, index) => <StoreCard key={store.id} store={store} index={index} selected={store.id === selectedId} select={showOnMap} hover={setHoveredId} />)}
+          {dirty ? <p className={styles.pendingNotice} role="status">{t("Changes not applied. Select Find stores to update results.")}</p> : null}
+          <div className={styles.resultHeading}><h2>{result && !loading && !requestError ? `${results.length} ${t("stores")}` : t(loading ? "Finding stores…" : requestError ? "Search could not complete" : "Ready when you are")}</h2><p role="status">{applied ? `${t("Near ")}${applied.zip} · ${applied.radius ? `${applied.radius}${t("-mile radius")}` : t("No radius limit")}` : t("Enter a NYC ZIP code to get started.")}</p>{result ? <p className={styles.help}>{t("Ordered by approximate straight-line distance.")}</p> : null}{result?.capNotice ? <p className={styles.help}>{result.capNotice}</p> : null}</div>
+          <div className={`${styles.resultsBody} ${loading || requestError || result?.status === "no-results" ? styles.searchFeedback : ""}`} data-store-list role="region" aria-label={t("Nearby store results")} tabIndex={0} aria-busy={loading}>
+            {loading ? <div className={styles.empty} role="status"><p>{t("Loading nearby stores…")}</p></div> : requestError ? <div className={styles.empty} role="alert"><h3>{requestError.code === "UNSUPPORTED_ZIP" ? t("ZIP not supported") : t("Stores unavailable")}</h3><p>{dynamic(requestError.message) !== requestError.message ? dynamic(requestError.message) : t("Search unavailable. Please try again or use the USDA retailer locator.")}</p><div className={styles.failureActions}><button className={styles.secondary} onClick={() => { if (applied) void apply(applied); }}>{t("Retry search")}</button><a href={retailerLocatorUrl} target="_blank" rel="noopener noreferrer">{t("Find stores with USDA ↗")}</a></div></div> : !result ? <div className={styles.empty}><h3>{t("A few possibilities, nearby.")}</h3><p>{t("Find stores to explore nearby supermarket candidates. No precise location needed.")}</p></div> : results.length === 0 ? <div className={styles.empty} role="status"><h3>{t("No stores in this radius")}</h3><p>{t("Try a wider straight-line radius or clear it to see nearby candidates.")}</p><button className={styles.secondary} onClick={() => { if (applied) { const next = { ...applied, radius: "" }; setSearch(next); void apply(next); } }}>{t("Clear radius")}</button></div> : results.map((store, index) => <StoreCard key={store.id} store={store} index={index} selected={store.id === selectedId} select={showOnMap} hover={setHoveredId} />)}
           </div>
           <Sources result={result} />
         </aside>
       </section>
-      <footer className={styles.footer}><span>Hiraku · Explore grocery options.</span><a href="https://www.fns.usda.gov/snap/retailer-locator" target="_blank" rel="noopener noreferrer">Find verified information with USDA ↗</a></footer>
+      <footer className={styles.footer}><span>{t("Hiraku · Explore grocery options.")}</span><a href="https://www.fns.usda.gov/snap/retailer-locator" target="_blank" rel="noopener noreferrer">{t("Find verified information with USDA ↗")}</a></footer>
     </main>
   </div></MotionConfig></LazyMotion>;
 }

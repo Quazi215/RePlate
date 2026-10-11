@@ -12,3 +12,31 @@ main {
   margin: 4rem auto;
   padding: 0 1.5rem;
 }
+
+.language-selector {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  font-size: .9rem;
+  font-weight: 700;
+  min-width: 0;
+}
+.language-selector select {
+  min-height: 44px;
+  max-width: min(48vw, 12rem);
+  padding: .45rem .55rem;
+  border: 1px solid currentColor;
+  border-radius: 5px;
+  background: #fffcf5;
+  color: inherit;
+  font: inherit;
+}
+
+[dir="rtl"] :is(input, textarea)[inputmode="numeric"],
+[dir="rtl"] :is(input, textarea)[inputmode="decimal"],
+[dir="rtl"] a[href^="tel:"] { direction: ltr; unicode-bidi: isolate; }
+
+@media (max-width: 560px) {
+  .language-selector { width: 100%; justify-content: flex-start; }
+  .language-selector select { max-width: calc(100vw - 8rem); }
+}

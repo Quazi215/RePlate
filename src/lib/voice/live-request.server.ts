@@ -1,6 +1,7 @@
 import type { ConversationMessage } from "../guidance/guidance";
 import { getGuidance, type GuidanceProvider } from "../guidance/guidance.server";
 import { speakAnswer, type SpeechProvider } from "./speech.server";
+import { isLocale, realtimeCodes } from "../i18n/locale";
 
 const headers = { "Cache-Control": "private, no-store, max-age=0", "X-Content-Type-Options": "nosniff" };
 function error(status: number, message: string, code = "INVALID_REQUEST"): Response {
@@ -44,7 +45,8 @@ export async function handleLiveGuidanceRequest(request: Request, provider?: Gui
     const body = await readRequest(request, signal);
     if (body instanceof Response) return body;
     const data = body as Record<string, unknown>;
-    if (Object.keys(data).sort().join(",") !== "history,question" || typeof data.question !== "string" ||
+    if (Object.keys(data).some(key => !["history", "question", "locale"].includes(key)) || !('history' in data) || !('question' in data) ||
+      ("locale" in data && !isLocale(data.locale)) || typeof data.question !== "string" ||
       !data.question.trim() || data.question.trim().length > 2000 || !Array.isArray(data.history) || data.history.length > 60) {
       return error(400, "Ask a shorter question, or start a fresh conversation.");
     }
@@ -58,13 +60,15 @@ export async function handleLiveGuidanceRequest(request: Request, provider?: Gui
       historyLength += message.text.length;
     }
     if (historyLength > 60000) return error(400, "This conversation is too long. Start again.");
-    const result = await getGuidance(data.question.trim(), signal, provider, data.history as ConversationMessage[]);
+    const locale = isLocale(data.locale) ? data.locale : "en";
+    if (!realtimeCodes[locale]) return error(400, "Live voice is unavailable in the selected language.", "LIVE_VOICE_UNAVAILABLE");
+    const result = await getGuidance(data.question.trim(), signal, provider, data.history as ConversationMessage[], locale);
     if (result.status === "error") {
       const { httpStatus, ...payload } = result;
       return Response.json(payload, { status: httpStatus, headers });
     }
     signal.throwIfAborted();
-    const audio = await speakAnswer(result.answer, signal, speech);
+    const audio = await speakAnswer(result.answer, signal, speech, locale);
     signal.throwIfAborted();
     return Response.json({ ...result, ...audio }, { headers });
   } catch {

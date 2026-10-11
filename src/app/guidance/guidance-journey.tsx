@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import dynamic from "next/dynamic";
 import type { GuidanceSuccess } from "../../lib/guidance/guidance";
+import { useLocale } from "../../lib/i18n/client";
+import { nativeNames, speechCodes } from "../../lib/i18n/locale";
 import { recordQuestion } from "../../lib/voice/recording";
 import brand from "../site.module.css";
 import styles from "./guidance.module.css";
@@ -12,6 +14,7 @@ const LiveConversation = dynamic(() => import("./live-conversation"), {
 });
 
 export default function GuidanceJourney() {
+  const { locale, t, dynamic } = useLocale();
   const [consented, setConsented] = useState(false);
   const [question, setQuestion] = useState("");
   const [result, setResult] = useState<GuidanceSuccess | null>(null);
@@ -37,6 +40,16 @@ export default function GuidanceJourney() {
     setAnalyser(null);
     setQuestion(""); setResult(null); setBusy(false); setMessage(""); setStage(""); setSeconds(0);
   }
+
+  useEffect(() => {
+    active.current?.abort();
+    active.current = null;
+    playback.current?.pause();
+    stopRecording.current?.();
+    stopRecording.current = null;
+    setQuestion(""); setResult(null); setMessage(""); setStage(""); setBusy(false);
+    setLiveOpen(false); setLiveActive(false); setSpoken(false);
+  }, [locale]);
 
   useEffect(() => {
     const leave = () => {
@@ -90,7 +103,7 @@ export default function GuidanceJourney() {
     try {
       const response = await fetch("/api/guidance", {
         method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store",
-        body: JSON.stringify({ question: trimmed, ...(spoken ? { spoken: true } : {}) }), signal: AbortSignal.any([controller.signal, AbortSignal.timeout(50000)]),
+        body: JSON.stringify({ question: trimmed, locale, ...(spoken ? { spoken: true } : {}) }), signal: AbortSignal.any([controller.signal, AbortSignal.timeout(50000)]),
       });
       if (active.current !== controller) return;
       if (response.status === 413) throw new Error("Type a shorter question and try again.");
@@ -111,7 +124,7 @@ export default function GuidanceJourney() {
   }
 
   async function startVoice() {
-    if (!consented || active.current || liveActive) return;
+    if (!consented || active.current || liveActive || !speechCodes[locale]) return;
     playback.current?.pause(); setSpoken(false);
     const controller = new AbortController(); active.current = controller;
     setBusy(true); setQuestion(""); setResult(null); setMessage(""); setSeconds(0); setStage("Waiting for microphone permission…");
@@ -129,7 +142,7 @@ export default function GuidanceJourney() {
       const audio = await recording.audio;
       if (active.current !== controller) return;
       stopRecording.current = null; setStage("Transcribing your question…");
-      const form = new FormData(); form.append("audio", audio, "question.wav");
+      const form = new FormData(); form.append("audio", audio, "question.wav"); form.append("locale", locale);
       const response = await fetch("/api/voice", { method: "POST", body: form, cache: "no-store",
         signal: AbortSignal.any([controller.signal, AbortSignal.timeout(50000)]) });
       if (active.current !== controller) return;
@@ -153,58 +166,58 @@ export default function GuidanceJourney() {
   }
 
   return <section id="shosai" className={styles.panel} aria-labelledby="shosai-title">
-    <p className={styles.eyebrow}>General NYC SNAP guidance · English</p>
-    <h2 id="shosai-title">Talk to Shosai</h2>
-    <p>Record or type a general question about SNAP, applying in NYC, household or income terms, or using our screening tool. Recorded questions also receive a spoken answer when speech is available. Choose Talk to Shosai for a live conversation.</p>
+    <p className={styles.eyebrow}><span lang={locale}>{nativeNames[locale]}</span> · NYC SNAP</p>
+    <h2 id="shosai-title">{t("Talk to Shosai")}</h2>
+    <p>{t("Record or type a general question about SNAP, applying in NYC, household or income terms, or using our screening tool. Recorded questions also receive a spoken answer when speech is available. Choose Talk to Shosai for a live conversation.")}</p>
     {!consented ? <div className={styles.disclosure}>
-      <h3>Before you ask</h3>
-      <p>With the voice icon, your audio is sent to Google Gemini for transcription. Review or edit the text, then choose Ask Shosai to send your question for an AI answer. For recorded questions, that written answer is sent to ElevenLabs to create speech. Typed questions stay text-only. Hiraku keeps recordings, questions, answers, and speech only in page memory and clears them when you leave or background this page. Google and ElevenLabs may retain submissions under their own policies. Cancelling cannot retract content already sent or undo provider billing. Microphone access is requested only when you choose the voice icon or Start conversation.</p>
-      <p>Do not share names, addresses, Social Security numbers, case numbers, documents, or private case details. We cannot guarantee automatic redaction. Use fictional, general questions for this local demo.</p>
-      <p>Shosai gives general information and may make mistakes. HRA decides eligibility. Your screening answers are never sent to Shosai. <a href="https://ai.google.dev/gemini-api/terms" referrerPolicy="no-referrer">Read Google’s processing terms ↗</a>. <a href="https://elevenlabs.io/privacy-policy" referrerPolicy="no-referrer">Read ElevenLabs’ privacy policy ↗</a>.</p>
+      <h3>{t("Before you ask")}</h3>
+      <p>{t("With the voice icon, your audio is sent to Google Gemini for transcription. Review or edit the text, then choose Ask Shosai to send your question for an AI answer. For recorded questions, that written answer is sent to ElevenLabs to create speech. Typed questions stay text-only. Hiraku keeps recordings, questions, answers, and speech only in page memory and clears them when you leave or background this page. Google and ElevenLabs may retain submissions under their own policies. Cancelling cannot retract content already sent or undo provider billing. Microphone access is requested only when you choose the voice icon or Start conversation.")}</p>
+      <p>{t("Do not share names, addresses, Social Security numbers, case numbers, documents, or private case details. We cannot guarantee automatic redaction. Use fictional, general questions for this local demo.")}</p>
+      <p>{t("Shosai gives general information and may make mistakes. HRA decides eligibility. Your screening answers are never sent to Shosai. ")}<a href="https://ai.google.dev/gemini-api/terms" referrerPolicy="no-referrer">{t("Read Google’s processing terms ↗")}</a>. <a href="https://elevenlabs.io/privacy-policy" referrerPolicy="no-referrer">{t("Read ElevenLabs’ privacy policy ↗")}</a>.</p>
       <button type="button" className={brand.primary} onClick={() => {
         setConsented(true);
         requestAnimationFrame(() => input.current?.focus());
-      }}>I agree — ask Shosai</button>
+      }}>{t("I agree — ask Shosai")}</button>
     </div> : <><div className={styles.form}>
-      <p>Use the voice icon in the question box to record up to 30 seconds in English. The stop icon transcribes into the box; review or edit it before choosing Ask Shosai. Cancel discards the recording. You can always type instead.</p>
+      {speechCodes[locale] ? <p>{t("Use the voice icon in the question box to record up to 30 seconds in your selected language. The stop icon transcribes into the box; review or edit it before choosing Ask Shosai. Cancel discards the recording. You can always type instead.")}</p> : <p role="status">{t("Voice is unavailable in the selected language. You can still read the answer and official sources.")}</p>}
       <div className={styles.actions}>
         <button ref={liveButton} type="button" className={brand.secondary} disabled={busy || liveOpen} aria-expanded={liveOpen} aria-controls="live-shosai-panel"
-          onClick={() => { clear(); setLiveOpen(true); }}>Talk to Shosai</button>
+          onClick={() => { clear(); setLiveOpen(true); }}>{t("Talk to Shosai")}</button>
       </div>
-      {stage === "Recording your question…" && <p aria-live="off">Recording: {seconds} / 30 seconds</p>}
-    </div>{liveOpen && <LiveConversation disabled={busy} onSessionChange={setLiveActive} onClose={() => {
+      {stage === "Recording your question…" && <p aria-live="off">{t("Recording: ")}{seconds}{t("/ 30 seconds")}</p>}
+    </div>{liveOpen && <LiveConversation key={locale} disabled={busy} onSessionChange={setLiveActive} onClose={() => {
       setLiveOpen(false); setLiveActive(false); requestAnimationFrame(() => liveButton.current?.focus());
     }} />}<form onSubmit={submit} className={styles.form}>
-      <label htmlFor="shosai-question">Your general SNAP question</label>
+      <label htmlFor="shosai-question">{t("Your general SNAP question")}</label>
       <div className={styles.questionInput}>
       <textarea id="shosai-question" ref={input} value={question} onChange={event => setQuestion(event.target.value)}
         maxLength={2000} required rows={3} disabled={busy || liveActive} aria-describedby="shosai-question-help" autoComplete="off" />
-      <VoiceInput analyser={analyser} requesting={stage === "Waiting for microphone permission…"} disabled={busy || liveActive}
-        seconds={seconds} onStart={() => { void startVoice(); }} onStop={() => stopRecording.current?.()} />
+      {speechCodes[locale] && <VoiceInput analyser={analyser} requesting={stage === "Waiting for microphone permission…"} disabled={busy || liveActive}
+        seconds={seconds} onStart={() => { void startVoice(); }} onStop={() => stopRecording.current?.()} />}
       </div>
-      <p id="shosai-question-help">Up to 2,000 characters. Leave out identifiers and private case details. Each question starts fresh.</p>
+      <p id="shosai-question-help">{t("Up to 2,000 characters. Leave out identifiers and private case details. Each question starts fresh.")}</p>
       <div className={styles.actions}>
-        <button className={brand.primary} disabled={busy || liveActive} type="submit">Ask Shosai</button>
-        <button className={brand.secondary} type="button" onClick={() => { clear(); if (busy) setMessage("Question cancelled. Ask again when ready."); input.current?.focus(); }}>{busy ? "Cancel question" : "Clear question and answer"}</button>
+        <button className={brand.primary} disabled={busy || liveActive} type="submit">{t("Ask Shosai")}</button>
+        <button className={brand.secondary} type="button" onClick={() => { clear(); if (busy) setMessage("Question cancelled. Ask again when ready."); input.current?.focus(); }}>{busy ? t("Cancel question") : t("Clear question and answer")}</button>
       </div>
     </form></>}
-    <p role="status" aria-live="polite">{result ? "Your answer is ready." : stage}</p>
-    {message && <p role="alert">{message}</p>}
+    <p role="status" aria-live="polite">{result ? t("Your answer is ready.") : dynamic(stage)}</p>
+    {message && <p role="alert">{locale !== "en" && dynamic(message) === message ? t("Shosai is unavailable. Use the official links below or try again.") : dynamic(message)}</p>}
     {result && <div className={styles.answer}>
-      <h3>Shosai’s answer</h3><p>{result.answer}</p>
-      {result.warning && <p role="status">{result.warning.message}</p>}
+      <h3>{t("Shosai’s answer")}</h3><p>{result.answer}</p>
+      {result.warning && <p role="status">{t("Voice is unavailable in the selected language. You can still read the answer and official sources.")}</p>}
       {result.audio && <>
-        <audio ref={playback} controls preload="auto" aria-label="Shosai’s spoken answer" onError={() => setMessage("Audio playback failed. Try Play again, or read the answer and official sources.")} />
+        <audio ref={playback} controls preload="auto" aria-label={t("Shosai’s spoken answer")} onError={() => setMessage("Audio playback failed. Try Play again, or read the answer and official sources.")} />
         <button type="button" className={brand.secondary} onClick={() => {
           const player = playback.current;
           if (!player) return;
           player.currentTime = 0;
           void player.play().catch(() => { if (playback.current === player) setMessage("Audio playback could not start. Use the audio controls or read the answer."); });
-        }}>Replay answer</button>
+        }}>{t("Replay answer")}</button>
       </>}
-      <h3>Official sources</h3>
-      <ul>{result.sources.map(source => <li key={source.id}><a href={source.url} referrerPolicy="no-referrer">{source.title} ↗</a> <span>Reviewed <time dateTime={source.reviewedAt}>{source.reviewedAt}</time></span></li>)}</ul>
-      <p>General guidance, not an eligibility decision. Check official sources before acting.</p>
+      <h3>{t("Official sources")}</h3>
+      <ul>{result.sources.map(source => <li key={source.id}><a href={source.url} referrerPolicy="no-referrer">{source.title} ↗</a> <span>{t("Reviewed ")}<time dateTime={source.reviewedAt}>{source.reviewedAt}</time></span></li>)}</ul>
+      <p>{t("General guidance, not an eligibility decision. Check official sources before acting.")}</p>
     </div>}
   </section>;
 }

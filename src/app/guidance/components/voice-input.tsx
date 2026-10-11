@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { AudioLines, Square } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import styles from "../guidance.module.css";
+import { useLocale } from "../../../lib/i18n/client";
 
 export default function VoiceInput({ analyser, requesting, disabled, seconds, onStart, onStop }: {
   analyser: AnalyserNode | null;
@@ -13,6 +14,7 @@ export default function VoiceInput({ analyser, requesting, disabled, seconds, on
   onStart: () => void;
   onStop: () => void;
 }) {
+  const { t } = useLocale();
   const waveform = useRef<SVGSVGElement>(null);
   const reducedMotion = useReducedMotion();
   const expanded = requesting || !!analyser;
@@ -46,11 +48,11 @@ export default function VoiceInput({ analyser, requesting, disabled, seconds, on
       <svg ref={waveform} className={styles.voiceWaveform} viewBox="0 0 96 32" aria-hidden="true">
         {Array.from({ length: 24 }, (_, index) => <rect key={index} x={index * 4} y={14.5} width={2} height={3} rx={1} />)}
       </svg>
-      <span className={styles.voiceTime} aria-hidden="true">{requesting ? "Mic…" : `${seconds}s / 30s`}</span>
+      <span className={styles.voiceTime} aria-hidden="true">{requesting ? t("Mic…") : `${seconds}s / 30s`}</span>
     </div>}
     <button type="button" className={styles.voiceButton} disabled={requesting || (!analyser && disabled)}
-      aria-label={analyser ? "Stop recording and transcribe" : "Record your question"}
-      title={analyser ? "Stop recording and transcribe" : "Record your question"}
+      aria-label={analyser ? t("Stop recording and transcribe") : t("Record your question")}
+      title={analyser ? t("Stop recording and transcribe") : t("Record your question")}
       onClick={analyser ? onStop : onStart}>
       {analyser ? <Square size={18} fill="currentColor" aria-hidden="true" /> : <AudioLines size={22} aria-hidden="true" />}
     </button>

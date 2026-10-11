@@ -32,6 +32,23 @@ test("recorded question returns only an editable transcript without generating g
   assert.equal(response.headers.get("x-content-type-options"), "nosniff");
 });
 
+test("recording locale reaches transcription and invalid locale is rejected", async () => {
+  const recorded = (locale: string) => {
+    const form = new FormData();
+    form.append("audio", new Blob([Uint8Array.from(wav())], { type: "audio/wav" }), "question.wav");
+    form.append("locale", locale);
+    return new Request("http://localhost/api/voice", { method: "POST", headers: { Origin: "http://localhost" }, body: form });
+  };
+  let seen = "";
+  const dependencies = { transcribe: async (_audio: Uint8Array, _signal: AbortSignal, locale?: string) => {
+    seen = locale ?? ""; return JSON.stringify("¿Qué es SNAP?");
+  } };
+  assert.equal((await handleVoiceRequest(recorded("es"), dependencies)).status, 200);
+  assert.equal(seen, "es");
+  assert.equal((await handleVoiceRequest(recorded("xx"), dependencies)).status, 400);
+  assert.equal(seen, "es");
+});
+
 test("invalid WAV, MIME, multipart fields and actual streamed limits avoid paid calls", async () => {
   let calls = 0;
   const dependencies = { transcribe: async () => { calls++; return '"What is SNAP?"'; } };

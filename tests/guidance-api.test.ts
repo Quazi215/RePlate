@@ -97,7 +97,7 @@ test("native conversion uses the configured voice and exact answer without expos
   const fetchMock = mock.method(globalThis, "fetch", async (url: string, options: RequestInit) => {
     assert.equal(url, "https://api.elevenlabs.io/v1/text-to-speech/fictional-voice?output_format=mp3_44100_128");
     assert.equal(options.method, "POST"); assert.equal(options.redirect, "error");
-    assert.deepEqual(JSON.parse(options.body as string), { text: "HRA decides eligibility.", model_id: "eleven_flash_v2_5" });
+    assert.deepEqual(JSON.parse(options.body as string), { text: "HRA decides eligibility.", model_id: "eleven_flash_v2_5", language_code: "en" });
     assert.equal(new Headers(options.headers).get("xi-api-key"), "fictional-key");
     return new Response(new Uint8Array([0xff, 0xfb, 0x90, 0]), { headers: { "Content-Type": "audio/mpeg" } });
   });
@@ -107,6 +107,28 @@ test("native conversion uses the configured voice and exact answer without expos
     assert.equal(response.status, 200); const body = await response.json();
     assert.equal(body.audio.base64, "//uQAA=="); assert.equal(body.warning, null);
     assert.doesNotMatch(JSON.stringify(body), /fictional-key/); assert.equal(fetchMock.mock.callCount(), 1);
+  } finally {
+    fetchMock.mock.restore();
+    if (previousKey === undefined) delete process.env.ELEVENLABS_API_KEY; else process.env.ELEVENLABS_API_KEY = previousKey;
+    if (previousVoice === undefined) delete process.env.ELEVENLABS_VOICE_ID; else process.env.ELEVENLABS_VOICE_ID = previousVoice;
+  }
+});
+
+test("spoken guidance sends the selected provider language code", async () => {
+  const previousKey = process.env.ELEVENLABS_API_KEY, previousVoice = process.env.ELEVENLABS_VOICE_ID;
+  const fetchMock = mock.method(globalThis, "fetch", async (_url: string, options: RequestInit) => {
+    assert.deepEqual(JSON.parse(options.body as string), {
+      text: "HRA decide sobre la elegibilidad.", model_id: "eleven_flash_v2_5", language_code: "es",
+    });
+    return new Response(new Uint8Array([1]), { headers: { "Content-Type": "audio/mpeg" } });
+  });
+  try {
+    process.env.ELEVENLABS_API_KEY = "fictional-key"; process.env.ELEVENLABS_VOICE_ID = "fictional-voice";
+    const response = await handleGuidanceRequest(request('{"question":"SNAP?","spoken":true,"locale":"es"}'),
+      async () => JSON.stringify({ answer: "HRA decide sobre la elegibilidad.", sourceIds: ["nyc-snap"] }));
+    assert.equal(response.status, 200);
+    assert.equal((await response.json()).audio.base64, "AQ==");
+    assert.equal(fetchMock.mock.callCount(), 1);
   } finally {
     fetchMock.mock.restore();
     if (previousKey === undefined) delete process.env.ELEVENLABS_API_KEY; else process.env.ELEVENLABS_API_KEY = previousKey;

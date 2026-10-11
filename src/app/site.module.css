@@ -17,7 +17,8 @@
   color: var(--forest);
   background: var(--cream);
   min-height: 100dvh;
-  font: 1rem/1.45 "Atkinson Hyperlegible Next", Arial, sans-serif;
+  font: 1rem/1.45 "Atkinson Hyperlegible Next", "Noto Sans Arabic", "Geeza Pro", "Noto Sans Bengali", "Bangla Sangam MN", "Noto Sans CJK TC", "PingFang TC", "Noto Sans", Arial, sans-serif;
+  overflow-wrap: anywhere;
 }
 .site *, .site *::before, .site *::after { box-sizing: border-box; }
 .site h1, .site h2, .site h3, .site p { margin: 0; }
@@ -36,7 +37,7 @@
 .brandMark::after { content: ""; position: absolute; width: 12px; height: 7px; background: var(--lime); border: 1px solid var(--forest); border-radius: 100% 0; top: -12px; right: -7px; transform: rotate(-10deg); }
 .brandPeriod { color: var(--forest); position: relative; }
 .brandPeriod::after { content: ""; position: absolute; width: 7px; height: 7px; background: var(--tomato); border: 1px solid var(--forest); bottom: 9px; left: 2px; border-radius: 50%; }
-.textButton { margin-left: auto; border: 1px solid var(--forest); border-radius: 6px; padding: 8px 20px; min-height: 44px; background: transparent; }
+.textButton { margin-inline-start: auto; border: 1px solid var(--forest); border-radius: 6px; padding: 8px 20px; min-height: 44px; background: transparent; }
 .textButton:hover { background: var(--lime); }
 .evidenceNotice { padding: 10px 40px; display: flex; align-items: baseline; gap: 18px; background: var(--lime); border-bottom: 1px solid #a7b65d; font-size: .9rem; }
 .evidenceNotice strong { flex: 0 1 auto; min-width: 0; max-width: 100%; }

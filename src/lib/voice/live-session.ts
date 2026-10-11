@@ -1,12 +1,13 @@
 import type { ConversationMessage, GuidanceSuccess } from "../guidance/guidance";
+import type { Locale } from "../i18n/locale";
 
 export type LiveTurn = { question: string; result?: GuidanceSuccess; interrupted?: boolean };
-export type LiveAnswerProvider = (question: string, history: ConversationMessage[], signal: AbortSignal) => Promise<GuidanceSuccess>;
+export type LiveAnswerProvider = (question: string, history: ConversationMessage[], signal: AbortSignal, locale?: Locale) => Promise<GuidanceSuccess>;
 
-async function requestAnswer(question: string, history: ConversationMessage[], signal: AbortSignal): Promise<GuidanceSuccess> {
+async function requestAnswer(question: string, history: ConversationMessage[], signal: AbortSignal, locale: Locale = "en"): Promise<GuidanceSuccess> {
   const response = await fetch("/api/voice/live", {
     method: "POST", headers: { "Content-Type": "application/json" }, cache: "no-store",
-    body: JSON.stringify({ question, history }), signal: AbortSignal.any([signal, AbortSignal.timeout(50000)]),
+    body: JSON.stringify({ question, history, locale }), signal: AbortSignal.any([signal, AbortSignal.timeout(50000)]),
   });
   const body = await response.json();
   if (!response.ok || body.status !== "ready" || typeof body.answer !== "string" || !Array.isArray(body.sources)) {
@@ -21,7 +22,7 @@ export class LiveSession {
   private pending: AbortController | null = null;
   private closed = false;
 
-  constructor(private changed: (turns: LiveTurn[]) => void, private provider: LiveAnswerProvider = requestAnswer) {}
+  constructor(private changed: (turns: LiveTurn[]) => void, private provider: LiveAnswerProvider = requestAnswer, private locale: Locale = "en") {}
 
   interrupt(speaking = false): void {
     if (this.closed) return;
@@ -44,7 +45,7 @@ export class LiveSession {
     this.turns.push(turn); this.changed([...this.turns]);
     const controller = new AbortController(); this.pending = controller;
     try {
-      const result = await this.provider(turn.question, history, controller.signal);
+      const result = await this.provider(turn.question, history, controller.signal, this.locale);
       if (this.closed || this.pending !== controller) return null;
       turn.result = result; this.changed([...this.turns]);
       return result;

@@ -1,5 +1,6 @@
 import { getGuidance, type GuidanceProvider } from "./guidance.server";
 import { speakAnswer, type SpeechProvider } from "../voice/speech.server";
+import { isLocale } from "../i18n/locale";
 
 const headers = { "Cache-Control": "private, no-store, max-age=0", "X-Content-Type-Options": "nosniff" };
 function error(status: number, code: string, message: string): Response {
@@ -41,22 +42,23 @@ export async function handleGuidanceRequest(request: Request, provider?: Guidanc
     // Capture decoded member names to reject duplicate keys, including escaped ones.
     const jsonString = '"(?:[^"\\\\\u0000-\u001f]|\\\\(?:["\\\\/bfnrt]|u[0-9a-fA-F]{4}))*"';
     const member = `(${jsonString})\\s*:\\s*(?:${jsonString}|true)`;
-    const members = new RegExp(`^\\s*\\{\\s*${member}\\s*(?:,\\s*${member}\\s*)?\\}\\s*$`).exec(text);
-    const names = members ? [members[1], members[2]].filter(Boolean).map(name => JSON.parse(name)) : [];
+    const members = new RegExp(`^\\s*\\{\\s*${member}\\s*(?:,\\s*${member}\\s*)?(?:,\\s*${member}\\s*)?\\}\\s*$`).exec(text);
+    const names = members ? [members[1], members[2], members[3]].filter(Boolean).map(name => JSON.parse(name)) : [];
     if (!body || typeof body !== "object" || Array.isArray(body) || !names.length || new Set(names).size !== names.length ||
-      names.some(name => name !== "question" && name !== "spoken") || !("question" in body) ||
-      typeof body.question !== "string" || ("spoken" in body && body.spoken !== true)) {
+      names.some(name => name !== "question" && name !== "spoken" && name !== "locale") || !("question" in body) ||
+      typeof body.question !== "string" || ("spoken" in body && body.spoken !== true) || ("locale" in body && !isLocale(body.locale))) {
       return error(400, "INVALID_REQUEST", "Send one question and, optionally, spoken: true.");
     }
     const question = (body as { question: string }).question.trim();
     if (!question || question.length > 2000) return error(400, "INVALID_QUESTION", "Ask a question between 1 and 2,000 characters.");
-    const result = await getGuidance(question, signal, provider);
+    const locale = "locale" in body && isLocale(body.locale) ? body.locale : "en";
+    const result = await getGuidance(question, signal, provider, undefined, locale);
     if (result.status === "error") {
       const { httpStatus, ...payload } = result;
       return Response.json(payload, { status: httpStatus, headers });
     }
     if (request.signal.aborted) return error(400, "INVALID_REQUEST", "The question was cancelled. Ask again when ready.");
-    const audio = "spoken" in body ? await speakAnswer(result.answer, signal, speech) : {};
+    const audio = "spoken" in body ? await speakAnswer(result.answer, signal, speech, locale) : {};
     if (request.signal.aborted) return error(400, "INVALID_REQUEST", "The question was cancelled. Ask again when ready.");
     return Response.json({ ...result, ...audio }, { headers });
   } catch {

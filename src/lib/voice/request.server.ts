@@ -1,4 +1,5 @@
 import { getTranscript, type VoiceDependencies } from "./voice.server";
+import { isLocale } from "../i18n/locale";
 
 const headers = { "Cache-Control": "private, no-store, max-age=0", "X-Content-Type-Options": "nosniff" };
 function error(httpStatus: number, code: string, message: string): Response {
@@ -32,10 +33,14 @@ export async function handleVoiceRequest(request: Request, dependencies?: VoiceD
     const form = await new Response(Buffer.concat(chunks), { headers: { "Content-Type": request.headers.get("content-type")! } }).formData();
     signal.throwIfAborted();
     const fields = [...form.entries()];
-    if (fields.length !== 1 || fields[0][0] !== "audio" || !(fields[0][1] instanceof File)) return error(400, "INVALID_REQUEST", "Send only one audio File field.");
-    const audio = fields[0][1];
+    const audioField = form.get("audio");
+    const localeField = form.get("locale");
+    if (fields.length < 1 || fields.length > 2 || fields.filter(([name]) => name === "audio").length !== 1 ||
+      fields.some(([name]) => name !== "audio" && name !== "locale") || !(audioField instanceof File) ||
+      (localeField !== null && !isLocale(localeField))) return error(400, "INVALID_REQUEST", "Send one audio file and a valid locale.");
+    const audio = audioField;
     if (audio.type !== "audio/wav") return error(415, "UNSUPPORTED_AUDIO", "Use the supported WAV recording format, or type your question.");
-    const result = await getTranscript(new Uint8Array(await audio.arrayBuffer()), signal, dependencies);
+    const result = await getTranscript(new Uint8Array(await audio.arrayBuffer()), signal, dependencies, isLocale(localeField) ? localeField : "en");
     if (deadline.aborted) return error(504, "PROCESSING_TIMEOUT", "Transcription took too long. Try again when ready.");
     if (result.status === "error") {
       const { httpStatus, ...payload } = result;
