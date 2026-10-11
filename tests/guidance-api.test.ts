@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { test } from "node:test";
+import { mock, test } from "node:test";
 import { handleGuidanceRequest } from "../src/lib/guidance/request.server";
 import { getGuidance } from "../src/lib/guidance/guidance.server";
 import { GET, POST } from "../src/app/api/guidance/route";
@@ -26,6 +26,119 @@ function request(body: string, headers: Record<string, string> = {}, signal?: Ab
     method: "POST", headers: { "Content-Type": "application/json", Origin: "http://localhost", ...headers }, body, signal,
   });
 }
+
+test("reviewed spoken questions synthesize exactly the checked answer, while typed questions avoid speech", async () => {
+  const answer = "SNAP helps people buy groceries. HRA decides eligibility.";
+  let calls = 0;
+  const speech = async (text: string) => { assert.equal(text, answer); calls++; return new Response(new Uint8Array([0xff, 0xfb, 0x90, 0]), { headers: { "Content-Type": "audio/mpeg" } }); };
+  const provider = async () => JSON.stringify({ answer, sourceIds: ["nyc-snap"] });
+  const response = await handleGuidanceRequest(request('{"question":"What is SNAP?","spoken":true}'), provider, speech);
+  assert.equal(response.status, 200);
+  const body = await response.json();
+  assert.equal(body.answer, answer); assert.equal(body.sources[0].id, "nyc-snap");
+  assert.deepEqual(body.audio, { mimeType: "audio/mpeg", base64: "//uQAA==" }); assert.equal(body.warning, null);
+  const typed = await handleGuidanceRequest(request('{"question":"What is SNAP?"}'), provider, speech);
+  assert.equal((await typed.json()).audio, undefined); assert.equal(calls, 1);
+});
+
+test("speech failures preserve HTTP 200 guidance and citations without retries", async () => {
+  const provider = async () => JSON.stringify({ answer: "HRA decides eligibility.", sourceIds: ["nyc-snap"] });
+  let cancelled = false;
+  const oversized = () => new Response(new ReadableStream({
+    start(controller) { controller.enqueue(new Uint8Array(1024 * 1024)); controller.enqueue(new Uint8Array(1024 * 1024 + 1)); },
+    cancel() { cancelled = true; },
+  }), { headers: { "Content-Type": "audio/mpeg", "Content-Length": "1" } });
+  for (const speech of [
+    async () => { throw new Error("secret"); }, async () => new Response("secret", { status: 429 }),
+    async () => new Response("invalid", { headers: { "Content-Type": "text/html" } }),
+    async () => new Response(new Uint8Array(), { headers: { "Content-Type": "audio/mpeg" } }),
+    async () => oversized(),
+  ]) {
+    let calls = 0;
+    const response = await handleGuidanceRequest(request('{"spoken":true,"question":"SNAP?"}'), provider,
+      async () => { calls++; return speech(); });
+    const body = await response.json();
+    assert.equal(response.status, 200); assert.equal(body.answer, "HRA decides eligibility.");
+    assert.equal(body.sources[0].id, "nyc-snap"); assert.equal(body.audio, null);
+    assert.equal(body.warning.code, "SPEECH_UNAVAILABLE"); assert.doesNotMatch(JSON.stringify(body), /secret/);
+    assert.equal(calls, 1);
+  }
+  assert.equal(cancelled, true);
+  const previousKey = process.env.ELEVENLABS_API_KEY, previousVoice = process.env.ELEVENLABS_VOICE_ID;
+  try {
+    delete process.env.ELEVENLABS_API_KEY; delete process.env.ELEVENLABS_VOICE_ID;
+    const response = await handleGuidanceRequest(request('{"question":"SNAP?","spoken":true}'), provider);
+    assert.equal(response.status, 200); assert.equal((await response.json()).warning.code, "SPEECH_UNAVAILABLE");
+  } finally {
+    if (previousKey === undefined) delete process.env.ELEVENLABS_API_KEY; else process.env.ELEVENLABS_API_KEY = previousKey;
+    if (previousVoice === undefined) delete process.env.ELEVENLABS_VOICE_ID; else process.env.ELEVENLABS_VOICE_ID = previousVoice;
+  }
+});
+
+test("invalid spoken contracts, failed guidance and cancellation never call speech", async () => {
+  let calls = 0;
+  const speech = async () => { calls++; return new Response(); };
+  const provider = async () => JSON.stringify({ answer: "HRA decides eligibility.", sourceIds: ["nyc-snap"] });
+  for (const body of ['{"question":"SNAP?","spoken":false}', '{"question":"SNAP?","spoken":"true"}',
+    '{"question":"SNAP?","spoken":true,"spoken":true}', '{"question":"SNAP?","spoken":true,"\\u0073poken":true}',
+    '{"question":"SNAP?","extra":true}', '{"question":true}']) {
+    assert.equal((await handleGuidanceRequest(request(body), provider, speech)).status, 400);
+  }
+  assert.equal((await handleGuidanceRequest(request('{"question":"SNAP?","spoken":true}'), async () => "invalid", speech)).status, 502);
+  const controller = new AbortController();
+  assert.equal((await handleGuidanceRequest(request('{"question":"SNAP?","spoken":true}', {}, controller.signal), async () => {
+    controller.abort(); return provider();
+  }, speech)).status, 400);
+  assert.equal(calls, 0);
+});
+
+test("native conversion uses the configured voice and exact answer without exposing credentials", async () => {
+  const previousKey = process.env.ELEVENLABS_API_KEY, previousVoice = process.env.ELEVENLABS_VOICE_ID;
+  const fetchMock = mock.method(globalThis, "fetch", async (url: string, options: RequestInit) => {
+    assert.equal(url, "https://api.elevenlabs.io/v1/text-to-speech/fictional-voice?output_format=mp3_44100_128");
+    assert.equal(options.method, "POST"); assert.equal(options.redirect, "error");
+    assert.deepEqual(JSON.parse(options.body as string), { text: "HRA decides eligibility.", model_id: "eleven_flash_v2_5" });
+    assert.equal(new Headers(options.headers).get("xi-api-key"), "fictional-key");
+    return new Response(new Uint8Array([0xff, 0xfb, 0x90, 0]), { headers: { "Content-Type": "audio/mpeg" } });
+  });
+  try {
+    process.env.ELEVENLABS_API_KEY = "fictional-key"; process.env.ELEVENLABS_VOICE_ID = "fictional-voice";
+    const response = await handleGuidanceRequest(request('{"question":"SNAP?","spoken":true}'), async () => JSON.stringify({ answer: "HRA decides eligibility.", sourceIds: ["nyc-snap"] }));
+    assert.equal(response.status, 200); const body = await response.json();
+    assert.equal(body.audio.base64, "//uQAA=="); assert.equal(body.warning, null);
+    assert.doesNotMatch(JSON.stringify(body), /fictional-key/); assert.equal(fetchMock.mock.callCount(), 1);
+  } finally {
+    fetchMock.mock.restore();
+    if (previousKey === undefined) delete process.env.ELEVENLABS_API_KEY; else process.env.ELEVENLABS_API_KEY = previousKey;
+    if (previousVoice === undefined) delete process.env.ELEVENLABS_VOICE_ID; else process.env.ELEVENLABS_VOICE_ID = previousVoice;
+  }
+});
+
+test("cancelling synthesis aborts the provider and discards its late audio", async () => {
+  const controller = new AbortController(); let cancelled = false;
+  const response = await handleGuidanceRequest(request('{"question":"SNAP?","spoken":true}', {}, controller.signal),
+    async () => JSON.stringify({ answer: "HRA decides eligibility.", sourceIds: ["nyc-snap"] }), async (_, signal) => {
+      controller.abort(); assert.equal(signal.aborted, true);
+      return new Response(new ReadableStream({ cancel() { cancelled = true; } }), { headers: { "Content-Type": "audio/mpeg" } });
+    });
+  assert.equal(response.status, 400); assert.equal((await response.json()).audio, undefined); assert.equal(cancelled, true);
+});
+
+test("speech stalls and stalled audio reads have a ten-second text-only deadline", async () => {
+  const keepAlive = setInterval(() => {}, 1000);
+  const provider = async () => JSON.stringify({ answer: "HRA decides eligibility.", sourceIds: ["nyc-snap"] });
+  try {
+    for (const stallRead of [false, true]) {
+      let signal: AbortSignal | undefined, cancelled = false;
+      const response = await handleGuidanceRequest(request('{"question":"SNAP?","spoken":true}'), provider, async (_, operation) => {
+        signal = operation;
+        return stallRead ? new Response(new ReadableStream({ cancel() { cancelled = true; } }), { headers: { "Content-Type": "audio/mpeg" } }) : new Promise(() => {});
+      });
+      assert.equal(response.status, 200); assert.equal((await response.json()).warning.code, "SPEECH_UNAVAILABLE");
+      assert.equal(signal?.aborted, true); assert.equal(cancelled, stallRead);
+    }
+  } finally { clearInterval(keepAlive); }
+});
 
 test("invalid shapes, duplicate fields, and actual byte limits reject before a paid call", async () => {
   let calls = 0;

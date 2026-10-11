@@ -4,6 +4,8 @@ Product decisions, important-case testing boundaries, and four-slice breakdown a
 
 Slice 2 interaction revision approved directly by the user on October 10, 2026: recording transcribes into the editable question box. Guidance waits for an explicit Ask Shosai action. No separate “What we heard” section or automatic answer is shown. This supersedes the original stop-to-answer orchestration and voice response contract in the published ticket. Speech delivery must be adapted to this reviewed-question flow in Slice 3; no speech implementation is included here.
 
+Slice 3 contract adaptation approved directly by the user on October 10, 2026: `/api/guidance` accepts optional `spoken: true` for an explicitly submitted reviewed recording (including edits). Typed questions omit it and remain text-only. `/api/voice` remains transcript-only. Spoken guidance success adds `audio: { mimeType: "audio/mpeg", base64 }` and `warning: null`, or `audio: null` and a `SPEECH_UNAVAILABLE` warning when synthesis fails. No transcript is duplicated in guidance responses. Guidance has a 15-second stage, optional speech a 10-second stage, a 45-second total request budget, and a 50-second client deadline. This supersedes earlier speech response placement and typed request-deadline descriptions below.
+
 ## Problem Statement
 
 People seeking SNAP help may find written forms and bureaucratic language difficult to use. They need to ask a short question aloud, read what the assistant understood, receive understandable guidance with official next steps, and hear that same guidance.

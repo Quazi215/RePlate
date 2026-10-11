@@ -1,11 +1,12 @@
 import { getGuidance, type GuidanceProvider } from "./guidance.server";
+import { speakAnswer, type SpeechProvider } from "../voice/speech.server";
 
 const headers = { "Cache-Control": "private, no-store, max-age=0", "X-Content-Type-Options": "nosniff" };
 function error(status: number, code: string, message: string): Response {
   return Response.json({ status: "error", code, message }, { status, headers });
 }
 
-export async function handleGuidanceRequest(request: Request, provider?: GuidanceProvider): Promise<Response> {
+export async function handleGuidanceRequest(request: Request, provider?: GuidanceProvider, speech?: SpeechProvider): Promise<Response> {
   if (request.method !== "POST") return new Response(null, { status: 405, headers: { ...headers, Allow: "POST" } });
   const incomingUrl = new URL(request.url);
   // Next can construct an internal localhost URL; Host identifies the browser's origin.
@@ -14,7 +15,7 @@ export async function handleGuidanceRequest(request: Request, provider?: Guidanc
     return error(400, "INVALID_REQUEST", "Submit a question from the Hiraku page.");
   }
   if (!/^application\/json(?:\s*;|$)/i.test(request.headers.get("content-type") ?? "")) return error(415, "UNSUPPORTED_CONTENT_TYPE", "Send a JSON question.");
-  const signal = AbortSignal.any([request.signal, AbortSignal.timeout(20000)]);
+  const signal = AbortSignal.any([request.signal, AbortSignal.timeout(45000)]);
   const reader = request.body?.getReader();
   if (!reader) return error(400, "INVALID_REQUEST", "Send one question.");
   const abort = () => { void reader.cancel().catch(() => {}); };
@@ -37,11 +38,15 @@ export async function handleGuidanceRequest(request: Request, provider?: Guidanc
     const bytes = Buffer.concat(chunks);
     const text = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
     const body: unknown = JSON.parse(text);
-    // A single string-valued member also rejects duplicate (including escaped) keys.
+    // Capture decoded member names to reject duplicate keys, including escaped ones.
     const jsonString = '"(?:[^"\\\\\u0000-\u001f]|\\\\(?:["\\\\/bfnrt]|u[0-9a-fA-F]{4}))*"';
-    if (!new RegExp(`^\\s*\\{\\s*${jsonString}\\s*:\\s*${jsonString}\\s*\\}\\s*$`).test(text) ||
-      !body || typeof body !== "object" || Array.isArray(body) || Object.keys(body).join() !== "question") {
-      return error(400, "INVALID_REQUEST", "Send only one question field.");
+    const member = `(${jsonString})\\s*:\\s*(?:${jsonString}|true)`;
+    const members = new RegExp(`^\\s*\\{\\s*${member}\\s*(?:,\\s*${member}\\s*)?\\}\\s*$`).exec(text);
+    const names = members ? [members[1], members[2]].filter(Boolean).map(name => JSON.parse(name)) : [];
+    if (!body || typeof body !== "object" || Array.isArray(body) || !names.length || new Set(names).size !== names.length ||
+      names.some(name => name !== "question" && name !== "spoken") || !("question" in body) ||
+      typeof body.question !== "string" || ("spoken" in body && body.spoken !== true)) {
+      return error(400, "INVALID_REQUEST", "Send one question and, optionally, spoken: true.");
     }
     const question = (body as { question: string }).question.trim();
     if (!question || question.length > 2000) return error(400, "INVALID_QUESTION", "Ask a question between 1 and 2,000 characters.");
@@ -50,7 +55,10 @@ export async function handleGuidanceRequest(request: Request, provider?: Guidanc
       const { httpStatus, ...payload } = result;
       return Response.json(payload, { status: httpStatus, headers });
     }
-    return Response.json(result, { headers });
+    if (request.signal.aborted) return error(400, "INVALID_REQUEST", "The question was cancelled. Ask again when ready.");
+    const audio = "spoken" in body ? await speakAnswer(result.answer, signal, speech) : {};
+    if (request.signal.aborted) return error(400, "INVALID_REQUEST", "The question was cancelled. Ask again when ready.");
+    return Response.json({ ...result, ...audio }, { headers });
   } catch {
     if (signal.aborted && !request.signal.aborted) return error(504, "PROCESSING_TIMEOUT", "The request took too long. Try again when ready.");
     return error(400, "INVALID_REQUEST", "Send a valid JSON question, or ask again after cancellation.");

@@ -14,3 +14,4 @@
 .answer li { margin-bottom: 12px; }
 .answer li a { display: inline-block; min-height: 44px; padding: 10px 0; }
 .answer li span { display: block; font-size: .85rem; }
+.answer audio { display: block; width: 100%; max-width: 480px; min-height: 44px; margin-bottom: 12px; }
