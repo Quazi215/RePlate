@@ -6,7 +6,6 @@ import brand from "../site.module.css";
 import styles from "./screening.module.css";
 
 const questions: Record<ScreeningQuestion, { title: string; help: string; kind: "choice" | "size" | "money" }> = {
-  nyc: { title: "Do you live in New York City?", help: "NYC means the Bronx, Brooklyn, Manhattan, Queens, or Staten Island. We don’t need your address.", kind: "choice" },
   householdSize: { title: "How many people are in your SNAP household?", help: "Usually, count yourself and people you live with who buy food and prepare meals together. Spouses living together and children under 22 living with a parent generally count together, even if meals are separate. Children under 18 in a household member’s care generally count too. A roommate who buys and prepares food separately usually does not count. If your household is unclear, choose I don’t know.", kind: "size" },
   allAssistance: { title: "Does everyone in your household receive SSI or Cash Assistance?", help: "Count each person who receives either Supplemental Security Income (SSI) or a Cash Assistance grant. SSI is different from Social Security retirement benefits. If only some people receive these benefits, choose No.", kind: "choice" },
   olderOrDisabled: { title: "Is anyone in your household 60 or older, disabled, or blind?", help: "These circumstances can change the income guideline. You don’t need to share an exact age or medical details. If you’re unsure whether a disability counts for SNAP, choose I don’t know.", kind: "choice" },
@@ -43,7 +42,7 @@ export default function ScreeningJourney() {
   }, []);
 
   function navigate(next: View) { setError(null); setView(next); }
-  function restart() { setAnswers({}); navigate("nyc"); }
+  function restart() { setAnswers({}); navigate(screeningOrder[0]); }
 
   if (view === "entry") return <section className={styles.panel} aria-labelledby="screening-title">
     <p className={styles.eyebrow}>NYC SNAP · A first check</p>
@@ -56,7 +55,7 @@ export default function ScreeningJourney() {
       <p>This is a limited financial check. If a required answer is unknown or your circumstances are outside the supported checks, you’ll get an explanation and an official next step.</p>
     </aside>
     <p>No account, identifying details, or documents. Answers stay on this page and clear when you refresh, start over, or leave.</p>
-    <div className={styles.actions}><button className={brand.primary} type="button" onClick={() => navigate("nyc")}>Start screening</button></div>
+    <div className={styles.actions}><button className={brand.primary} type="button" onClick={() => navigate(screeningOrder[0])}>Start screening</button></div>
   </section>;
 
   const activeQuestions = activeScreeningQuestions(answers);

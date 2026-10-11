@@ -3,7 +3,7 @@ import DiscoveryJourney from "./discovery-journey";
 
 export const metadata: Metadata = {
   title: "RePlate · Explore groceries",
-  description: "Explore nearby supermarket candidates by NYC ZIP code and straight-line radius. Current SNAP authorization is unverified.",
+  description: "Explore nearby supermarkets by NYC ZIP code and straight-line radius.",
 };
 
 export default function ExplorePage() {

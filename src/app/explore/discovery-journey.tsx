@@ -59,7 +59,6 @@ function StoreCard({ store, index, selected, select, hover }: {
     <div className={styles.cardTop}><span className={styles.storeNumber} aria-hidden="true">{index + 1}</span><div><span className={styles.storeTag}>Retailer candidate</span><h3>{store.name}</h3></div>{selected ? <span className={styles.selectedLabel}>Selected</span> : null}</div>
     <p className={styles.address}>{store.address}</p>
     <p className={styles.distance}>{store.miles.toFixed(2)} mi <span>approx. straight-line</span></p>
-    <p className={styles.cardStatus}>SNAP authorization: <strong>Not verified</strong></p>
     <p className={styles.help}>Prices &amp; stock unknown. Route, time &amp; trip fare unknown.</p>
     {!located ? <p className={styles.help}>Location unavailable. This store remains in the list.</p> : null}
     <div className={styles.cardActions}>
@@ -71,10 +70,10 @@ function StoreCard({ store, index, selected, select, hover }: {
 function Sources({ result }: { result: DiscoveryResult | null }) {
   return <details className={styles.assumptions}>
     <summary>Sources &amp; limitations</summary>
-    <p>Retailers come from the local supermarket snapshot. Its source, snapshot date, and current SNAP authorization have not been verified. Prices and inventory are unknown.</p>
+    <p>Retailers come from the local supermarket snapshot. Prices and inventory are unknown.</p>
     <p>Distances are calculated from an approximate ZIP/ZCTA internal point, not your address or a travel route. {result ? `${result.originLabel} Reference extracted ${result.referenceDate}. ` : null}<a href="https://data.cityofnewyork.us/City-Government/ZIP-Code-Tabulation-Areas/35j5-n34v" target="_blank" rel="noopener noreferrer">NYC ZIP/ZCTA reference ↗</a>.</p>
     <p>Results use the submitted ZIP and straight-line radius. Panning or zooming does not search the visible area. Nearby does not establish a usable walking or bus route.</p>
-    <p>SNAP authorization is not verified. Missing evidence does not mean a store does not accept SNAP. <a href={retailerLocatorUrl} target="_blank" rel="noopener noreferrer">Check stores in the official USDA retailer locator ↗</a>.</p>
+    <p><a href={retailerLocatorUrl} target="_blank" rel="noopener noreferrer">Browse the official USDA retailer locator ↗</a>.</p>
     <p>The geographic basemap is supplied by OpenStreetMap. Tile requests share normal browser/network information and the viewed tile area with that provider. RePlate does not request your precise location or send a home address. <a href="https://osmfoundation.org/wiki/Privacy_Policy" target="_blank" rel="noopener noreferrer">OpenStreetMap privacy policy ↗</a>.</p>
   </details>;
 }
@@ -170,7 +169,6 @@ export default function DiscoveryJourney() {
 
   return <LazyMotion features={domMax} strict><MotionConfig reducedMotion="user"><div className={styles.site}>
     <header className={styles.header}><Link className={styles.brand} href="/" aria-label="RePlate home"><span className={styles.brandMark} aria-hidden="true" />RePlate<span className={styles.brandPeriod} aria-hidden="true">.</span></Link><nav className={styles.navigation} aria-label="Main navigation"><Link href="/">Info</Link><Link href="/explore" aria-current="page">Explore</Link></nav><button className={styles.textButton} onClick={reset}>Reset</button></header>
-    <div className={styles.evidenceNotice}><strong>SNAP authorization not verified</strong><span>Confirm current SNAP acceptance with the USDA locator or the store.</span></div>
     <main className={styles.shell}>
       <div className={styles.titleStrip}><div><h1>Your neighborhood, on the map.</h1><p>Find nearby supermarket candidates by NYC ZIP code.</p></div><span className={styles.areaTag}>{result ? `${result.borough} · ${result.zip}` : "NYC · Five boroughs"}</span></div>
       <div className={styles.mobileSwitch} aria-label="Discovery view">{(["map", "list"] as const).map(option => <button key={option} className={view === option ? styles.viewSelected : ""} aria-pressed={view === option} onClick={() => setView(option)}>
@@ -179,11 +177,11 @@ export default function DiscoveryJourney() {
       <section className={`${styles.discovery} ${view === "list" ? styles.listView : styles.mapView}`} aria-label="Grocery discovery">
         <div className={styles.mapStage}>
           {result && results.some(hasLocation) ? <MapBoundary key={mapAttempt} fallback={fallback}>{mapFailed ? fallback : <DiscoveryMap stores={results} selectedId={selectedId} hoveredId={hoveredId} select={selectPin} hover={setHoveredId} failed={failMap} />}</MapBoundary> : <div className={styles.mapPlaceholder}><span className={styles.placeholderMark} aria-hidden="true">↗</span><h2>{loading ? "Finding nearby stores…" : requestError ? "Search unavailable" : result ? "No nearby stores to show" : "Your next stop starts here"}</h2><p>{loading ? "The map and list will update together." : requestError ? "Check the search message in the list and try again." : result ? "Adjust or clear your radius to search again." : "Enter a NYC ZIP code to explore nearby stores."}</p></div>}
-          <div className={styles.mapCaption}><span className={styles.mapCaptionDot} aria-hidden="true" /><strong>Retailer locations · SNAP not verified</strong><span>Map movement does not change results.</span></div>
+          <div className={styles.mapCaption}><span className={styles.mapCaptionDot} aria-hidden="true" /><strong>Retailer locations</strong><span>Map movement does not change results.</span></div>
           <AnimatePresence initial={false}>{selected && !mapFailed ? <m.aside className={styles.selectedSummary} aria-label="Selected store" key={selected.id}
             initial={{ opacity: reducedMotion ? 1 : 0, y: reducedMotion ? 0 : 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: reducedMotion ? 1 : 0, y: reducedMotion ? 0 : 4 }} transition={{ duration: reducedMotion ? 0 : 0.16 }}>
             <div className={styles.summaryTop}><span className={styles.storeNumber} aria-hidden="true">{selectedNumber}</span><span className={styles.storeTag}>Retailer candidate · selected</span><button className={styles.closeSummary} aria-label="Close selected store summary" onClick={() => setSelectedId(null)}>×</button></div>
-            <h2>{selected.name}</h2><p>{selected.address}</p><p className={styles.distance}>{selected.miles.toFixed(2)} mi <span>approx. straight-line</span></p><p className={styles.help}>SNAP not verified. Prices, stock, route, time &amp; trip fare unknown.</p><button className={styles.primary} onClick={viewInList} aria-label="View selected store in list">View in list <span aria-hidden="true">→</span></button>
+            <h2>{selected.name}</h2><p>{selected.address}</p><p className={styles.distance}>{selected.miles.toFixed(2)} mi <span>approx. straight-line</span></p><p className={styles.help}>Prices, stock, route, time &amp; trip fare unknown.</p><button className={styles.primary} onClick={viewInList} aria-label="View selected store in list">View in list <span aria-hidden="true">→</span></button>
           </m.aside> : null}</AnimatePresence>
         </div>
         <aside className={styles.sidePanel} aria-label="Search and store list">

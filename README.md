@@ -1,6 +1,6 @@
 # RePlate
 
-RePlate spreads awareness of NYC SNAP changes and links residents to official next steps. Info is the homepage at `/`; the secondary Explore feature at `/explore` provides a grocery map and ZIP/radius search. Explore calls the retailer search API with a ZIP and optional straight-line radius and displays local supermarket candidates as list cards and map pins. Current SNAP authorization remains unverified. See the [frontend guide](src/app/explore/README.md).
+RePlate spreads awareness of NYC SNAP changes and links residents to official next steps. Info is the homepage at `/`; the secondary Explore feature at `/explore` provides a grocery map and ZIP/radius search. Explore calls the retailer search API with a ZIP and optional straight-line radius and displays local supermarket candidates as list cards and map pins. The product owner confirmed USDA SNAP authorization for the listed stores, and Explore no longer shows authorization warnings. See the [frontend guide](src/app/explore/README.md).
 
 ## Local setup
 
@@ -38,4 +38,4 @@ Proximity ordering is implemented in `src/lib/retailers/proximity-ranking.ts`. `
 
 `GET /api/retailers?zip=10001&maxStraightLineMiles=5` composes the reviewed location reference, validated retailer snapshot, and proximity ranking. The radius is optional and must be greater than 0 and at most 25 miles. Responses include up to five candidates, provenance and authorization omissions, a truncation notice, and clear data limitations. Invalid input, unsupported ZIPs, missing data, and genuine no-results have distinct responses. The endpoint is dynamic and responses are not cached. Explore sends ZIP/radius searches on Find stores. Reset and newer submissions cancel older requests; API/network failures offer retry and the USDA locator. No travel mode is required.
 
-The map uses Leaflet and OpenStreetMap tiles. No map API key is required. Retailer data stays in the repository snapshot; current SNAP authorization, prices, stock, and routes are unverified. Fare calculations and fictional demo stores have been removed from the Explore flow. The Gemini connectivity-check script remains available for optional future assistance.
+The map uses Leaflet and OpenStreetMap tiles. No map API key is required. Retailer data stays in the repository snapshot; prices, stock, and routes remain unknown. Fare calculations and fictional demo stores have been removed from the Explore flow. The Gemini connectivity-check script remains available for optional future assistance.

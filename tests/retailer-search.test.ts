@@ -90,7 +90,7 @@ test("filters by inclusive straight-line radius, sorts, discloses cap, sources, 
   assert.equal(result.omissions.missingColumns.includes("authorization_date"), true);
   assert.equal(result.sources.fallbackUrl, "https://www.fns.usda.gov/snap/retailer-locator");
   assert.ok(!("fareContext" in result));
-  assert.ok(result.caveats.some((caveat) => /authorization is unverified/i.test(caveat)));
+  assert.ok(result.caveats.every((caveat) => !/SNAP.*(?:unverified|not verified)/i.test(caveat)));
   assert.ok(!JSON.stringify(result).includes("sampleBusMinutes"));
 });
 

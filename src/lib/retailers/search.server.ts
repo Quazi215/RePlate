@@ -136,7 +136,6 @@ export async function searchRetailers(
     caveats: [
       "Distances are approximate straight-line miles from a ZIP/ZCTA internal point, not route distances or travel times.",
       "Prices and stock are unknown; proximity does not establish affordability or route availability.",
-      "Current SNAP authorization is unverified for these retailer candidates.",
       "Results are limited to the local NYC ZIP/ZCTA and retailer references; no outside-coverage claim is made.",
     ],
   };

@@ -109,15 +109,21 @@ try {
     }
     await checkScreeningLayout();
     await page.getByRole('button', { name: 'Start screening', exact: true }).click();
-    await page.getByRole('heading', { name: 'Do you live in New York City?', exact: true }).waitFor({ timeout: 10000 });
-    await focusIs('Do you live in New York City?');
-    assert.equal(await page.getByRole('group', { name: 'Do you live in New York City?' }).count(), 1, 'The answer group is named by its question');
+    await page.getByRole('heading', { name: 'Does everyone in your household receive SSI or Cash Assistance?', exact: true }).waitFor({ timeout: 10000 });
+    await focusIs('Does everyone in your household receive SSI or Cash Assistance?');
+    assert.equal(await page.getByRole('heading', { name: 'Do you live in New York City?', exact: true }).count(), 0, 'Residence is not a screening question');
+    assert.match(await page.locator('main').innerText(), /Question 1 of up to 8/);
+    assert.equal(await page.getByRole('group', { name: 'Does everyone in your household receive SSI or Cash Assistance?' }).count(), 1, 'The answer group is named by its question');
+    await page.getByRole('button', { name: 'Back', exact: true }).click();
+    await page.getByRole('heading', { name: 'Could SNAP help your household?', exact: true }).waitFor();
+    await page.getByRole('button', { name: 'Start screening', exact: true }).click();
+    await focusIs('Does everyone in your household receive SSI or Cash Assistance?');
     assert.equal(await page.locator('input:checked').count(), 0, 'No answer is preselected');
     await page.getByRole('button', { name: 'Continue', exact: true }).click();
     assert.match(await page.locator('main').getByRole('alert').innerText(), /Choose Yes, No, or I don’t know/);
     assert.equal(await page.locator(':focus').getAttribute('type'), 'radio');
     assert.match(await page.locator(':focus').getAttribute('aria-describedby'), /answer-error/);
-    for (const answer of ['Yes', 'No', '1', 'No', 'No', 'Yes', 'No', '1995']) {
+    for (const answer of ['No', '1', 'No', 'No', 'Yes', 'No', '1995']) {
       await checkScreeningLayout();
       await continueWith(answer);
     }
@@ -135,7 +141,8 @@ try {
     await page.setViewportSize({ width: 1440, height: 1000 });
     await page.getByRole('button', { name: 'Review my answers', exact: true }).click();
     await focusIs('Review your answers');
-    assert.equal(await page.locator('dl > div').count(), 8);
+    assert.equal(await page.locator('dl > div').count(), 7);
+    assert.equal(await page.getByRole('button', { name: 'Change: Do you live in New York City?' }).count(), 0, 'Review contains no residence answer');
     await checkScreeningLayout();
     await page.getByRole('button', { name: 'Change: What is your household’s monthly gross income?', exact: true }).click();
     assert.equal(await page.getByRole('textbox').inputValue(), '1995', 'Review preserves a relevant answer');
@@ -159,7 +166,7 @@ try {
     assert.match(await page.locator('main').innerText(), /200% income guideline/);
     assert.equal(await page.getByText(/150% income guideline/).count(), 0, 'Prior branch explanation disappears');
     await page.getByRole('button', { name: 'Review my answers', exact: true }).click();
-    assert.equal(await page.locator('dl > div').count(), 6, 'Stale follow-ups disappear from review');
+    assert.equal(await page.locator('dl > div').count(), 5, 'Stale follow-ups disappear from review');
     await page.getByRole('button', { name: 'Change: Is anyone in your household 60 or older, disabled, or blind?', exact: true }).click();
     await continueWith('No');
     await focusIs('Does your household pay for child care or dependent care?');
@@ -172,14 +179,9 @@ try {
     assert.match(await page.locator('main').innerText(), /need your monthly gross household income/);
     await checkScreeningLayout();
     await page.getByRole('button', { name: 'Start over', exact: true }).click();
-    await focusIs('Do you live in New York City?');
+    await focusIs('Does everyone in your household receive SSI or Cash Assistance?');
     assert.equal(await page.locator('input:checked').count(), 0);
     // Complete using only the keyboard, including native radio arrow navigation.
-    await page.keyboard.press('Tab');
-    await page.keyboard.press('Space');
-    await page.keyboard.press('Tab');
-    await page.keyboard.press('Enter');
-    await focusIs('Does everyone in your household receive SSI or Cash Assistance?');
     await page.keyboard.press('Tab');
     await page.keyboard.press('ArrowDown');
     await page.keyboard.press('Space');
@@ -223,7 +225,7 @@ try {
     assert.equal(await page.locator('input:checked').count(), 0, 'Refresh clears answers');
     await continueWith('I don’t know');
     await focusIs('We need more information');
-    assert.match(await page.locator('main').innerText(), /whether you live in NYC/);
+    assert.match(await page.locator('main').innerText(), /everyone receives SSI or Cash Assistance/);
     await page.getByRole('navigation').getByRole('link', { name: 'Info', exact: true }).click();
     await page.waitForURL(`${base}/`);
     await page.goBack();
@@ -239,10 +241,10 @@ try {
     page.on('request', recordBranchRequest);
     page.on('console', recordBranchLog);
     for (const journey of [
-      { answers: ['Yes', 'Yes'], reason: /assistance-based path/, count: 2 },
-      { answers: ['Yes', 'No', '2', 'No', 'Yes', 'No', '3607'], reason: /200% income guideline/, count: 7 },
-      { answers: ['Yes', 'No', '1', 'No', 'No', 'No', 'No', '1729'], reason: /130% income guideline/, count: 8 },
-      { answers: ['Yes', 'No', '1', 'No', 'No', 'Yes', 'Yes', '250', '2245'], reason: /subtracting child support paid of \$250/, count: 9 },
+      { answers: ['Yes'], reason: /assistance-based path/, count: 1 },
+      { answers: ['No', '2', 'No', 'Yes', 'No', '3607'], reason: /200% income guideline/, count: 6 },
+      { answers: ['No', '1', 'No', 'No', 'No', 'No', '1729'], reason: /130% income guideline/, count: 7 },
+      { answers: ['No', '1', 'No', 'No', 'Yes', 'Yes', '250', '2245'], reason: /subtracting child support paid of \$250/, count: 8 },
     ]) {
       await page.getByRole('button', { name: 'Start screening', exact: true }).click();
       for (const answer of journey.answers) await continueWith(answer);
@@ -254,7 +256,7 @@ try {
       await checkScreeningLayout();
       await page.getByRole('button', { name: 'Review my answers', exact: true }).click();
       assert.equal(await page.locator('dl > div').count(), journey.count);
-      if (journey.count === 2) {
+      if (journey.count === 1) {
         await page.getByRole('button', { name: 'Change: Does everyone in your household receive SSI or Cash Assistance?' }).click();
         await continueWith('No');
         for (const answer of ['1', 'No', 'No', 'No', 'No', '1729']) await continueWith(answer);
@@ -281,22 +283,20 @@ try {
       await page.getByRole('heading', { name: 'Could SNAP help your household?', exact: true }).waitFor();
       page.on('request', recordBranchRequest);
     }
-    const tablePath = ['Yes', 'No', '1', 'No', 'No', 'Yes'];
+    const tablePath = ['No', '1', 'No', 'No', 'Yes'];
     for (const journey of [
-      { answers: ['No'], reason: /Living elsewhere does not mean you cannot get SNAP/ },
-      { answers: ['I don’t know'], reason: /whether you live in NYC/ },
-      { answers: ['Yes', 'I don’t know'], reason: /everyone receives SSI or Cash Assistance/ },
-      { answers: ['Yes', 'No', 'I don’t know'], reason: /SNAP household size/ },
-      { answers: ['Yes', 'No', '9'], reason: /more than eight household members/ },
-      { answers: ['Yes', 'No', '1', 'I don’t know'], reason: /60 or older, disabled, or blind/ },
-      { answers: ['Yes', 'No', '1', 'No', 'I don’t know'], reason: /dependent-care costs/ },
-      { answers: [...tablePath.slice(0, 5), 'I don’t know'], reason: /income from work/ },
+      { answers: ['I don’t know'], reason: /everyone receives SSI or Cash Assistance/ },
+      { answers: ['No', 'I don’t know'], reason: /SNAP household size/ },
+      { answers: ['No', '9'], reason: /more than eight household members/ },
+      { answers: ['No', '1', 'I don’t know'], reason: /60 or older, disabled, or blind/ },
+      { answers: ['No', '1', 'No', 'I don’t know'], reason: /dependent-care costs/ },
+      { answers: [...tablePath.slice(0, 4), 'I don’t know'], reason: /income from work/ },
       { answers: [...tablePath, 'I don’t know'], reason: /pays child support/ },
       { answers: [...tablePath, 'Yes', 'I don’t know'], reason: /child support paid amount/ },
       { answers: [...tablePath, 'No', 'I don’t know'], reason: /monthly gross household income/ },
-      { answers: ['Yes', 'No', '1', 'Yes', 'No', 'I don’t know'], reason: /monthly gross household income/ },
-      { answers: ['Yes', 'No', '1', 'No', 'Yes', 'No', 'I don’t know'], reason: /monthly gross household income/ },
-      { answers: ['Yes', 'No', '1', 'No', 'No', 'No', 'No', 'I don’t know'], reason: /monthly gross household income/ },
+      { answers: ['No', '1', 'Yes', 'No', 'I don’t know'], reason: /monthly gross household income/ },
+      { answers: ['No', '1', 'No', 'Yes', 'No', 'I don’t know'], reason: /monthly gross household income/ },
+      { answers: ['No', '1', 'No', 'No', 'No', 'No', 'I don’t know'], reason: /monthly gross household income/ },
       { answers: [...tablePath, 'No', '0'], reason: /income from work and a zero monthly total/ },
       { answers: [...tablePath, 'Yes', '0', '1995'], reason: /paying child support but entered \$0/ },
       { answers: [...tablePath, 'Yes', '2000', '1995'], reason: /child support paid amount is more than your monthly gross income/ },
@@ -359,12 +359,13 @@ try {
     assert.match(await page.locator('main').innerText(), /household of 2/);
     assert.match(await page.locator('main').innerText(), /\$2,705\.00 guideline/);
     await page.getByRole('button', { name: 'Review my answers', exact: true }).click();
-    await page.getByRole('button', { name: 'Change: Do you live in New York City?' }).click();
-    await submitAnswer('No');
-    await focusIs('We need more information');
+    await page.getByRole('button', { name: 'Change: Does everyone in your household receive SSI or Cash Assistance?' }).click();
+    await submitAnswer('Yes');
+    await focusIs('You may qualify for SNAP');
+    assert.match(await page.locator('main').innerText(), /assistance-based path/);
     assert.equal(await page.getByText(/\$2,705\.00 guideline/).count(), 0, 'Old household comparison disappears');
     await page.getByRole('button', { name: 'Review my answers', exact: true }).click();
-    assert.equal(await page.locator('dl > div').count(), 1, 'Unsupported residence clears branch follow-ups');
+    assert.equal(await page.locator('dl > div').count(), 1, 'Assistance shortcut clears income branch follow-ups');
     await checkNoScreeningStorage();
     page.off('request', recordBranchRequest);
     page.off('console', recordBranchLog);

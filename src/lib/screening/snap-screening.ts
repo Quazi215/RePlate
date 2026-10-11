@@ -1,6 +1,5 @@
 export type Choice = "yes" | "no" | "unknown";
 export type ScreeningAnswers = Partial<{
-  nyc: Choice;
   householdSize: string;
   allAssistance: Choice;
   olderOrDisabled: Choice;
@@ -28,11 +27,10 @@ const olderOrCareIncomeLimits = [2660, 3607, 4553, 5500, 6447, 7393, 8340, 9287]
 const noEarnedIncomeLimits = [1729, 2345, 2960, 3575, 4191, 4806, 5421, 6037];
 const limitation = "This is a limited household-size and gross-income check, not an eligibility decision. HRA must review your full circumstances, including other financial rules, household rules, student status, immigration rules, and work requirements. No application has been submitted.";
 
-export const screeningOrder = ["nyc", "allAssistance", "householdSize", "olderOrDisabled", "dependentCare", "earnedIncome", "childSupportPaid", "childSupportAmount", "monthlyIncome"] as const;
+export const screeningOrder = ["allAssistance", "householdSize", "olderOrDisabled", "dependentCare", "earnedIncome", "childSupportPaid", "childSupportAmount", "monthlyIncome"] as const;
 export type ScreeningQuestion = typeof screeningOrder[number];
 
 const branchChecks = {
-  nyc: { supported: "yes", unknown: "whether you live in NYC", deferred: "This first version covers NYC residents. Living elsewhere does not mean you cannot get SNAP." },
   allAssistance: { unknown: "whether everyone receives SSI or Cash Assistance" },
   olderOrDisabled: { unknown: "whether a household member is 60 or older, disabled, or blind" },
   dependentCare: { unknown: "whether you pay dependent-care costs" },
@@ -82,8 +80,7 @@ function uncertaintyReason(question: ScreeningQuestion, answers: ScreeningAnswer
   }
   const check = branchChecks[question];
   if (value === "unknown") return `We need to know ${check.unknown}.`;
-  if (question !== "nyc") return null;
-  return value === branchChecks.nyc.supported ? null : branchChecks.nyc.deferred;
+  return null;
 }
 
 // Stop at the first unresolved/deferred branch; later answers are irrelevant.
@@ -112,7 +109,7 @@ export function screenSnap(answers: ScreeningAnswers): ScreeningResult {
   if (journey.reason) return { outcome: "more-information", title: "We need more information", reasons: [journey.reason], limitation };
   if (journey.branch === "assistance") return {
     outcome: "may-qualify", title: "You may qualify for SNAP",
-    reasons: ["You live in NYC and reported that everyone in your household receives SSI or Cash Assistance. The published prescreen supports potential eligibility through this assistance-based path."],
+    reasons: ["You reported that everyone in your household receives SSI or Cash Assistance. The published prescreen supports potential eligibility through this assistance-based path."],
     limitation: "This is a limited assistance-based check, not an eligibility decision. We did not compare your income with a household-size guideline. HRA must review your full circumstances and confirm official eligibility. No application has been submitted.",
   };
   const size = Number(answers.householdSize);
@@ -149,7 +146,7 @@ export function screenSnap(answers: ScreeningAnswers): ScreeningResult {
     outcome: passes ? "may-qualify" : "not-established",
     title: passes ? "You may qualify for SNAP" : "We couldn't establish likely eligibility from your answers",
     reasons: [
-      `You live in NYC and reported a SNAP household of ${size}.`,
+      `You reported a SNAP household of ${size}.`,
       ...(answers.childSupportPaid === "yes" ? [`From gross income of ${dollars(income)}, subtracting child support paid of ${dollars(paidCents / 100)} leaves ${dollars(comparedCents / 100)} for this limited comparison.`] : []),
       `Your monthly gross income${answers.childSupportPaid === "yes" ? " after subtracting child support paid" : ""} of ${dollars(comparedCents / 100)} is ${passes ? "at or below" : "above"} the ${dollars(limit)} guideline for your household size.`,
       branchReason,
