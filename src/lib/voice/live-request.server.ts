@@ -14,7 +14,6 @@ async function readRequest(request: Request, signal: AbortSignal): Promise<unkno
   if (request.method !== "POST") return new Response(null, { status: 405, headers: { ...headers, Allow: "POST" } });
   const url = new URL(request.url);
   url.host = request.headers.get("host") ?? url.host;
-  if (!["localhost", "127.0.0.1", "[::1]"].includes(url.hostname)) return error(403, "Live conversation is available only in the local demo.");
   if (request.headers.get("origin") !== url.origin || request.headers.get("sec-fetch-site") === "cross-site") return error(400, "Start a conversation from the Hiraku page.");
   if (!/^application\/json(?:\s*;|$)/i.test(request.headers.get("content-type") ?? "")) return error(415, "Send a JSON request.");
   const reader = request.body?.getReader();

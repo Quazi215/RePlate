@@ -111,8 +111,8 @@ test("live boundaries reject invalid history, oversize bodies and cross-origin r
   ]) assert.equal((await handleLiveGuidanceRequest(request(body), provider)).status, 400);
   assert.equal((await handleLiveGuidanceRequest(request({ question: "x".repeat(140000), history: [] }), provider)).status, 413);
   assert.equal((await handleLiveGuidanceRequest(request({ question: "SNAP?", history: [] }, "https://other.test"), provider)).status, 400);
-  const hosted = new Request("https://hiraku.test/api/voice/live", { method: "POST", headers: { Origin: "https://hiraku.test", "Content-Type": "application/json" }, body: "{}" });
-  assert.equal((await handleLiveGuidanceRequest(hosted, provider)).status, 403);
+  const hosted = new Request("https://hiraku.test/api/voice/live", { method: "POST", headers: { Origin: "https://hiraku.test", "Content-Type": "application/json" }, body: JSON.stringify({ history: [], greeting: true, screening, spoken: false }) });
+  assert.equal((await handleLiveGuidanceRequest(hosted, provider)).status, 200);
   assert.equal(calls, 0);
 });
 
